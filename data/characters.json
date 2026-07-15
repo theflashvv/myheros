@@ -2,101 +2,6 @@
   "version": "1.2",
   "characters": [
     {
-      "id": "veil",
-      "name": "薇儿",
-      "name_en": "Veil",
-      "series": "My Heroes",
-      "portrait": "assets/portraits/veil.png",
-      "avatar": null,
-      "role": "辅助 / 治愈",
-      "description": "拥有神圣治愈之力的少女，能以星光为媒介恢复队友的生命，甚至将倒下的同伴从死亡边缘拉回。平时温柔沉默，但当她召唤天国之力时，星辰的审判降临大地，足以将一切敌人化为虚无。",
-      "base_stats": {
-        "hp": 260,
-        "mp": 280,
-        "attack": 22,
-        "defense": 48,
-        "magic_defense": 90,
-        "speed": 68,
-        "agility": 52,
-        "intelligence": 95
-      },
-      "growth_rates": {
-        "hp": 18,
-        "mp": 5,
-        "attack": 1,
-        "defense": 1,
-        "magic_defense": 2,
-        "speed": 1,
-        "agility": 1,
-        "intelligence": 3
-      },
-      "unique_command": {
-        "name": "天国星坠",
-        "description": "召唤星空之力，对所有敌人造成圣属性魔法大伤害，伤害量基于当前队伍中存活队友数量提升（每名存活队友+15%），并使所有敌人陷入「星缚」状态，3回合内魔防降低20%",
-        "type": "unique"
-      },
-      "skills": [
-        {
-          "level": 1,
-          "skill_id": "heal",
-          "name": "治愈术",
-          "type": "support",
-          "mp_cost": 10,
-          "description": "恢复单体队友中量HP"
-        },
-        {
-          "level": 5,
-          "skill_id": "star_light",
-          "name": "星光祈祷",
-          "type": "support",
-          "mp_cost": 18,
-          "description": "恢复全体队友少量HP，并解除一个负面状态"
-        },
-        {
-          "level": 10,
-          "skill_id": "revive",
-          "name": "复生",
-          "type": "support",
-          "mp_cost": 40,
-          "description": "复活一名倒下的队友，并恢复其30%最大HP"
-        },
-        {
-          "level": 18,
-          "skill_id": "holy_barrier",
-          "name": "圣光护盾",
-          "type": "support",
-          "mp_cost": 28,
-          "description": "为单体队友施加圣光护盾，抵挡一次伤害，持续3回合"
-        },
-        {
-          "level": 25,
-          "skill_id": "full_revive",
-          "name": "满血复苏",
-          "type": "support",
-          "mp_cost": 70,
-          "description": "复活一名倒下的队友，并恢复其100%最大HP"
-        },
-        {
-          "level": 35,
-          "skill_id": "heaven_star_fall",
-          "name": "天国星坠",
-          "type": "magic",
-          "mp_cost": 85,
-          "description": "对全体敌人造成圣属性魔法大伤害，伤害随存活队友数量提升，并施加星缚（魔防-20%，持续3回合）"
-        }
-      ],
-      "resistances": {
-        "圣": "absorb",
-        "暗": "weak",
-        "火": "normal",
-        "冰": "normal",
-        "雷": "normal",
-        "风": "normal",
-        "物理": "normal"
-      },
-      "equipment_slots": ["weapon", "offhand", "head", "chest", "legs", "accessory"]
-    },
-    {
       "id": "sheru_faniru",
       "name": "雪露法妮尔",
       "name_en": "Shelu Fanir",
@@ -1056,7 +961,12 @@
         "fire": "normal",
         "ice": "normal"
       },
-      "equipment_slots": ["法杖", "法袍", "饰品", "饰品"]
+      "equipment_slots": [
+        "法杖",
+        "法袍",
+        "饰品",
+        "饰品"
+      ]
     },
     {
       "id": "luofa",
@@ -1131,7 +1041,12 @@
         "dark": "normal",
         "holy": "normal"
       },
-      "equipment_slots": ["双斧", "重甲", "饰品", "饰品"]
+      "equipment_slots": [
+        "双斧",
+        "重甲",
+        "饰品",
+        "饰品"
+      ]
     },
     {
       "id": "dennis",
@@ -1206,7 +1121,12 @@
         "dark": "normal",
         "wind": "resist"
       },
-      "equipment_slots": ["枪械", "轻甲", "饰品", "饰品"]
+      "equipment_slots": [
+        "枪械",
+        "轻甲",
+        "饰品",
+        "饰品"
+      ]
     },
     {
       "id": "nalong",
@@ -1281,7 +1201,12 @@
         "dark": "normal",
         "ice": "normal"
       },
-      "equipment_slots": ["手枪", "海盗服", "饰品", "饰品"]
+      "equipment_slots": [
+        "手枪",
+        "海盗服",
+        "饰品",
+        "饰品"
+      ]
     },
     {
       "id": "meriel",
@@ -1356,7 +1281,12 @@
         "water": "weak",
         "holy": "normal"
       },
-      "equipment_slots": ["手枪", "海盗服", "饰品", "饰品"]
+      "equipment_slots": [
+        "手枪",
+        "海盗服",
+        "饰品",
+        "饰品"
+      ]
     },
     {
       "id": "mathew",
@@ -1431,7 +1361,12 @@
         "dark": "normal",
         "wind": "resist"
       },
-      "equipment_slots": ["拳套", "格斗服", "饰品", "饰品"]
+      "equipment_slots": [
+        "拳套",
+        "格斗服",
+        "饰品",
+        "饰品"
+      ]
     },
     {
       "id": "grifon",
@@ -1506,7 +1441,12 @@
         "fire": "normal",
         "ice": "normal"
       },
-      "equipment_slots": ["召唤书", "法袍", "饰品", "饰品"]
+      "equipment_slots": [
+        "召唤书",
+        "法袍",
+        "饰品",
+        "饰品"
+      ]
     },
     {
       "id": "jessica",
@@ -1581,7 +1521,12 @@
         "holy": "normal",
         "time": "resist"
       },
-      "equipment_slots": ["弓", "轻甲", "饰品", "饰品"]
+      "equipment_slots": [
+        "弓",
+        "轻甲",
+        "饰品",
+        "饰品"
+      ]
     },
     {
       "id": "tiya",
@@ -1664,7 +1609,12 @@
         "holy": "resist",
         "time": "normal"
       },
-      "equipment_slots": ["单手剑", "盾牌", "重甲", "饰品"]
+      "equipment_slots": [
+        "单手剑",
+        "盾牌",
+        "重甲",
+        "饰品"
+      ]
     },
     {
       "id": "clarete",
@@ -1747,7 +1697,12 @@
         "holy": "normal",
         "time": "resist"
       },
-      "equipment_slots": ["武士刀", "轻甲", "饰品", "饰品"]
+      "equipment_slots": [
+        "武士刀",
+        "轻甲",
+        "饰品",
+        "饰品"
+      ]
     },
     {
       "id": "stephanie",
@@ -1830,7 +1785,12 @@
         "holy": "normal",
         "time": "normal"
       },
-      "equipment_slots": ["长枪", "重甲", "饰品", "饰品"]
+      "equipment_slots": [
+        "长枪",
+        "重甲",
+        "饰品",
+        "饰品"
+      ]
     },
     {
       "id": "cross",
@@ -1913,7 +1873,114 @@
         "holy": "normal",
         "time": "resist"
       },
-      "equipment_slots": ["弯刀", "轻甲", "饰品", "饰品"]
+      "equipment_slots": [
+        "弯刀",
+        "轻甲",
+        "饰品",
+        "饰品"
+      ]
+    },
+    {
+      "id": "veil",
+      "name": "薇儿",
+      "name_en": "Veil",
+      "series": "My Heroes",
+      "portrait": "assets/portraits/veil.png",
+      "avatar": null,
+      "role": "辅助 / 治愈",
+      "description": "拥有神圣治愈之力的少女，能以星光为媒介恢复队友的生命，甚至将倒下的同伴从死亡边缘拉回。平时温柔沉默，但当她召唤天国之力时，星辰的审判降临大地，足以将一切敌人化为虚无。",
+      "base_stats": {
+        "hp": 260,
+        "mp": 280,
+        "attack": 22,
+        "defense": 48,
+        "magic_defense": 90,
+        "speed": 68,
+        "agility": 52,
+        "intelligence": 95
+      },
+      "growth_rates": {
+        "hp": 18,
+        "mp": 5,
+        "attack": 1,
+        "defense": 1,
+        "magic_defense": 2,
+        "speed": 1,
+        "agility": 1,
+        "intelligence": 3
+      },
+      "unique_command": {
+        "name": "光耀",
+        "description": "【被动】薇儿每次施放技能后获得1层「星辉」（最多叠加3层）；叠满3层时自动施放「光耀」，对全体队友回复高额HP（回复量基于薇儿的智力），同时「星辉」归零重新积累",
+        "type": "unique"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "heal",
+          "name": "治愈术",
+          "type": "support",
+          "mp_cost": 10,
+          "description": "恢复单体队友中量HP"
+        },
+        {
+          "level": 5,
+          "skill_id": "star_light",
+          "name": "星光祈祷",
+          "type": "support",
+          "mp_cost": 18,
+          "description": "恢复全体队友少量HP，并解除一个负面状态"
+        },
+        {
+          "level": 10,
+          "skill_id": "revive",
+          "name": "复生",
+          "type": "support",
+          "mp_cost": 40,
+          "description": "复活一名倒下的队友，并恢复其30%最大HP"
+        },
+        {
+          "level": 18,
+          "skill_id": "holy_barrier",
+          "name": "圣光护盾",
+          "type": "support",
+          "mp_cost": 28,
+          "description": "为单体队友施加圣光护盾，抵挡一次伤害，持续3回合"
+        },
+        {
+          "level": 25,
+          "skill_id": "full_revive",
+          "name": "满血复苏",
+          "type": "support",
+          "mp_cost": 70,
+          "description": "复活一名倒下的队友，并恢复其100%最大HP"
+        },
+        {
+          "level": 35,
+          "skill_id": "heaven_star_fall",
+          "name": "天国星坠",
+          "type": "magic",
+          "mp_cost": 85,
+          "description": "对全体敌人造成圣属性魔法大伤害，伤害随存活队友数量提升，并施加星缚（魔防-20%，持续3回合）"
+        }
+      ],
+      "resistances": {
+        "圣": "absorb",
+        "暗": "weak",
+        "火": "normal",
+        "冰": "normal",
+        "雷": "normal",
+        "风": "normal",
+        "物理": "normal"
+      },
+      "equipment_slots": [
+        "weapon",
+        "offhand",
+        "head",
+        "chest",
+        "legs",
+        "accessory"
+      ]
     }
   ]
 }
