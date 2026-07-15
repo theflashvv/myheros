@@ -1892,7 +1892,7 @@
       "base_stats": {
         "hp": 260,
         "mp": 280,
-        "attack": 22,
+        "attack": 88,
         "defense": 48,
         "magic_defense": 90,
         "speed": 68,
@@ -1902,7 +1902,7 @@
       "growth_rates": {
         "hp": 18,
         "mp": 5,
-        "attack": 1,
+        "attack": 3,
         "defense": 1,
         "magic_defense": 2,
         "speed": 1,
