@@ -121,7 +121,7 @@
       "target": "single",
       "base_power": 80,
       "mp_cost": 0,
-      "defPierce": 0.20,
+      "defPierce": 0.2,
       "description": "以厨刀精准攻击敌人要害，无视部分防御"
     },
     {
@@ -333,7 +333,7 @@
       "target": "single",
       "base_power": 110,
       "mp_cost": 0,
-      "defPierce": 0.20,
+      "defPierce": 0.2,
       "description": "以黑暗之力灌注的重斩，无视部分防御，对单体造成强力物理伤害"
     },
     {
@@ -711,7 +711,11 @@
       "base_power": 80,
       "mp_cost": 48,
       "tripleHit": true,
-      "tripleHitScale": [1.0, 1.3, 1.6],
+      "tripleHitScale": [
+        1,
+        1.3,
+        1.6
+      ],
       "cooldown": 5,
       "description": "末日之力注入双斧，连续3击单体目标，每击威力递增（×1.0 / ×1.3 / ×1.6）"
     },
@@ -973,8 +977,7 @@
       "stunOnAllHit": true,
       "cooldown": 5,
       "description": "对单体发动8连击，全部命中后使目标眩晕跳过下一回合"
-    }
-,
+    },
     {
       "id": "jessica_swift_shot",
       "name": "疾风箭",
@@ -1102,7 +1105,7 @@
       "base_power": 75,
       "mp_cost": 20,
       "hits": 3,
-      "lifeSteal": 0.20,
+      "lifeSteal": 0.2,
       "description": "连续三击目标，每击吸取20%伤害量为自身回复HP"
     },
     {
@@ -1113,7 +1116,7 @@
       "target": "single",
       "base_power": 150,
       "mp_cost": 28,
-      "defPierce": 0.50,
+      "defPierce": 0.5,
       "description": "踏入虚空瞬移至敌后，单体大伤害，无视50%防御"
     },
     {
@@ -1124,7 +1127,7 @@
       "target": "all_enemies",
       "base_power": 110,
       "mp_cost": 38,
-      "defPierce": 0.30,
+      "defPierce": 0.3,
       "description": "以血刃蓄积赤焰之力，瞬间横扫全体敌人，无视30%防御"
     },
     {
@@ -1135,7 +1138,7 @@
       "target": "single",
       "base_power": 200,
       "mp_cost": 50,
-      "defPierce": 0.60,
+      "defPierce": 0.6,
       "bonusCritRate": 30,
       "description": "集中全部杀意于一击，无视60%防御，暴击率大幅提升，触发奥义的概率翻倍"
     },
@@ -1158,7 +1161,7 @@
       "target": "single",
       "base_power": 130,
       "mp_cost": 24,
-      "defPierce": 0.30,
+      "defPierce": 0.3,
       "description": "纵身跃起从高空全力俯冲，无视30%防御的重击"
     },
     {
@@ -1191,7 +1194,7 @@
       "target": "all_enemies",
       "base_power": 160,
       "mp_cost": 55,
-      "defPierce": 0.40,
+      "defPierce": 0.4,
       "cooldown": 4,
       "description": "斯蒂芬妮化身巨龙，对全体敌人喷射炽热龙息，造成大量物理火焰伤害，无视40%防御"
     },
@@ -1252,9 +1255,79 @@
       "target": "single",
       "base_power": 180,
       "mp_cost": 40,
-      "defPierce": 0.50,
-      "hpThreshold": 0.50,
+      "defPierce": 0.5,
+      "hpThreshold": 0.5,
       "description": "对HP低于50%的目标造成额外50%伤害；无视50%防御"
+    },
+    {
+      "id": "heal",
+      "name": "治愈术",
+      "type": "heal",
+      "element": "holy",
+      "target": "single_ally",
+      "base_power": 0,
+      "mp_cost": 10,
+      "healFlat": 100,
+      "healScaling": true,
+      "description": "恢复单体队友中量HP，回复量随薇儿智力提升"
+    },
+    {
+      "id": "star_light",
+      "name": "星光祈祷",
+      "type": "heal",
+      "element": "holy",
+      "target": "all_allies",
+      "base_power": 0,
+      "mp_cost": 18,
+      "healFlat": 50,
+      "description": "恢复全体队友少量HP，并解除一个负面状态"
+    },
+    {
+      "id": "revive",
+      "name": "复生",
+      "type": "support",
+      "element": "holy",
+      "target": "single_dead_ally",
+      "base_power": 0,
+      "mp_cost": 40,
+      "revive": true,
+      "reviveHpRate": 0.3,
+      "description": "复活一名倒下的队友，恢复其30%最大HP"
+    },
+    {
+      "id": "holy_barrier",
+      "name": "圣光护盾",
+      "type": "support",
+      "element": "holy",
+      "target": "single_ally",
+      "base_power": 0,
+      "mp_cost": 28,
+      "shield": true,
+      "shieldHits": 1,
+      "buffTurns": 3,
+      "description": "为单体队友施加圣光护盾，抵挡一次伤害，持续3回合"
+    },
+    {
+      "id": "full_revive",
+      "name": "满血复苏",
+      "type": "support",
+      "element": "holy",
+      "target": "single_dead_ally",
+      "base_power": 0,
+      "mp_cost": 70,
+      "revive": true,
+      "reviveHpRate": 1,
+      "description": "复活一名倒下的队友，完全恢复其HP"
+    },
+    {
+      "id": "heaven_star_fall",
+      "name": "天国星坠",
+      "type": "magic",
+      "element": "holy",
+      "target": "all_enemies",
+      "base_power": 160,
+      "mp_cost": 85,
+      "description": "对全体敌人造成圣属性魔法大伤害，并施加星缚（魔防-20%，持续3回合）"
     }
   ]
 }
