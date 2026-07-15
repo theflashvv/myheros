@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Heroes — 地图</title>
+  <style>
+    :root {
+      --bg: #0d0d1a; --panel: #141428; --border: #2a2a50;
+      --accent: #7b5ea7; --accent2: #c084fc; --gold: #f0c060;
+      --text: #e8e0f0; --subtext: #9988bb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+      height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+    }
+    header {
+      background: linear-gradient(135deg, #1a0a2e, #0d1a2e);
+      border-bottom: 2px solid var(--accent);
+      padding: 14px 32px; display: flex; align-items: center;
+      justify-content: space-between; flex-shrink: 0;
+    }
+    header h1 { font-size: 1.8rem; color: var(--gold); letter-spacing: 0.1em; text-shadow: 0 0 20px rgba(240,192,96,0.4); }
+    .btn-nav {
+      padding: 6px 14px; background: transparent; border: 1px solid var(--border);
+      border-radius: 6px; color: var(--subtext); cursor: pointer; font-size: 0.8rem;
+      text-decoration: none; transition: all 0.2s; font-family: inherit;
+    }
+    .btn-nav:hover { border-color: var(--accent); color: var(--accent2); }
+    .btn-nav-active { border-color: var(--accent) !important; color: var(--gold) !important; cursor: default; }
+
+    .map-layout {
+      display: flex; flex: 1; min-height: 0; gap: 0;
+    }
+
+    /* ── 地图区域 ── */
+    #map-wrap {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      background: #050510; overflow: hidden; position: relative;
+    }
+    #map-canvas {
+      image-rendering: pixelated;
+      cursor: default;
+    }
+
+    /* ── 侧边信息栏 ── */
+    .info-panel {
+      width: 240px; background: var(--panel); border-left: 1px solid var(--border);
+      display: flex; flex-direction: column; flex-shrink: 0;
+    }
+    .info-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    .info-title {
+      font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent2); margin-bottom: 8px;
+    }
+    .map-name { font-size: 1rem; font-weight: 600; color: var(--gold); }
+    .map-size { font-size: 0.75rem; color: var(--subtext); margin-top: 2px; }
+    .coord-display {
+      font-size: 0.85rem; color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+    .tile-info {
+      font-size: 0.82rem; color: var(--text);
+    }
+    .tile-info .tile-name { font-weight: 600; }
+    .tile-info .tile-pass { font-size: 0.72rem; color: var(--subtext); margin-top: 2px; }
+
+    .legend-grid { display: flex; flex-direction: column; gap: 5px; }
+    .legend-row { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; }
+    .legend-swatch { width: 16px; height: 16px; border-radius: 3px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1); }
+
+    .controls-list { font-size: 0.75rem; color: var(--subtext); line-height: 1.9; }
+    .controls-list span { color: var(--gold); font-weight: 600; }
+
+    /* ── 对话框 ── */
+    #dialog-box {
+      display: none;
+      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+      width: min(520px, 90%);
+      background: rgba(13,13,26,0.97); border: 2px solid var(--accent);
+      border-radius: 10px; padding: 16px 20px; z-index: 100;
+    }
+    #dialog-box.visible { display: block; }
+    #dialog-speaker {
+      font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent2); margin-bottom: 6px;
+    }
+    #dialog-text { font-size: 0.92rem; line-height: 1.6; color: var(--text); }
+    #dialog-hint { font-size: 0.7rem; color: var(--subtext); margin-top: 8px; text-align: right; }
+
+    /* ── 事件通知 ── */
+    #event-notice {
+      display: none;
+      position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+      background: rgba(13,13,26,0.95); border: 1px solid var(--gold);
+      border-radius: 8px; padding: 10px 18px; z-index: 100;
+      color: var(--gold); font-size: 0.88rem; text-align: center;
+      max-width: 400px;
+    }
+    #event-notice.visible { display: block; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:12px">
+    <h1>My Heroes</h1>
+  </div>
+  <nav style="display:flex;gap:8px;flex-wrap:wrap">
+    <a href="index.html" class="btn-nav">角色库</a>
+    <a href="equipment.html" class="btn-nav">装备管理</a>
+    <a href="skills.html" class="btn-nav">技能库</a>
+    <a href="battle.html" class="btn-nav">战斗 Demo</a>
+    <a href="status.html" class="btn-nav">角色状态</a>
+    <span class="btn-nav btn-nav-active">地图</span>
+  </nav>
+</header>
+
+<div class="map-layout">
+  <div id="map-wrap">
+    <canvas id="map-canvas"></canvas>
+    <div id="dialog-box">
+      <div id="dialog-speaker"></div>
+      <div id="dialog-text"></div>
+      <div id="dialog-hint">按 E 继续</div>
+    </div>
+    <div id="event-notice"></div>
+  </div>
+
+  <aside class="info-panel">
+    <div class="info-section">
+      <div class="info-title">当前地图</div>
+      <div class="map-name" id="info-mapname">加载中…</div>
+      <div class="map-size" id="info-mapsize"></div>
+    </div>
+
+    <div class="info-section">
+      <div class="info-title">玩家位置</div>
+      <div class="coord-display" id="info-coord">X: — Y: —</div>
+    </div>
+
+    <div class="info-section">
+      <div class="info-title">脚下地形</div>
+      <div class="tile-info" id="info-tile">
+        <div class="tile-name">—</div>
+        <div class="tile-pass">—</div>
+      </div>
+    </div>
+
+    <div class="info-section" style="flex:1;overflow-y:auto">
+      <div class="info-title">图例</div>
+      <div class="legend-grid" id="legend"></div>
+    </div>
+
+    <div class="info-section">
+      <div class="info-title">操作说明</div>
+      <div class="controls-list">
+        <span>WASD / 方向键</span> 移动<br>
+        <span>E</span> 与NPC对话 / 关闭对话<br>
+        <span>鼠标悬停</span> 查看格子
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+// ── 图块定义 ────────────────────────────────────────────────
+const TILES = {
+  0: { name:'草地',   passable:true,  color:'#3d6b45', symbol:'·' },
+  1: { name:'树木',   passable:false, color:'#254d20', symbol:'♣' },
+  2: { name:'水域',   passable:false, color:'#1a5080', symbol:'≈' },
+  3: { name:'山地',   passable:false, color:'#6b5535', symbol:'▲' },
+  4: { name:'道路',   passable:true,  color:'#9c7d4a', symbol:'=' },
+  5: { name:'建筑',   passable:false, color:'#4a3d5c', symbol:'■' },
+  6: { name:'沙地',   passable:true,  color:'#b89a5a', symbol:'~' },
+  7: { name:'洞穴',   passable:true,  color:'#3a3a3a', symbol:'O' },
+  8: { name:'传送点', passable:true,  color:'#5c3d8c', symbol:'✦' },
+  9: { name:'出入口', passable:true,  color:'#8a7020', symbol:'D' },
+}
+
+const TILE_SIZE = 36
+const PLAYER_COLOR = '#f0c060'
+const NPC_COLOR    = '#60c0f0'
+const EVENT_COLOR  = 'rgba(255,200,50,0.25)'
+
+// ── 状态 ────────────────────────────────────────────────────
+let map = null
+let player = { x: 6, y: 13 }  // 从出入口附近开始
+let triggeredEvents = new Set()
+let dialogState = null  // { npc, lineIndex }
+let noticeTimer = null
+
+// ── 画布 ────────────────────────────────────────────────────
+const canvas = document.getElementById('map-canvas')
+const ctx = canvas.getContext('2d')
+
+function resizeCanvas() {
+  if (!map) return
+  const wrap = document.getElementById('map-wrap')
+  const maxW = wrap.clientWidth  - 20
+  const maxH = wrap.clientHeight - 20
+  const scaleW = Math.floor(maxW / map.width)
+  const scaleH = Math.floor(maxH / map.height)
+  const ts = Math.max(20, Math.min(TILE_SIZE, scaleW, scaleH))
+  canvas.width  = map.width  * ts
+  canvas.height = map.height * ts
+  canvas._ts = ts
+  render()
+}
+
+// ── 渲染 ────────────────────────────────────────────────────
+function render() {
+  if (!map) return
+  const ts = canvas._ts || TILE_SIZE
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+  // 瓦片层
+  for (let y = 0; y < map.height; y++) {
+    for (let x = 0; x < map.width; x++) {
+      const tid = map.tileLayer[y][x]
+      const tile = TILES[tid] || TILES[0]
+      ctx.fillStyle = tile.color
+      ctx.fillRect(x * ts, y * ts, ts, ts)
+
+      // 网格线（细）
+      ctx.strokeStyle = 'rgba(0,0,0,0.25)'
+      ctx.lineWidth = 0.5
+      ctx.strokeRect(x * ts, y * ts, ts, ts)
+    }
+  }
+
+  // 事件标记
+  for (const ev of map.events) {
+    if (triggeredEvents.has(ev.id) && ev.once) continue
+    ctx.fillStyle = EVENT_COLOR
+    ctx.fillRect(ev.x * ts + 1, ev.y * ts + 1, ts - 2, ts - 2)
+    ctx.fillStyle = 'rgba(255,200,50,0.8)'
+    ctx.font = `${Math.floor(ts * 0.45)}px serif`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('E', ev.x * ts + ts / 2, ev.y * ts + ts / 2)
+  }
+
+  // NPC
+  for (const npc of map.npcs) {
+    ctx.fillStyle = NPC_COLOR
+    const pad = Math.floor(ts * 0.15)
+    ctx.fillRect(npc.x * ts + pad, npc.y * ts + pad, ts - pad * 2, ts - pad * 2)
+    // NPC名字
+    ctx.fillStyle = '#fff'
+    ctx.font = `bold ${Math.max(8, Math.floor(ts * 0.28))}px 'Microsoft YaHei', sans-serif`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'bottom'
+    ctx.fillText(npc.name.slice(0,3), npc.x * ts + ts / 2, npc.y * ts - 2)
+  }
+
+  // 玩家
+  const px = player.x * ts
+  const py = player.y * ts
+  const r  = Math.floor(ts * 0.32)
+  ctx.fillStyle = PLAYER_COLOR
+  ctx.beginPath()
+  ctx.arc(px + ts / 2, py + ts / 2, r, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.strokeStyle = '#fff'
+  ctx.lineWidth = 1.5
+  ctx.stroke()
+
+  // 玩家光晕
+  const grad = ctx.createRadialGradient(px + ts/2, py + ts/2, r, px + ts/2, py + ts/2, r * 2.5)
+  grad.addColorStop(0, 'rgba(240,192,96,0.25)')
+  grad.addColorStop(1, 'rgba(240,192,96,0)')
+  ctx.fillStyle = grad
+  ctx.beginPath()
+  ctx.arc(px + ts/2, py + ts/2, r * 2.5, 0, Math.PI * 2)
+  ctx.fill()
+}
+
+// ── 移动 ────────────────────────────────────────────────────
+function tryMove(dx, dy) {
+  if (dialogState) return
+  const nx = player.x + dx
+  const ny = player.y + dy
+  if (nx < 0 || ny < 0 || nx >= map.width || ny >= map.height) return
+
+  const tid  = map.tileLayer[ny][nx]
+  const tile = TILES[tid] || TILES[0]
+  if (!tile.passable) return
+
+  // NPC碰撞
+  const npcAt = map.npcs.find(n => n.x === nx && n.y === ny)
+  if (npcAt) return  // 不能走进NPC格
+
+  player.x = nx
+  player.y = ny
+
+  updateInfoPanel()
+  render()
+  checkStepEvents()
+}
+
+// ── 触发事件 ────────────────────────────────────────────────
+function checkStepEvents() {
+  for (const ev of map.events) {
+    if (ev.trigger !== 'step') continue
+    if (triggeredEvents.has(ev.id) && ev.once) continue
+    if (ev.x === player.x && ev.y === player.y) {
+      fireEvent(ev)
+    }
+  }
+  // 遭遇区
+  for (const enc of map.encounters) {
+    if (player.x >= enc.x && player.x < enc.x + enc.width &&
+        player.y >= enc.y && player.y < enc.y + enc.height) {
+      if (Math.random() < enc.encounter_rate) {
+        showNotice(`⚔️ 遭遇敌人！（等级 ${enc.level_range.min}–${enc.level_range.max}）`)
+      }
+    }
+  }
+}
+
+function fireEvent(ev) {
+  if (ev.once) triggeredEvents.add(ev.id)
+  if (ev.type === 'story') {
+    showNotice('📖 ' + ev.data.text)
+  } else if (ev.type === 'treasure') {
+    showNotice('🎁 获得道具：' + (ev.data.items || []).join('、'))
+  } else if (ev.type === 'heal') {
+    showNotice('💚 HP 恢复了 ' + ev.data.amount + ' 点！')
+  } else if (ev.type === 'teleport') {
+    showNotice(`✦ 传送至：${ev.data.target_map}（${ev.data.target_x}, ${ev.data.target_y}）`)
+  } else if (ev.type === 'battle') {
+    showNotice('⚔️ 战斗开始！敌人：' + (ev.data.enemies || []).join('、'))
+  }
+  render()
+}
+
+// ── E键交互 ─────────────────────────────────────────────────
+function interact() {
+  // 关闭对话
+  if (dialogState) {
+    dialogState.lineIndex++
+    if (dialogState.lineIndex >= dialogState.npc.dialogues.length) {
+      closeDialog()
+    } else {
+      showDialogLine()
+    }
+    return
+  }
+  // 找相邻NPC（4方向）
+  const dirs = [[0,-1],[0,1],[-1,0],[1,0]]
+  for (const [dx, dy] of dirs) {
+    const npc = map.npcs.find(n => n.x === player.x + dx && n.y === player.y + dy)
+    if (npc) { openDialog(npc); return }
+  }
+  // 踩上的interact事件
+  for (const ev of map.events) {
+    if (ev.trigger !== 'interact') continue
+    if (triggeredEvents.has(ev.id) && ev.once) continue
+    if (ev.x === player.x && ev.y === player.y) {
+      fireEvent(ev); return
+    }
+  }
+}
+
+function openDialog(npc) {
+  dialogState = { npc, lineIndex: 0 }
+  showDialogLine()
+}
+
+function showDialogLine() {
+  const box = document.getElementById('dialog-box')
+  document.getElementById('dialog-speaker').textContent = dialogState.npc.name
+  document.getElementById('dialog-text').textContent    = dialogState.npc.dialogues[dialogState.lineIndex]
+  const remaining = dialogState.npc.dialogues.length - dialogState.lineIndex - 1
+  document.getElementById('dialog-hint').textContent = remaining > 0 ? `按 E 继续（${remaining} 条剩余）` : '按 E 关闭'
+  box.classList.add('visible')
+}
+
+function closeDialog() {
+  dialogState = null
+  document.getElementById('dialog-box').classList.remove('visible')
+}
+
+// ── 通知条 ──────────────────────────────────────────────────
+function showNotice(msg) {
+  const el = document.getElementById('event-notice')
+  el.textContent = msg
+  el.classList.add('visible')
+  if (noticeTimer) clearTimeout(noticeTimer)
+  noticeTimer = setTimeout(() => el.classList.remove('visible'), 3000)
+}
+
+// ── 信息面板 ────────────────────────────────────────────────
+function updateInfoPanel() {
+  document.getElementById('info-coord').textContent = `X: ${player.x}  Y: ${player.y}`
+  if (!map) return
+  const tid  = map.tileLayer[player.y]?.[player.x] ?? 0
+  const tile = TILES[tid] || TILES[0]
+  document.getElementById('info-tile').innerHTML =
+    `<div class="tile-name" style="color:${tile.color}">${tile.name}</div>
+     <div class="tile-pass">${tile.passable ? '可通行' : '不可通行'}</div>`
+}
+
+function buildLegend() {
+  const grid = document.getElementById('legend')
+  for (const [id, t] of Object.entries(TILES)) {
+    const row = document.createElement('div')
+    row.className = 'legend-row'
+    row.innerHTML = `<div class="legend-swatch" style="background:${t.color}"></div>
+                     <span>${t.name}</span>`
+    grid.appendChild(row)
+  }
+}
+
+// ── 键盘 ────────────────────────────────────────────────────
+const KEYS = new Set()
+document.addEventListener('keydown', e => {
+  KEYS.add(e.key)
+  switch(e.key) {
+    case 'ArrowUp':    case 'w': case 'W': tryMove(0,-1); break
+    case 'ArrowDown':  case 's': case 'S': tryMove(0,1);  break
+    case 'ArrowLeft':  case 'a': case 'A': tryMove(-1,0); break
+    case 'ArrowRight': case 'd': case 'D': tryMove(1,0);  break
+    case 'e': case 'E': interact(); break
+  }
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault()
+})
+
+// ── 鼠标悬停 ────────────────────────────────────────────────
+canvas.addEventListener('mousemove', e => {
+  if (!map) return
+  const ts = canvas._ts || TILE_SIZE
+  const rect = canvas.getBoundingClientRect()
+  const mx = Math.floor((e.clientX - rect.left) / ts)
+  const my = Math.floor((e.clientY - rect.top)  / ts)
+  if (mx < 0 || my < 0 || mx >= map.width || my >= map.height) return
+  const tid = map.tileLayer[my]?.[mx] ?? 0
+  const tile = TILES[tid] || TILES[0]
+  const npc = map.npcs.find(n => n.x === mx && n.y === my)
+  const ev  = map.events.find(ev => ev.x === mx && ev.y === my)
+  let label = `(${mx},${my}) ${tile.name}`
+  if (npc) label += ` · NPC: ${npc.name}`
+  if (ev)  label += ` · 事件: ${ev.type}`
+  canvas.title = label
+})
+
+// ── 窗口缩放 ────────────────────────────────────────────────
+window.addEventListener('resize', () => resizeCanvas())
+
+// ── 加载地图 ────────────────────────────────────────────────
+async function loadMap(mapId) {
+  const res  = await fetch(`data/maps/${mapId}.json`)
+  map = await res.json()
+
+  // 找出入口作为初始位置
+  for (let y = 0; y < map.height; y++) {
+    for (let x = 0; x < map.width; x++) {
+      if (map.tileLayer[y][x] === 9) {
+        player = { x, y }
+      }
+    }
+  }
+
+  document.getElementById('info-mapname').textContent = map.name
+  document.getElementById('info-mapsize').textContent = `${map.width} × ${map.height} 格`
+  buildLegend()
+  resizeCanvas()
+  updateInfoPanel()
+}
+
+loadMap('town_start')
+</script>
+</body>
+</html>

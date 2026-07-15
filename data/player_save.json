@@ -1,0 +1,184 @@
+{
+  "version": "1.0",
+  "equipped": {
+    "sheru_faniru": {
+      "head": null,
+      "chest": "robe_silk",
+      "legs": null,
+      "weapon": "staff_ember",
+      "offhand": null,
+      "accessory": "ring_fire"
+    },
+    "anjielina": {
+      "head": null,
+      "chest": null,
+      "legs": null,
+      "weapon": "lance_swallow",
+      "offhand": "shield_wind",
+      "accessory": null
+    },
+    "kobayashi_ryutan": {
+      "head": null,
+      "chest": "apron_battle",
+      "legs": null,
+      "weapon": "knife_santoku",
+      "offhand": null,
+      "accessory": null
+    },
+    "meiou_setsuna": {
+      "head": null,
+      "chest": "robe_silk",
+      "legs": null,
+      "weapon": "staff_time",
+      "offhand": null,
+      "accessory": "timepiece_setsuna"
+    },
+    "xia_yuyao": {
+      "head": null,
+      "chest": "armor_heavy",
+      "legs": null,
+      "weapon": "claw_flame",
+      "offhand": null,
+      "accessory": null
+    },
+    "sang": {
+      "head": null,
+      "chest": "armor_dark_iron",
+      "legs": null,
+      "weapon": "sword_dark_edge",
+      "offhand": "shield_dark_iron",
+      "accessory": null
+    },
+    "camille": {
+      "head": null,
+      "chest": "robe_holy",
+      "legs": null,
+      "weapon": "staff_crystal",
+      "offhand": null,
+      "accessory": "ring_water"
+    },
+    "uum": {
+      "head": null,
+      "chest": "robe_shadow",
+      "legs": null,
+      "weapon": "chainsaw_runic",
+      "offhand": null,
+      "accessory": "ring_phantom"
+    },
+    "jenny": {
+      "head": null,
+      "chest": "armor_holy_robe",
+      "legs": null,
+      "weapon": "sword_holy_blade",
+      "offhand": null,
+      "accessory": "ring_holy_crest"
+    },
+    "alicia": {
+      "head": null,
+      "chest": "armor_storm_robe",
+      "legs": null,
+      "weapon": "staff_thundergod",
+      "offhand": null,
+      "accessory": "ring_static_charge"
+    },
+    "xiaoyao": {
+      "head": null,
+      "chest": "armor_summoner_robe",
+      "legs": null,
+      "weapon": "staff_spirit_caller",
+      "offhand": null,
+      "accessory": "ring_spirit_pact"
+    },
+    "luofa": {
+      "head": null,
+      "chest": "armor_berserker_plate",
+      "legs": null,
+      "weapon": "axe_berserker",
+      "offhand": null,
+      "accessory": "ring_berserker_rage"
+    },
+    "dennis": {
+      "head": null,
+      "chest": "armor_hunter_coat",
+      "legs": null,
+      "weapon": "gun_golden_hawk",
+      "offhand": null,
+      "accessory": "ring_eagle_eye"
+    },
+    "nalong": {
+      "head": null,
+      "chest": "armor_pirate_coat",
+      "legs": null,
+      "weapon": "gun_skull_pistol",
+      "offhand": null,
+      "accessory": "ring_treasure_map"
+    },
+    "meriel": {
+      "head": null,
+      "chest": "armor_pirate_queen_coat",
+      "legs": null,
+      "weapon": "gun_twin_pistols",
+      "offhand": null,
+      "accessory": "ring_lucky_coin"
+    },
+    "mathew": {
+      "head": null,
+      "chest": "armor_fighter_gi",
+      "legs": null,
+      "weapon": "gloves_gold_spike",
+      "offhand": null,
+      "accessory": "ring_fighter_spirit"
+    },
+    "grifon": {
+      "head": null,
+      "chest": "armor_demon_robe",
+      "legs": null,
+      "weapon": "book_grimoire",
+      "offhand": null,
+      "accessory": "monocle_grifon_eye"
+    },
+    "jessica": {
+      "head": null,
+      "chest": "armor_hunter_coat",
+      "legs": null,
+      "weapon": "bow_wind_hunter",
+      "offhand": null,
+      "accessory": "ring_eagle_eye"
+    },
+    "tiya": {
+      "head": null,
+      "chest": "armor_gold_plate",
+      "legs": null,
+      "weapon": "sword_blue_crest",
+      "offhand": "shield_blue_crest",
+      "accessory": null
+    },
+    "clarete": {
+      "head": null,
+      "chest": "armor_shadow_coat",
+      "legs": null,
+      "weapon": "katana_blood_edge",
+      "offhand": null,
+      "accessory": "ring_crimson_seal"
+    },
+    "stephanie": {
+      "head": null,
+      "chest": "armor_dragon_plate",
+      "legs": null,
+      "weapon": "lance_dragon_fang",
+      "offhand": null,
+      "accessory": "ring_dragon_soul"
+    },
+    "cross": {
+      "head": null,
+      "chest": "armor_thief_coat",
+      "legs": null,
+      "weapon": "dagger_blue_wind",
+      "offhand": null,
+      "accessory": "ring_swift_step"
+    }
+  },
+  "inventory": [
+    "ring_fire"
+  ]
+}

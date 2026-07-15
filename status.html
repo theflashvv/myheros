@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Heroes — 角色状态</title>
+  <style>
+    :root {
+      --bg:      #0d0d1a; --panel:  #141428; --panel2: #1a1a35;
+      --border:  #2a2a50; --accent: #7b5ea7; --accent2:#c084fc;
+      --gold:    #f0c060; --text:   #e8e0f0; --subtext: #9988bb;
+      --hp:      #4ade80; --mp:     #60a5fa; --atk:    #f87171;
+      --mag:     #c084fc; --def:    #fbbf24; --spd:    #34d399;
+      --crit:    #f472b6; --agi:    #f472b6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Segoe UI','Microsoft YaHei',sans-serif;
+      height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+    }
+    header {
+      background: linear-gradient(135deg,#1a0a2e,#0d1a2e);
+      border-bottom: 2px solid var(--accent);
+      padding: 10px 24px; display: flex; align-items: center;
+      justify-content: space-between; flex-shrink: 0; gap: 8px;
+    }
+    header h1 { font-size: 1.2rem; color: var(--gold); letter-spacing: 0.1em; }
+    .nav-links { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-nav {
+      padding: 5px 14px; background: transparent;
+      border: 1px solid var(--border); border-radius: 6px;
+      color: var(--subtext); cursor: pointer; font-size: 0.78rem;
+      text-decoration: none; transition: all 0.2s;
+    }
+    .btn-nav:hover { border-color: var(--accent); color: var(--accent2); }
+    .btn-nav-active { border-color: var(--accent) !important; color: var(--gold) !important; cursor: default; }
+
+    /* 主布局 */
+    #main {
+      flex: 1; display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: 0; overflow: hidden;
+    }
+
+    /* 左侧角色列表 */
+    #char-list {
+      background: var(--panel); border-right: 1px solid var(--border);
+      overflow-y: auto; padding: 10px 0;
+    }
+    .char-list-title {
+      padding: 0 14px 8px; font-size: 0.62rem;
+      letter-spacing: 0.12em; color: var(--subtext); text-transform: uppercase;
+    }
+    .char-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 14px; cursor: pointer;
+      border-left: 3px solid transparent; transition: all 0.15s;
+    }
+    .char-item:hover { background: rgba(123,94,167,0.12); }
+    .char-item.active { border-left-color: var(--accent2); background: rgba(123,94,167,0.22); }
+    .char-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: linear-gradient(135deg,var(--accent),#0d0d2e);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0; border: 2px solid var(--border); overflow: hidden;
+    }
+    .char-avatar img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
+    .char-item.active .char-avatar { border-color: var(--accent2); }
+    .char-item-name { font-size: 0.88rem; font-weight: 600; }
+    .char-item-role { font-size: 0.6rem; color: var(--subtext); margin-top: 1px; }
+
+    /* 右侧状态面板 */
+    #status-panel { overflow-y: auto; padding: 20px 24px; }
+
+    /* 顶部：立绘 + 基本信息 */
+    .status-header {
+      display: flex; gap: 20px; align-items: flex-start; margin-bottom: 20px;
+    }
+    .portrait-wrap {
+      flex-shrink: 0; width: 120px;
+      background: linear-gradient(180deg,#0a0a1e,#080818);
+      border: 1px solid var(--accent); border-radius: 8px; overflow: hidden;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .portrait-wrap img { width: 100%; object-fit: contain; image-rendering: pixelated; display: block; }
+    .portrait-wrap .no-portrait {
+      width: 100%; height: 150px; display: flex; align-items: center;
+      justify-content: center; font-size: 2.5rem; opacity: 0.3;
+    }
+    .portrait-label {
+      font-size: 0.48rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--accent2); opacity: 0.7; padding: 4px 0 3px;
+    }
+    .char-meta { flex: 1; min-width: 0; }
+    .char-name-big { font-size: 1.8rem; font-weight: 700; color: var(--gold); line-height: 1.1; }
+    .char-name-en  { font-size: 0.85rem; color: var(--subtext); margin-top: 2px; }
+    .char-badges   { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .badge {
+      display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.72rem;
+      border: 1px solid;
+    }
+    .badge-series  { background: rgba(123,94,167,0.2); border-color: var(--accent);  color: var(--accent2); }
+    .badge-role    { background: rgba(240,192,96,0.1);  border-color: var(--gold);   color: var(--gold); }
+    .badge-passive { background: rgba(248,113,113,0.1); border-color: var(--atk);    color: var(--atk); }
+
+    /* 等级 + 经验 */
+    .level-row {
+      display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap;
+    }
+    .level-display {
+      display: flex; align-items: baseline; gap: 4px;
+    }
+    .level-label { font-size: 0.62rem; color: var(--subtext); letter-spacing: 0.1em; text-transform: uppercase; }
+    .level-num   { font-size: 2rem; font-weight: 700; color: var(--accent2); line-height: 1; }
+    .level-max   { font-size: 0.72rem; color: var(--subtext); }
+    .level-slider-wrap { flex: 1; min-width: 160px; }
+    .level-slider-label { font-size: 0.6rem; color: var(--subtext); margin-bottom: 4px; }
+    #level-input {
+      -webkit-appearance: none; width: 100%; height: 6px;
+      background: #1a1a40; border: 1px solid var(--accent); outline: none; cursor: pointer; border-radius: 3px;
+    }
+    #level-input::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 16px; height: 16px;
+      background: var(--accent2); border-radius: 50%; cursor: pointer; border: 2px solid #0d0d1a;
+    }
+
+    /* 区块标题 */
+    .section-title {
+      font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--accent2); margin-bottom: 10px; padding-bottom: 5px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-wrap { margin-bottom: 22px; }
+
+    /* 8格属性网格 */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 8px;
+    }
+    .stat-block {
+      background: var(--panel2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 9px 10px; text-align: center;
+    }
+    .stat-label { font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--subtext); margin-bottom: 3px; }
+    .stat-value { font-size: 1.3rem; font-weight: 700; }
+    .stat-growth { font-size: 0.56rem; color: var(--subtext); margin-top: 1px; }
+    .stat-bar { height: 3px; border-radius: 2px; margin-top: 5px; background: var(--border); overflow: hidden; }
+    .stat-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+
+    /* 派生属性 */
+    .derived-grid {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 8px;
+    }
+    .derived-block {
+      background: var(--panel2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 9px 12px;
+    }
+    .derived-label { font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--subtext); margin-bottom: 3px; }
+    .derived-value { font-size: 1.1rem; font-weight: 700; }
+    .derived-src   { font-size: 0.58rem; color: var(--subtext); margin-top: 2px; }
+
+    /* 技能伤害表 */
+    .skill-table { width: 100%; border-collapse: collapse; }
+    .skill-table th {
+      text-align: left; font-size: 0.6rem; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--subtext);
+      padding: 5px 10px; border-bottom: 1px solid var(--border);
+    }
+    .skill-table td { padding: 8px 10px; font-size: 0.83rem; border-bottom: 1px solid rgba(42,42,80,0.4); vertical-align: middle; }
+    .skill-table tr:last-child td { border-bottom: none; }
+    .skill-table tr:hover td { background: rgba(123,94,167,0.08); }
+
+    .sk-name  { font-weight: 600; }
+    .sk-lv    { font-size: 0.7rem; color: var(--gold); white-space: nowrap; }
+    .sk-type  { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 0.62rem; border: 1px solid; white-space: nowrap; }
+    .sk-phys  { background: rgba(248,113,113,0.15); color: var(--atk); border-color: var(--atk); }
+    .sk-mag   { background: rgba(192,132,252,0.15); color: var(--mag); border-color: var(--mag); }
+    .sk-sup   { background: rgba(251,191,36,0.15);  color: var(--def); border-color: var(--def); }
+    .sk-heal  { background: rgba(74,222,128,0.15);  color: var(--hp);  border-color: var(--hp); }
+    .sk-uniq  { background: rgba(123,94,167,0.25);  color: var(--accent2); border-color: var(--accent); }
+
+    .dmg-val  { font-weight: 700; font-size: 1rem; }
+    .dmg-crit { font-size: 0.7rem; color: var(--crit); margin-left: 6px; white-space: nowrap; }
+    .dmg-hits { font-size: 0.65rem; color: var(--subtext); margin-top: 1px; }
+    .dmg-note { font-size: 0.62rem; color: var(--accent2); margin-left: 4px; }
+    .dmg-na   { color: var(--subtext); font-style: italic; font-size: 0.8rem; }
+
+    /* 装备 */
+    .equip-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+    .equip-slot {
+      background: var(--panel2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 9px 12px; min-height: 60px;
+    }
+    .equip-slot.has-item { border-color: var(--accent); }
+    .equip-slot.rarity-rare { border-color: var(--mp); }
+    .equip-slot.rarity-epic { border-color: var(--gold); box-shadow: 0 0 8px rgba(240,192,96,0.2); }
+    .equip-slot-label { font-size: 0.56rem; color: var(--subtext); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 3px; }
+    .equip-slot-name  { font-size: 0.85rem; font-weight: 600; }
+    .equip-slot-stats { font-size: 0.64rem; color: var(--subtext); margin-top: 3px; line-height: 1.5; }
+
+    /* 抗性 */
+    .resist-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+    .resist-tag {
+      padding: 3px 10px; border-radius: 6px; font-size: 0.72rem;
+      font-weight: 600; border: 1px solid;
+    }
+    .r-absorb { background: rgba(74,222,128,0.15);  color: var(--hp);  border-color: var(--hp); }
+    .r-immune { background: rgba(96,165,250,0.15);  color: var(--mp);  border-color: var(--mp); }
+    .r-resist { background: rgba(251,191,36,0.15);  color: var(--def); border-color: var(--def); }
+    .r-weak   { background: rgba(248,113,113,0.15); color: var(--atk); border-color: var(--atk); }
+    .r-normal { background: rgba(153,136,187,0.1);  color: var(--subtext); border-color: var(--subtext); }
+
+    /* 假想敌防御滑条 */
+    .dummy-bar {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+      background: var(--panel2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 14px; flex-wrap: wrap;
+    }
+    .dummy-label { font-size: 0.65rem; color: var(--subtext); white-space: nowrap; }
+    #dummy-def-range {
+      -webkit-appearance: none; width: 120px; height: 4px;
+      background: #1a1a40; border: 1px solid var(--accent); outline: none; cursor: pointer; border-radius: 2px;
+    }
+    #dummy-def-range::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 12px; height: 12px;
+      background: var(--def); border-radius: 50%; cursor: pointer; border: 1px solid #0d0d1a;
+    }
+    #dummy-magdef-range {
+      -webkit-appearance: none; width: 120px; height: 4px;
+      background: #1a1a40; border: 1px solid var(--accent); outline: none; cursor: pointer; border-radius: 2px;
+    }
+    #dummy-magdef-range::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 12px; height: 12px;
+      background: var(--mag); border-radius: 50%; cursor: pointer; border: 1px solid #0d0d1a;
+    }
+    .dummy-val { font-size: 0.75rem; font-weight: 700; min-width: 28px; }
+
+    /* 汉堡菜单 */
+    #menu-toggle {
+      display: none; background: transparent; border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text); font-size: 1.2rem; cursor: pointer; padding: 4px 10px;
+    }
+    #sidebar-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 190;
+    }
+    #sidebar-overlay.active { display: block; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+    @media (max-width: 900px) {
+      #main { grid-template-columns: 180px 1fr; }
+      .stats-grid { grid-template-columns: repeat(2,1fr); }
+      .derived-grid { grid-template-columns: repeat(2,1fr); }
+    }
+    @media (max-width: 600px) {
+      #menu-toggle { display: block; }
+      #main { grid-template-columns: 1fr; }
+      #char-list {
+        position: fixed; left: -240px; top: 0; height: 100%; width: 220px;
+        z-index: 200; transition: left 0.25s ease; padding-top: 52px;
+      }
+      #char-list.open { left: 0; }
+      .stats-grid  { grid-template-columns: repeat(2,1fr); }
+      .derived-grid{ grid-template-columns: repeat(2,1fr); }
+      .equip-grid  { grid-template-columns: repeat(2,1fr); }
+      #status-panel { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button id="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <div>
+      <h1>My Heroes</h1>
+      <div style="font-size:0.72rem;color:var(--subtext)">角色状态 · Status</div>
+    </div>
+  </div>
+  <nav class="nav-links">
+    <a href="index.html"     class="btn-nav">角色库</a>
+    <a href="equipment.html" class="btn-nav">装备管理</a>
+    <a href="skills.html"    class="btn-nav">技能库</a>
+    <a href="battle.html"    class="btn-nav">战斗 Demo</a>
+    <span class="btn-nav btn-nav-active">角色状态</span>
+  </nav>
+</header>
+
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<div id="main">
+  <div id="char-list">
+    <div class="char-list-title">选择角色</div>
+  </div>
+  <div id="status-panel">
+    <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--subtext);font-size:0.9rem">
+      ← 从左侧选择一名角色
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 常量 ──────────────────────────────────────────────────────
+const AVATAR_ICONS = {
+  sheru_faniru:'🧝', anjielina:'🛡️', kobayashi_ryutan:'🍴', meiou_setsuna:'⌛',
+  xia_yuyao:'🔥', sang:'⚔️', camille:'💎', uum:'🪚', jenny:'⚔️',
+  jessica:'🏹', tiya:'🛡️', clarete:'🗡️'
+}
+const SLOT_ORDER  = ['weapon','offhand','head','chest','legs','accessory']
+const SLOT_LABELS = { weapon:'武器', offhand:'副手/盾牌', head:'头盔', chest:'护甲', legs:'腿甲', accessory:'饰品' }
+const STAT_MAX    = { hp:600, mp:300, attack:120, defense:120, magic_defense:120, speed:100, agility:100, intelligence:110 }
+const STAT_COLORS = { hp:'var(--hp)', mp:'var(--mp)', attack:'var(--atk)', defense:'var(--def)',
+                      magic_defense:'var(--def)', speed:'var(--spd)', agility:'var(--agi)', intelligence:'var(--mag)' }
+const TYPE_CLS = { physical:'sk-phys', magic:'sk-mag', support:'sk-sup', heal:'sk-heal', unique:'sk-uniq' }
+const TYPE_LBL = { physical:'物理', magic:'魔法', support:'辅助', heal:'治疗', unique:'专属' }
+const RESIST_LBL = { absorb:'吸收', immune:'无效', resist:'抵抗', weak:'弱点', normal:'普通' }
+const STAT_SHORT  = { hp:'HP', mp:'MP', attack:'攻击', defense:'防御', magic_defense:'魔防',
+                      intelligence:'智力', agility:'敏捷', speed:'速度' }
+const EQUIP_SAVE_KEY = 'myheroes_equip_save'
+
+let _chars = [], _items = {}, _skills = {}, _save = { equipped:{}, inventory:[] }
+let _currentChar = null
+let _level = 1
+let _dummyDef = 65, _dummyMagDef = 50
+
+// ── 数据加载 ──────────────────────────────────────────────────
+async function loadAll() {
+  const [charRes, itemRes, skillRes] = await Promise.all([
+    fetch('data/characters.json'), fetch('data/items.json'), fetch('data/skills.json')
+  ])
+  const charData  = await charRes.json()
+  const itemData  = await itemRes.json()
+  const skillData = await skillRes.json()
+  _chars  = charData.characters
+  _items  = Object.fromEntries(itemData.items.map(i => [i.id, i]))
+  _skills = Object.fromEntries(skillData.skills.map(s => [s.name, s]))
+
+  // 存档
+  const raw = localStorage.getItem(EQUIP_SAVE_KEY)
+  try {
+    const saveRes = await fetch('data/player_save.json')
+    const def = await saveRes.json()
+    if (raw) {
+      const saved = JSON.parse(raw)
+      for (const cid of Object.keys(def.equipped)) {
+        if (!saved.equipped[cid]) saved.equipped[cid] = def.equipped[cid]
+      }
+      _save = saved
+    } else {
+      _save = def
+    }
+  } catch { if (raw) _save = JSON.parse(raw) }
+
+  buildCharList()
+  if (_chars.length > 0) selectChar(_chars[0])
+}
+
+// ── 角色列表 ──────────────────────────────────────────────────
+function buildCharList() {
+  const list = document.getElementById('char-list')
+  list.innerHTML = '<div class="char-list-title">选择角色</div>'
+  _chars.forEach(c => {
+    const el = document.createElement('div')
+    el.className = 'char-item'
+    el.dataset.id = c.id
+    const avatar = c.portrait
+      ? `<img src="${c.portrait}" alt="${c.name}" onerror="this.outerHTML='${AVATAR_ICONS[c.id]||'👤'}'">`
+      : (AVATAR_ICONS[c.id] || '👤')
+    el.innerHTML = `
+      <div class="char-avatar">${avatar}</div>
+      <div>
+        <div class="char-item-name">${c.name}</div>
+        <div class="char-item-role">${c.role}</div>
+      </div>`
+    el.addEventListener('click', () => { selectChar(c); closeSidebar() })
+    list.appendChild(el)
+  })
+}
+
+function selectChar(c) {
+  _currentChar = c
+  _level = 1
+  document.querySelectorAll('.char-item').forEach(el =>
+    el.classList.toggle('active', el.dataset.id === c.id))
+  renderStatus()
+}
+
+// ── 属性计算 ──────────────────────────────────────────────────
+function calcStats(c, level) {
+  const g = c.growth_rates
+  const b = c.base_stats
+  const equipped = _save.equipped?.[c.id] || {}
+  // 等级加成
+  const s = {
+    hp:              b.hp              + g.hp              * (level - 1),
+    mp:              b.mp              + g.mp              * (level - 1),
+    attack:          b.attack          + g.attack          * (level - 1),
+    defense:         b.defense         + g.defense         * (level - 1),
+    magic_defense:   b.magic_defense   + g.magic_defense   * (level - 1),
+    speed:           b.speed           + (g.speed || 0)    * (level - 1),
+    agility:         b.agility         + (g.agility || 0)  * (level - 1),
+    intelligence:    b.intelligence    + (g.intelligence || 0) * (level - 1),
+  }
+  // 装备加成
+  const equipEffects = []
+  for (const slot of SLOT_ORDER) {
+    const itemId = equipped[slot]
+    if (!itemId) continue
+    const item = _items[itemId]
+    if (!item) continue
+    for (const [k, v] of Object.entries(item.stats || {})) {
+      if (s[k] !== undefined) s[k] += v
+    }
+    for (const eff of (item.special_effects || [])) equipEffects.push(eff)
+  }
+  return { stats: s, equipEffects }
+}
+
+function calcDerived(stats) {
+  return {
+    physCrit:   +(Math.min(75,  stats.agility      * 0.15)).toFixed(1),
+    physEvade:  +(Math.min(40,  stats.agility      * 0.10)).toFixed(1),
+    magCrit:    +(Math.min(60,  stats.intelligence * 0.12)).toFixed(1),
+    magBonus:   +(1 + stats.intelligence / 100).toFixed(2),
+  }
+}
+
+// ── 技能伤害预估（不含随机，取平均暴击期望） ──────────────────
+function estimateSkillDmg(skill, stats, derived) {
+  if (!skill || skill.base_power === 0) return null
+  const type = skill.type
+
+  let baseDmg
+  if (type === 'physical') {
+    const atk    = stats.attack
+    const defVal = Math.floor(_dummyDef * (1 - (skill.defPierce || 0)))
+    let raw = skill.base_power * 2 + Math.floor(atk * 0.5) - Math.floor(defVal * 0.4)
+    // speedBonus
+    if (skill.speedBonus) raw += Math.floor(stats.speed * 0.4)
+    raw = Math.max(1, raw)
+    baseDmg = raw
+  } else if (type === 'magic' || type === 'unique') {
+    const magBonus = derived.magBonus
+    const magDef   = skill.ignoreMagDef ? 0 : Math.floor(_dummyMagDef * 0.15)
+    baseDmg = Math.max(1, Math.floor(skill.base_power * magBonus) - magDef)
+  } else {
+    return null
+  }
+
+  const hits    = skill.hits || 1
+  const total   = baseDmg * hits
+  const critMult = (type === 'physical') ? 1.5 : 1.5
+  const critRate = (type === 'physical') ? derived.physCrit : derived.magCrit
+  // 暴击期望 = baseDmg * (1 + critRate/100 * (critMult-1))
+  const expected = Math.round(baseDmg * (1 + (critRate / 100) * (critMult - 1)))
+  const critDmg  = Math.round(baseDmg * critMult)
+
+  return { baseDmg, total, expected, expectedTotal: expected * hits, critDmg, critTotal: critDmg * hits, hits, critRate }
+}
+
+// ── 渲染 ──────────────────────────────────────────────────────
+function renderStatus() {
+  const c = _currentChar
+  if (!c) return
+  const { stats, equipEffects } = calcStats(c, _level)
+  const derived = calcDerived(stats)
+  const equipped = _save.equipped?.[c.id] || {}
+
+  const panel = document.getElementById('status-panel')
+  panel.innerHTML = `
+    ${renderHeader(c, stats)}
+    ${renderDummyBar()}
+    ${renderBaseStats(c, stats, derived)}
+    ${renderDerived(stats, derived)}
+    ${renderSkills(c, stats, derived)}
+    ${renderEquipment(c, equipped)}
+    ${renderResistances(c)}
+  `
+  // 等级滑条事件
+  document.getElementById('level-input').addEventListener('input', e => {
+    _level = +e.target.value
+    renderStatus()
+  })
+  document.getElementById('dummy-def-range').addEventListener('input', e => {
+    _dummyDef = +e.target.value; renderStatus()
+  })
+  document.getElementById('dummy-magdef-range').addEventListener('input', e => {
+    _dummyMagDef = +e.target.value; renderStatus()
+  })
+}
+
+function renderHeader(c, stats) {
+  const portrait = c.portrait
+    ? `<img src="${c.portrait}" alt="${c.name}">`
+    : `<div class="no-portrait">${AVATAR_ICONS[c.id] || '👤'}</div>`
+
+  return `
+  <div class="status-header">
+    <div class="portrait-wrap">
+      <div class="portrait-label">PORTRAIT</div>
+      ${portrait}
+    </div>
+    <div class="char-meta">
+      <div class="char-name-big">${c.name}</div>
+      <div class="char-name-en">${c.name_en}</div>
+      <div class="char-badges">
+        <span class="badge badge-series">${c.series}</span>
+        <span class="badge badge-role">${c.role}</span>
+        ${c.unique_command?.type === 'passive' ? `<span class="badge badge-passive">被动：${c.unique_command.name}</span>` : ''}
+      </div>
+      <div class="level-row">
+        <div class="level-display">
+          <span class="level-label">LV</span>
+          <span class="level-num">${_level}</span>
+          <span class="level-max">/ 99</span>
+        </div>
+        <div class="level-slider-wrap">
+          <div class="level-slider-label">拖动调整等级</div>
+          <input type="range" id="level-input" min="1" max="99" value="${_level}">
+        </div>
+      </div>
+      ${c.unique_command ? `
+      <div style="margin-top:10px;background:rgba(123,94,167,0.12);border:1px solid var(--accent);border-radius:6px;padding:8px 12px">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--accent2);margin-bottom:3px">【${c.unique_command.name}】</div>
+        <div style="font-size:0.75rem;color:var(--subtext);line-height:1.5">${c.unique_command.description}</div>
+      </div>` : ''}
+    </div>
+  </div>`
+}
+
+function renderDummyBar() {
+  return `
+  <div class="dummy-bar">
+    <span class="dummy-label">假想敌防御</span>
+    <input type="range" id="dummy-def-range" min="0" max="200" value="${_dummyDef}">
+    <span class="dummy-val" style="color:var(--def)">${_dummyDef}</span>
+    <span class="dummy-label" style="margin-left:10px">魔防</span>
+    <input type="range" id="dummy-magdef-range" min="0" max="200" value="${_dummyMagDef}">
+    <span class="dummy-val" style="color:var(--mag)">${_dummyMagDef}</span>
+    <span style="font-size:0.58rem;color:var(--subtext);margin-left:6px">（影响技能伤害预估）</span>
+  </div>`
+}
+
+function renderBaseStats(c, stats, derived) {
+  const statList = [
+    { key:'hp',            label:'HP',   color:'var(--hp)'  },
+    { key:'mp',            label:'MP',   color:'var(--mp)'  },
+    { key:'attack',        label:'攻击', color:'var(--atk)' },
+    { key:'defense',       label:'防御', color:'var(--def)' },
+    { key:'magic_defense', label:'魔防', color:'var(--def)' },
+    { key:'speed',         label:'速度', color:'var(--spd)' },
+    { key:'agility',       label:'敏捷', color:'var(--agi)' },
+    { key:'intelligence',  label:'智力', color:'var(--mag)' },
+  ]
+  const g = c.growth_rates
+  const blocks = statList.map(s => {
+    const val  = stats[s.key]
+    const base = c.base_stats[s.key]
+    const grow = g[s.key] || 0
+    const pct  = Math.min(100, Math.round(val / (STAT_MAX[s.key] || 200) * 100))
+    const gained = (_level - 1) * grow
+    return `
+    <div class="stat-block">
+      <div class="stat-label">${s.label}</div>
+      <div class="stat-value" style="color:${s.color}">${val}</div>
+      <div class="stat-growth">基础${base}${gained > 0 ? ` +${gained}(Lv)` : ''}</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%;background:${s.color}"></div></div>
+    </div>`
+  }).join('')
+  return `
+  <div class="section-wrap">
+    <div class="section-title">基础属性 · Base Stats</div>
+    <div class="stats-grid">${blocks}</div>
+  </div>`
+}
+
+function renderDerived(stats, derived) {
+  const rows = [
+    { label:'物理暴击率', value:`${derived.physCrit}%`, src:`敏捷 ${stats.agility} × 0.15%`, color:'var(--crit)' },
+    { label:'物理闪避率', value:`${derived.physEvade}%`, src:`敏捷 ${stats.agility} × 0.10%`, color:'var(--spd)' },
+    { label:'法术暴击率', value:`${derived.magCrit}%`, src:`智力 ${stats.intelligence} × 0.12%`, color:'var(--mag)' },
+    { label:'魔法伤害倍率', value:`×${derived.magBonus}`, src:`1 + 智力 ${stats.intelligence} / 100`, color:'var(--mag)' },
+  ]
+  return `
+  <div class="section-wrap">
+    <div class="section-title">派生属性 · Derived Stats</div>
+    <div class="derived-grid">
+      ${rows.map(r => `
+      <div class="derived-block">
+        <div class="derived-label">${r.label}</div>
+        <div class="derived-value" style="color:${r.color}">${r.value}</div>
+        <div class="derived-src">${r.src}</div>
+      </div>`).join('')}
+    </div>
+  </div>`
+}
+
+function renderSkills(c, stats, derived) {
+  const rows = c.skills.map(sk => {
+    const skillDef = _skills[sk.name] || null
+    const dmg = estimateSkillDmg(skillDef, stats, derived)
+    const typeKey = sk.type || skillDef?.type || 'physical'
+    const typeCls = TYPE_CLS[typeKey] || 'sk-phys'
+    const typeLbl = TYPE_LBL[typeKey] || typeKey
+    const mp = sk.mp_cost > 0 ? `<span style="color:var(--mp);font-size:0.72rem">${sk.mp_cost} MP</span>` : '<span style="color:var(--subtext);font-size:0.72rem">—</span>'
+
+    let dmgCell = `<td><span class="dmg-na">—</span></td>`
+    if (dmg) {
+      const hitsNote = dmg.hits > 1
+        ? `<div class="dmg-hits">${dmg.hits}段 × ${dmg.baseDmg} = <b>${dmg.total}</b></div>`
+        : ''
+      const notes = []
+      if (skillDef?.defPierce)    notes.push(`破防${Math.round(skillDef.defPierce*100)}%`)
+      if (skillDef?.speedBonus)   notes.push('速度加成')
+      if (skillDef?.lifeSteal)    notes.push(`吸血${Math.round(skillDef.lifeSteal*100)}%`)
+      if (skillDef?.bonusCritRate) notes.push(`暴击+${skillDef.bonusCritRate}%`)
+      if (skillDef?.splashRate)   notes.push(`溅射${Math.round(skillDef.splashRate*100)}%`)
+      if (skillDef?.skipTurn)     notes.push('眩晕')
+      const noteHtml = notes.map(n => `<span class="dmg-note">[${n}]</span>`).join('')
+
+      dmgCell = `<td>
+        <div>
+          <span class="dmg-val" style="color:${typeKey==='magic'||typeKey==='unique'?'var(--mag)':'var(--atk)'}">${dmg.hits > 1 ? dmg.total : dmg.baseDmg}</span>
+          <span class="dmg-crit">暴击 ${dmg.hits > 1 ? dmg.critTotal : dmg.critDmg}</span>
+          ${noteHtml}
+        </div>
+        ${hitsNote}
+        <div style="font-size:0.6rem;color:var(--subtext);margin-top:2px">期望 ${dmg.hits > 1 ? dmg.expectedTotal : dmg.expected}（含${dmg.critRate}%暴击）</div>
+      </td>`
+    }
+
+    return `<tr>
+      <td class="sk-lv">Lv.${sk.level}</td>
+      <td class="sk-name">${sk.name}</td>
+      <td><span class="sk-type ${typeCls}">${typeLbl}</span></td>
+      <td>${mp}</td>
+      ${dmgCell}
+    </tr>`
+  }).join('')
+
+  return `
+  <div class="section-wrap">
+    <div class="section-title">技能伤害 · Skills</div>
+    <table class="skill-table">
+      <thead><tr>
+        <th>解锁</th><th>技能名</th><th>类型</th><th>消耗</th><th>伤害预估（对防御 ${_dummyDef} / 魔防 ${_dummyMagDef}）</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`
+}
+
+function renderEquipment(c, equipped) {
+  const blocks = SLOT_ORDER.map(slot => {
+    const itemId = equipped[slot]
+    const item   = itemId ? _items[itemId] : null
+    const cls    = item ? `has-item rarity-${item.rarity}` : ''
+    const statStr = item
+      ? Object.entries(item.stats || {}).filter(([,v]) => v).map(([k,v]) => `${STAT_SHORT[k]||k}+${v}`).join(' · ')
+      : ''
+    return `
+    <div class="equip-slot ${cls}">
+      <div class="equip-slot-label">${SLOT_LABELS[slot]}</div>
+      <div class="equip-slot-name">${item ? item.name : '— 未装备 —'}</div>
+      ${statStr ? `<div class="equip-slot-stats">${statStr}</div>` : ''}
+    </div>`
+  }).join('')
+  return `
+  <div class="section-wrap">
+    <div class="section-title">当前装备 · Equipment</div>
+    <div class="equip-grid">${blocks}</div>
+    <a href="equipment.html?char=${c.id}" style="display:inline-block;margin-top:10px;padding:5px 14px;background:rgba(123,94,167,0.15);border:1px solid var(--accent);border-radius:6px;color:var(--accent2);font-size:0.78rem;text-decoration:none">管理装备 ▶</a>
+  </div>`
+}
+
+function renderResistances(c) {
+  const tags = Object.entries(c.resistances || {}).map(([elem, val]) =>
+    `<span class="resist-tag r-${val}">${elem} · ${RESIST_LBL[val]||val}</span>`).join('')
+  return `
+  <div class="section-wrap">
+    <div class="section-title">属性抗性 · Resistances</div>
+    <div class="resist-wrap">${tags || '<span style="color:var(--subtext);font-size:0.8rem">无特殊抗性</span>'}</div>
+  </div>`
+}
+
+// ── 汉堡菜单 ──────────────────────────────────────────────────
+function toggleSidebar() {
+  const s = document.getElementById('char-list')
+  const o = document.getElementById('sidebar-overlay')
+  s.classList.toggle('open'); o.classList.toggle('active')
+}
+function closeSidebar() {
+  document.getElementById('char-list').classList.remove('open')
+  document.getElementById('sidebar-overlay').classList.remove('active')
+}
+
+loadAll()
+</script>
+</body>
+</html>

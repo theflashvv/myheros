@@ -1,0 +1,45 @@
+{
+  "version": "1.1",
+  "level": {
+    "max": 99,
+    "initial": 1
+  },
+  "experience": {
+    "reserve_rate": 0.20,
+    "comment": "每场战斗获得的总EXP有20%存入储备池，新角色加入时可从池中提取"
+  },
+  "derived_stats": {
+    "physical_crit_rate": {
+      "source": "agility",
+      "formula": "agility * 0.15",
+      "unit": "%",
+      "cap": 75,
+      "comment": "物理暴击率上限75%"
+    },
+    "physical_evasion_rate": {
+      "source": "agility",
+      "formula": "agility * 0.10",
+      "unit": "%",
+      "cap": 40,
+      "comment": "物理闪避率上限40%"
+    },
+    "magic_crit_rate": {
+      "source": "intelligence",
+      "formula": "intelligence * 0.12",
+      "unit": "%",
+      "cap": 60,
+      "comment": "法术暴击率上限60%"
+    },
+    "magic_damage_bonus": {
+      "source": "intelligence",
+      "formula": "1 + intelligence / 100",
+      "unit": "multiplier",
+      "comment": "魔法技能伤害乘数，intelligence=100时为x2.0"
+    }
+  },
+  "crit": {
+    "physical_multiplier": 1.5,
+    "magic_multiplier": 1.5,
+    "comment": "暴击伤害固定为1.5倍"
+  }
+}

@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Heroes — 装备管理</title>
+  <style>
+    :root {
+      --bg:      #0d0d1a; --panel:  #141428; --border: #2a2a50;
+      --accent:  #7b5ea7; --accent2:#c084fc; --gold:   #f0c060;
+      --text:    #e8e0f0; --subtext:#9988bb;
+      --hp:      #4ade80; --mp:     #60a5fa; --atk:    #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Segoe UI','Microsoft YaHei',sans-serif;
+      height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+    }
+    header {
+      background: linear-gradient(135deg,#1a0a2e,#0d1a2e);
+      border-bottom: 2px solid var(--accent);
+      padding: 10px 24px; display: flex; align-items: center;
+      justify-content: space-between; flex-shrink: 0;
+      gap: 8px;
+    }
+    header h1 { font-size: 1.2rem; color: var(--gold); letter-spacing: 0.1em; }
+    .nav-links { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* 汉堡按钮 */
+    #menu-toggle {
+      display: none;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 4px 10px;
+      flex-shrink: 0;
+    }
+    /* 遮罩层 */
+    #sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 190;
+    }
+    #sidebar-overlay.active { display: block; }
+    .btn-nav {
+      padding: 5px 14px; background: transparent;
+      border: 1px solid var(--border); border-radius: 6px;
+      color: var(--subtext); cursor: pointer; font-size: 0.78rem;
+      text-decoration: none; transition: all 0.2s;
+    }
+    .btn-nav:hover { border-color: var(--accent); color: var(--accent2); }
+
+    /* ── 三栏主布局 ── */
+    #main {
+      flex: 1; display: grid;
+      grid-template-columns: 180px 1fr 280px;
+      gap: 0; overflow: hidden;
+    }
+
+    /* 左栏：角色列表 */
+    #char-list {
+      background: var(--panel); border-right: 1px solid var(--border);
+      overflow-y: auto; padding: 12px 0;
+    }
+    .char-list-title {
+      padding: 0 14px 10px; font-size: 0.65rem; letter-spacing: 0.12em;
+      color: var(--subtext); text-transform: uppercase;
+    }
+    .char-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; cursor: pointer;
+      border-left: 3px solid transparent; transition: all 0.15s;
+    }
+    .char-item:hover { background: rgba(123,94,167,0.12); }
+    .char-item.active { border-left-color: var(--accent2); background: rgba(123,94,167,0.2); }
+    .char-item-icon { font-size: 1.4rem; }
+    .char-item-name { font-size: 0.85rem; font-weight: 600; }
+    .char-item-role { font-size: 0.62rem; color: var(--subtext); margin-top: 1px; }
+
+    /* 中栏：装备槽位 + 属性汇总 */
+    #equip-panel {
+      overflow-y: auto; padding: 20px 24px;
+      border-right: 1px solid var(--border);
+    }
+    .section-title {
+      font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent2); margin-bottom: 12px; padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .slots-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 8px; margin-bottom: 20px;
+    }
+    .slot-card {
+      background: rgba(20,20,40,0.6); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px; cursor: pointer;
+      transition: all 0.15s; min-height: 72px;
+    }
+    .slot-card:hover { border-color: var(--accent); }
+    .slot-card.selected { border-color: var(--accent2); background: rgba(123,94,167,0.15); }
+    .slot-card.has-item { border-color: var(--accent); }
+    .slot-card.rarity-rare  { border-color: var(--mp); }
+    .slot-card.rarity-epic  { border-color: var(--gold); box-shadow: 0 0 8px rgba(240,192,96,0.2); }
+    .slot-label { font-size: 0.6rem; color: var(--subtext); letter-spacing: 0.08em; text-transform: uppercase; }
+    .slot-item-name { font-size: 0.88rem; font-weight: 600; margin-top: 4px; }
+    .slot-item-stats { font-size: 0.68rem; color: var(--subtext); margin-top: 4px; line-height: 1.5; }
+    .slot-unequip {
+      display: inline-block; margin-top: 6px; font-size: 0.65rem;
+      color: var(--atk); cursor: pointer; opacity: 0.7;
+    }
+    .slot-unequip:hover { opacity: 1; }
+
+    /* 属性汇总 */
+    .stat-compare-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 6px; margin-bottom: 16px;
+    }
+    .stat-block-sm {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 6px; padding: 7px 8px; text-align: center;
+    }
+    .stat-block-sm .s-label { font-size: 0.58rem; color: var(--subtext); text-transform: uppercase; }
+    .stat-block-sm .s-val   { font-size: 1.05rem; font-weight: 700; margin-top: 2px; }
+    .stat-block-sm .s-diff  { font-size: 0.62rem; margin-top: 1px; }
+    .diff-plus  { color: var(--hp); }
+    .diff-minus { color: var(--atk); }
+
+    /* 右栏：背包 */
+    #inventory-panel { overflow-y: auto; padding: 12px 16px; }
+    .inv-title {
+      font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--subtext); margin-bottom: 10px; padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .inv-hint { font-size: 0.72rem; color: var(--subtext); margin-bottom: 10px; font-style: italic; }
+    .inv-item-card {
+      background: rgba(20,20,40,0.6); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px; margin-bottom: 8px;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .inv-item-card:hover  { border-color: var(--accent); }
+    .inv-item-card.preview { border-color: var(--accent2); background: rgba(123,94,167,0.15); }
+    .inv-item-card.rarity-rare  { border-left: 3px solid var(--mp); }
+    .inv-item-card.rarity-epic  { border-left: 3px solid var(--gold); }
+    .inv-item-card.cannot-equip { opacity: 0.35; cursor: not-allowed; }
+    .inv-item-name  { font-size: 0.88rem; font-weight: 600; }
+    .inv-item-type  { font-size: 0.62rem; color: var(--subtext); margin-top: 2px; }
+    .inv-item-stats { font-size: 0.68rem; color: var(--subtext); margin-top: 4px; line-height: 1.5; }
+    .inv-equip-btn {
+      display: inline-block; margin-top: 6px; padding: 3px 10px;
+      background: rgba(123,94,167,0.2); border: 1px solid var(--accent);
+      border-radius: 4px; font-size: 0.68rem; color: var(--accent2);
+      cursor: pointer; transition: all 0.12s;
+    }
+    .inv-equip-btn:hover { background: rgba(123,94,167,0.4); color: var(--gold); }
+    .no-items { font-size: 0.78rem; color: var(--subtext); padding: 8px 0; font-style: italic; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+    /* ── 响应式断点 ── */
+    @media (max-width: 1024px) {
+      #main { grid-template-columns: 160px 1fr 240px; }
+    }
+
+    @media (max-width: 768px) {
+      #main {
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      #char-list {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: hidden;
+        height: auto;
+        min-height: 72px;
+        flex-shrink: 0;
+        padding: 8px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .char-list-title { display: none; }
+      .char-item {
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        padding: 6px 10px;
+        text-align: center;
+        white-space: nowrap;
+        flex-shrink: 0;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+      }
+      .char-item.active {
+        border-left-color: transparent;
+        border-bottom-color: var(--accent2);
+      }
+      .char-item-role { display: none; }
+      #equip-panel {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        overflow-y: visible;
+      }
+      #inventory-panel { overflow-y: visible; }
+      .stat-compare-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 600px) {
+      #menu-toggle { display: block; }
+      header { padding: 8px 12px; }
+
+      #char-list {
+        position: fixed;
+        left: -220px;
+        top: 0;
+        height: 100%;
+        width: 200px;
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+        z-index: 200;
+        transition: left 0.25s ease;
+        padding: 52px 0 12px;
+        border-right: 1px solid var(--border);
+        border-bottom: none;
+        min-height: unset;
+      }
+      #char-list.open { left: 0; }
+      .char-list-title { display: block; }
+      .char-item {
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        text-align: left;
+        padding: 10px 14px;
+        border-left: 3px solid transparent;
+        border-bottom: none;
+        white-space: normal;
+      }
+      .char-item.active { border-left-color: var(--accent2); border-bottom-color: transparent; }
+      .char-item-role { display: block; }
+
+      .slots-grid { grid-template-columns: 1fr; }
+      .stat-compare-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button id="menu-toggle" onclick="toggleCharList()">☰</button>
+    <div>
+      <h1>My Heroes</h1>
+      <div style="font-size:0.75rem;color:var(--subtext)">装备管理 · Equipment</div>
+    </div>
+  </div>
+  <nav style="display:flex;gap:8px;flex-wrap:wrap">
+    <a href="index.html" class="btn-nav">角色库</a>
+    <span class="btn-nav" style="border-color:var(--accent);color:var(--gold);cursor:default">装备管理</span>
+    <a href="skills.html" class="btn-nav">技能库</a>
+    <a href="battle.html" class="btn-nav">战斗 Demo</a>
+    <a href="status.html" class="btn-nav">角色状态</a>
+  </nav>
+</header>
+
+<div id="sidebar-overlay" onclick="toggleCharList()"></div>
+
+<div id="main">
+  <div id="char-list">
+    <div class="char-list-title">角色</div>
+  </div>
+  <div id="equip-panel">
+    <p style="color:var(--subtext);font-size:0.85rem;padding-top:40px;text-align:center">← 选择角色</p>
+  </div>
+  <div id="inventory-panel">
+    <div class="inv-title">背包 · Inventory</div>
+    <p class="inv-hint">点击左侧槽位，再点击此处装备</p>
+  </div>
+</div>
+
+<script>
+function toggleCharList() {
+  const s = document.getElementById('char-list')
+  const o = document.getElementById('sidebar-overlay')
+  s.classList.toggle('open')
+  o.classList.toggle('active')
+}
+const EQUIP_SAVE_KEY = 'myheroes_equip_save'
+const SLOT_ORDER  = ['weapon','offhand','head','chest','legs','accessory']
+const SLOT_LABELS = { weapon:'武器', offhand:'副手', head:'头部', chest:'胸部', legs:'腿部', accessory:'饰品' }
+const STAT_SHORT  = { hp:'HP', mp:'MP', attack:'攻击', defense:'防御', magic_defense:'魔防', intelligence:'智力', agility:'敏捷', speed:'速度' }
+const STAT_DISPLAY_KEYS = ['hp','mp','attack','defense','magic_defense','intelligence']
+const AVATAR_ICONS = {
+  sheru_faniru:'🧝', anjielina:'🛡️', kobayashi_ryutan:'🍴',
+  meiou_setsuna:'⌛', xia_yuyao:'🔥'
+}
+const PORTRAITS = {
+  sheru_faniru:'assets/portraits/sheru.png', anjielina:'assets/portraits/angelina.png',
+  kobayashi_ryutan:'assets/portraits/ryutan.png', meiou_setsuna:'assets/portraits/setsuna.png',
+  xia_yuyao:'assets/portraits/xiayuyao.png'
+}
+
+let _chars     = []
+let _itemsDb   = {}
+let _save      = { equipped:{}, inventory:[] }
+let _selCharId = null
+let _selSlot   = null
+let _previewItemId = null
+
+// ── 存档读写 ──
+function getSave()        { return _save }
+function writeSave(s)     { _save = s; localStorage.setItem(EQUIP_SAVE_KEY, JSON.stringify(s)) }
+
+// ── 装备操作 ──
+function equipItem(charId, slot, itemId) {
+  const save = JSON.parse(JSON.stringify(getSave()))
+  if (!save.equipped[charId]) save.equipped[charId] = {}
+  // 原来槽位的装备退回背包
+  const prev = save.equipped[charId][slot]
+  if (prev) save.inventory.push(prev)
+  // 从背包移除新装备
+  const idx = save.inventory.indexOf(itemId)
+  if (idx >= 0) save.inventory.splice(idx, 1)
+  save.equipped[charId][slot] = itemId
+  writeSave(save)
+}
+
+function unequipItem(charId, slot) {
+  const save = JSON.parse(JSON.stringify(getSave()))
+  if (!save.equipped[charId]) return
+  const itemId = save.equipped[charId][slot]
+  if (!itemId) return
+  save.equipped[charId][slot] = null
+  save.inventory.push(itemId)
+  writeSave(save)
+}
+
+// ── 可装备判断 ──
+function canEquipToSlot(item, charId, slot) {
+  if (item.slot !== slot) return false
+  if (item.equippable_by.length > 0 && !item.equippable_by.includes(charId)) return false
+  const char = _chars.find(c => c.id === charId)
+  if (!char) return false
+  if (item.type_restriction.length > 0) {
+    return item.type_restriction.some(t => char.equipment_slots.includes(t))
+  }
+  return true
+}
+
+// ── 属性计算 ──
+function calcFinalStats(charId, overrideSlot, overrideItemId) {
+  const char = _chars.find(c => c.id === charId)
+  if (!char) return {}
+  const base = char.base_stats
+  const stats = { ...base }
+  const equipped = { ...(_save.equipped[charId] || {}) }
+  if (overrideSlot !== undefined) equipped[overrideSlot] = overrideItemId || null
+
+  for (const itemId of Object.values(equipped)) {
+    if (!itemId || !_itemsDb[itemId]) continue
+    const item = _itemsDb[itemId]
+    for (const [k, v] of Object.entries(item.stats || {})) {
+      if (stats[k] !== undefined) stats[k] += v
+    }
+  }
+  for (const itemId of Object.values(equipped)) {
+    if (!itemId || !_itemsDb[itemId]) continue
+    const item = _itemsDb[itemId]
+    for (const [k, v] of Object.entries(item.percent_stats || {})) {
+      if (stats[k] !== undefined && v > 0) stats[k] = Math.round(stats[k] * (1 + v / 100))
+    }
+  }
+  return stats
+}
+
+function buildItemStatsSummary(item) {
+  const parts = []
+  for (const [k,v] of Object.entries(item.stats||{})) if(v>0) parts.push((STAT_SHORT[k]||k)+'+'+v)
+  for (const [k,v] of Object.entries(item.percent_stats||{})) if(v>0) parts.push((STAT_SHORT[k]||k)+'+'+v+'%')
+  for (const e of (item.special_effects||[])) parts.push(e.description)
+  if (item.skill_grant) parts.push(item.skill_grant.description)
+  return parts.join(' · ')
+}
+
+// ── 渲染左栏 ──
+function renderCharList() {
+  const el = document.getElementById('char-list')
+  el.innerHTML = '<div class="char-list-title">角色</div>'
+  _chars.forEach(c => {
+    const div = document.createElement('div')
+    div.className = 'char-item' + (_selCharId === c.id ? ' active' : '')
+    div.innerHTML = `
+      <div class="char-item-icon">${AVATAR_ICONS[c.id]||'👤'}</div>
+      <div>
+        <div class="char-item-name">${c.name.split('·')[0].split(' ')[0]}</div>
+        <div class="char-item-role">${c.role}</div>
+      </div>`
+    div.addEventListener('click', () => selectChar(c.id))
+    el.appendChild(div)
+  })
+}
+
+// ── 渲染中栏 ──
+function renderEquipPanel() {
+  const el = document.getElementById('equip-panel')
+  if (!_selCharId) {
+    el.innerHTML = '<p style="color:var(--subtext);font-size:0.85rem;padding-top:40px;text-align:center">← 选择角色</p>'
+    return
+  }
+  const char = _chars.find(c => c.id === _selCharId)
+  const equipped = _save.equipped[_selCharId] || {}
+
+  const baseStats    = calcFinalStats(_selCharId)
+  const previewStats = _selSlot && _previewItemId
+    ? calcFinalStats(_selCharId, _selSlot, _previewItemId)
+    : null
+
+  // 槽位 HTML
+  const slotsHtml = SLOT_ORDER.map(slot => {
+    const itemId = equipped[slot] || null
+    const item   = itemId ? _itemsDb[itemId] : null
+    const isSel  = _selSlot === slot
+    let cls = 'slot-card'
+    if (item) cls += ' has-item rarity-' + item.rarity
+    if (isSel) cls += ' selected'
+    return `
+      <div class="${cls}" data-slot="${slot}">
+        <div class="slot-label">${SLOT_LABELS[slot]}</div>
+        <div class="slot-item-name">${item ? item.name : '— 未装备 —'}</div>
+        ${item ? '<div class="slot-item-stats">' + buildItemStatsSummary(item) + '</div>' : ''}
+        ${item ? '<span class="slot-unequip" data-slot="' + slot + '">[卸下]</span>' : ''}
+      </div>`
+  }).join('')
+
+  // 属性对比 HTML
+  const statHtml = STAT_DISPLAY_KEYS.map(k => {
+    const cur  = baseStats[k] ?? 0
+    const prev = previewStats ? (previewStats[k] ?? 0) : cur
+    const diff = prev - cur
+    const diffHtml = diff !== 0
+      ? '<div class="s-diff ' + (diff>0?'diff-plus':'diff-minus') + '">' + (diff>0?'+':'') + diff + '</div>'
+      : '<div class="s-diff" style="color:transparent">0</div>'
+    return `
+      <div class="stat-block-sm">
+        <div class="s-label">${STAT_SHORT[k]||k}</div>
+        <div class="s-val">${previewStats ? prev : cur}</div>
+        ${previewStats ? diffHtml : ''}
+      </div>`
+  }).join('')
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+      <span style="font-size:2.2rem">${AVATAR_ICONS[_selCharId]||'👤'}</span>
+      <div>
+        <div style="font-size:1.1rem;font-weight:700;color:var(--gold)">${char.name}</div>
+        <div style="font-size:0.72rem;color:var(--subtext)">${char.role}</div>
+      </div>
+    </div>
+    <div class="section-title">装备槽位 · Slots${_selSlot ? ' — 已选: '+SLOT_LABELS[_selSlot] : ''}</div>
+    <div class="slots-grid">${slotsHtml}</div>
+    <div class="section-title">属性汇总${previewStats ? ' · 预览对比' : ' · Current Stats'}</div>
+    <div class="stat-compare-grid">${statHtml}</div>
+    ${previewStats ? '<div style="font-size:0.7rem;color:var(--subtext)">绿色=提升 / 红色=下降，点击「装备」按钮确认</div>' : ''}
+  `
+
+  // 绑定槽位点击
+  el.querySelectorAll('.slot-card[data-slot]').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.classList.contains('slot-unequip')) return
+      const slot = card.dataset.slot
+      _selSlot = _selSlot === slot ? null : slot
+      _previewItemId = null
+      renderEquipPanel()
+      renderInventory()
+    })
+  })
+  // 绑定卸下按钮
+  el.querySelectorAll('.slot-unequip').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation()
+      unequipItem(_selCharId, btn.dataset.slot)
+      if (_selSlot === btn.dataset.slot) _selSlot = null
+      _previewItemId = null
+      renderEquipPanel()
+      renderInventory()
+    })
+  })
+}
+
+// ── 渲染右栏背包 ──
+function renderInventory() {
+  const el = document.getElementById('inventory-panel')
+  el.innerHTML = '<div class="inv-title">背包 · Inventory</div>'
+
+  if (!_selCharId) {
+    el.insertAdjacentHTML('beforeend', '<p class="inv-hint">← 先选择角色</p>')
+    return
+  }
+
+  const allItems = Object.values(_itemsDb)
+  // 显示：背包里的装备（可装到当前槽或通用展示）
+  const invIds = _save.inventory || []
+
+  if (!_selSlot) {
+    el.insertAdjacentHTML('beforeend', '<p class="inv-hint">← 点击槽位，查看可用装备</p>')
+    // 显示背包全部内容（只读）
+    if (invIds.length === 0) {
+      el.insertAdjacentHTML('beforeend', '<p class="no-items">背包为空</p>')
+    } else {
+      const seen = {}
+      invIds.forEach(id => {
+        const item = _itemsDb[id]
+        if (!item) return
+        const key = id
+        if (!seen[key]) { seen[key] = 0 }
+        seen[key]++
+      })
+      Object.entries(seen).forEach(([id, count]) => {
+        const item = _itemsDb[id]
+        if (!item) return
+        el.insertAdjacentHTML('beforeend', `
+          <div class="inv-item-card rarity-${item.rarity}">
+            <div class="inv-item-name">${item.name}${count>1?' ×'+count:''}</div>
+            <div class="inv-item-type">${SLOT_LABELS[item.slot]||item.slot} · ${item.rarity}</div>
+            <div class="inv-item-stats">${buildItemStatsSummary(item)}</div>
+          </div>`)
+      })
+    }
+    return
+  }
+
+  el.insertAdjacentHTML('beforeend', `<p class="inv-hint">点击装备预览，再点「装备」确认</p>`)
+
+  // 过滤可装备到当前槽的背包物品
+  const usable = []
+  const seen = {}
+  invIds.forEach(id => { seen[id] = (seen[id]||0)+1 })
+  Object.keys(seen).forEach(id => {
+    const item = _itemsDb[id]
+    if (!item) return
+    if (canEquipToSlot(item, _selCharId, _selSlot)) usable.push({ item, count: seen[id] })
+  })
+
+  if (usable.length === 0) {
+    el.insertAdjacentHTML('beforeend', '<p class="no-items">没有可装备到此槽位的物品</p>')
+  }
+
+  usable.forEach(({ item, count }) => {
+    const isPrev = _previewItemId === item.id
+    const card = document.createElement('div')
+    card.className = 'inv-item-card rarity-' + item.rarity + (isPrev ? ' preview' : '')
+    card.innerHTML = `
+      <div class="inv-item-name">${item.name}${count>1?' ×'+count:''}</div>
+      <div class="inv-item-type">${SLOT_LABELS[item.slot]||item.slot} · ${item.rarity}</div>
+      <div class="inv-item-stats">${buildItemStatsSummary(item)}</div>
+      ${isPrev ? '<span class="inv-equip-btn" id="confirm-equip">✔ 装备</span>' : ''}
+    `
+    card.addEventListener('click', e => {
+      if (e.target.id === 'confirm-equip') {
+        equipItem(_selCharId, _selSlot, item.id)
+        _selSlot = null; _previewItemId = null
+        renderEquipPanel(); renderInventory()
+        return
+      }
+      _previewItemId = isPrev ? null : item.id
+      renderEquipPanel(); renderInventory()
+    })
+    el.appendChild(card)
+  })
+}
+
+function selectChar(charId) {
+  _selCharId = charId; _selSlot = null; _previewItemId = null
+  renderCharList(); renderEquipPanel(); renderInventory()
+}
+
+// ── 启动 ──
+Promise.all([
+  fetch('data/characters.json').then(r=>r.json()),
+  fetch('data/items.json').then(r=>r.json())
+]).then(([charData, itemData]) => {
+  _chars   = charData.characters
+  _itemsDb = Object.fromEntries(itemData.items.map(i=>[i.id,i]))
+
+  const raw = localStorage.getItem(EQUIP_SAVE_KEY)
+  fetch('data/player_save.json').then(r=>r.json()).then(defaultSave => {
+    if (raw) {
+      const saved = JSON.parse(raw)
+      for (const charId of Object.keys(defaultSave.equipped)) {
+        if (!saved.equipped[charId]) {
+          saved.equipped[charId] = defaultSave.equipped[charId]
+        } else {
+          const savedHasAny = Object.values(saved.equipped[charId]).some(v => v !== null)
+          const defaultHasAny = Object.values(defaultSave.equipped[charId]).some(v => v !== null)
+          if (!savedHasAny && defaultHasAny) saved.equipped[charId] = defaultSave.equipped[charId]
+        }
+      }
+      _save = saved
+      localStorage.setItem(EQUIP_SAVE_KEY, JSON.stringify(saved))
+    } else {
+      _save = defaultSave
+      localStorage.setItem(EQUIP_SAVE_KEY, JSON.stringify(defaultSave))
+    }
+    renderAll()
+  })
+})
+
+function renderAll() {
+  // 从 URL 参数决定默认选中角色
+  const params = new URLSearchParams(location.search)
+  const initChar = params.get('char')
+  if (initChar && _chars.find(c=>c.id===initChar)) _selCharId = initChar
+  else if (_chars.length > 0) _selCharId = _chars[0].id
+
+  renderCharList(); renderEquipPanel(); renderInventory()
+}
+</script>
+</body>
+</html>

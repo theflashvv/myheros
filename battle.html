@@ -1,0 +1,5005 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Heroes — 战斗 Demo</title>
+  <style>
+    :root {
+      --bg:      #0a0a14;
+      --panel:   #0e0e20;
+      --border:  #3a3a6a;
+      --accent:  #7b5ea7;
+      --accent2: #c084fc;
+      --gold:    #f0c060;
+      --text:    #e8e0f0;
+      --subtext: #9988bb;
+      --hp:      #4ade80;
+      --mp:      #60a5fa;
+      --atk:     #f87171;
+      --mag:     #c084fc;
+      --spd:     #34d399;
+      --win-bg:  rgba(0,180,255,0.08);
+      /* FF6 风格窗口边框色 */
+      --ff6-win:   #5060a0;
+      --ff6-win2:  #8090d0;
+      --ff6-dark:  #060610;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Courier New', 'MS Gothic', monospace;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      image-rendering: pixelated;
+    }
+
+    /* ══════════════════════════════
+       FF6 风格窗口组件
+    ══════════════════════════════ */
+    .ff6-window {
+      background: linear-gradient(180deg, #101030 0%, #080818 100%);
+      border: 2px solid var(--ff6-win);
+      box-shadow:
+        inset 0 0 0 1px var(--ff6-dark),
+        inset 0 0 12px rgba(80,96,160,0.3),
+        0 0 0 1px var(--ff6-win2);
+      position: relative;
+    }
+    .ff6-window::before {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      border: 1px solid rgba(128,144,208,0.25);
+      pointer-events: none;
+    }
+
+    /* ══════════════════════════════
+       战场区（全屏背景）
+    ══════════════════════════════ */
+    #battle-scene {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      /* FF6 战斗背景 — 深蓝渐变地板 */
+      background:
+        linear-gradient(180deg,
+          #0a0618 0%,
+          #0d0a2a 40%,
+          #141040 60%,
+          #1a1450 75%,
+          #1e1860 100%);
+    }
+
+    /* 背景装饰线（FF6地板网格感） */
+    #battle-scene::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          180deg,
+          transparent 0px,
+          transparent 3px,
+          rgba(80,96,200,0.04) 3px,
+          rgba(80,96,200,0.04) 4px
+        );
+      pointer-events: none;
+    }
+
+    /* ══════════════════════════════
+       敌人区域（左半部）
+    ══════════════════════════════ */
+    #enemy-area {
+      position: absolute;
+      left: 4%;
+      top: 8%;
+      width: 40%;
+      height: 65%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .boss-sprite {
+      font-size: 7rem;
+      filter: drop-shadow(0 0 24px rgba(248,113,113,0.6));
+      animation: boss-float 3s ease-in-out infinite;
+      line-height: 1;
+    }
+    @keyframes boss-float {
+      0%,100% { transform: translateY(0) scale(1); }
+      50%      { transform: translateY(-8px) scale(1.04); }
+    }
+    .boss-sprite.rage {
+      filter: drop-shadow(0 0 32px rgba(255,50,50,0.9));
+      animation: boss-rage 1.2s ease-in-out infinite;
+    }
+    @keyframes boss-rage {
+      0%,100% { transform: translateY(0) scale(1); }
+      50%      { transform: translateY(-6px) scale(1.08); }
+    }
+
+    /* Boss HP/MP 窗口 */
+    #boss-status-window {
+      width: 100%;
+      max-width: 260px;
+      padding: 8px 12px;
+    }
+    .boss-name-label {
+      font-size: 0.78rem;
+      color: var(--atk);
+      letter-spacing: 0.12em;
+      font-weight: 700;
+      margin-bottom: 6px;
+      text-shadow: 0 0 8px rgba(248,113,113,0.5);
+    }
+    .ff6-bar-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+    .ff6-bar-label { font-size: 0.62rem; color: var(--subtext); width: 18px; }
+    .ff6-bar-track {
+      flex: 1;
+      height: 8px;
+      background: #0a0a20;
+      border: 1px solid #303060;
+      overflow: hidden;
+    }
+    .ff6-bar-fill { height: 100%; transition: width 0.4s ease; }
+    .ff6-bar-hp { background: linear-gradient(90deg, #1a8030, #4ade80); }
+    .ff6-bar-mp { background: linear-gradient(90deg, #1040a0, #60a5fa); }
+    .ff6-bar-val { font-size: 0.65rem; color: var(--subtext); min-width: 72px; text-align: right; }
+
+    /* ══════════════════════════════
+       角色立绘区（错落布局）
+    ══════════════════════════════ */
+    #party-sprites {
+      position: absolute;
+      right: 0;
+      left: 30%;
+      top: 0;
+      bottom: 0;
+      pointer-events: none;
+    }
+
+    .char-sprite-wrap {
+      position: absolute;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.3s;
+    }
+    /* 错落坐标：从上到下，左右交错 */
+    .char-sprite-wrap:nth-child(1) { top:  4%; right: 28%; }
+    .char-sprite-wrap:nth-child(2) { top: 27%; right:  8%; }
+    .char-sprite-wrap:nth-child(3) { top: 50%; right: 24%; }
+    .char-sprite-wrap:nth-child(4) { top: 72%; right:  4%; }
+
+    .char-sprite {
+      width: clamp(80px, 13vw, 150px);
+      height: clamp(80px, 13vw, 150px);
+      object-fit: contain;
+      image-rendering: pixelated;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.7));
+    }
+    .char-sprite-wrap.active-turn .char-sprite {
+      filter: drop-shadow(0 0 16px rgba(192,132,252,0.95)) drop-shadow(0 4px 8px rgba(0,0,0,0.7));
+      animation: char-ready 1s ease-in-out infinite;
+    }
+    @keyframes char-ready {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-6px); }
+    }
+    .char-sprite-wrap.dead .char-sprite {
+      filter: grayscale(1) brightness(0.35);
+      transform: rotate(90deg) translateX(14px);
+    }
+
+    /* 角色名字标签 */
+    .char-sprite-name {
+      font-size: 0.62rem;
+      color: var(--text);
+      letter-spacing: 0.08em;
+      background: rgba(6,6,16,0.82);
+      padding: 2px 8px;
+      border: 1px solid var(--ff6-win);
+      white-space: nowrap;
+    }
+    .char-sprite-wrap.active-turn .char-sprite-name {
+      color: var(--accent2);
+      border-color: var(--accent2);
+    }
+
+    /* 游标箭头 */
+    .cursor-arrow {
+      color: var(--gold);
+      font-size: 0.9rem;
+      animation: blink 0.7s step-end infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ══════════════════════════════
+       战斗日志（底部中间列，不再是浮层）
+    ══════════════════════════════ */
+    #battle-log-window {
+      display: none; /* 原浮层隐藏，日志改用 #mini-log */
+    }
+    .log-entry {
+      font-size: 0.72rem;
+      line-height: 1.7;
+      padding: 0;
+    }
+    .log-sys    { color: #b0b8e8; }
+    .log-phys   { color: var(--atk); }
+    .log-magic  { color: var(--mag); }
+    .log-crit   { color: var(--gold); font-weight: 700; }
+    .log-heal   { color: var(--hp); }
+    .log-enemy  { color: #8888aa; }
+    .log-evade  { color: var(--spd); }
+    .log-burn   { color: #fb923c; }
+    .log-drain  { color: #a78bfa; }
+    .log-win    { color: var(--gold); font-weight: 700; }
+    .log-lose   { color: var(--atk); font-weight: 700; }
+
+    /* ══════════════════════════════
+       底部 UI 区（状态栏 + 日志 + 指令栏）
+    ══════════════════════════════ */
+    #bottom-ui {
+      flex-shrink: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px;
+      padding: 3px;
+      height: auto;
+      min-height: 60px;
+      max-height: 100px;
+      background: var(--ff6-dark);
+      border-top: 2px solid var(--ff6-win);
+    }
+
+    /* 四人状态栏 */
+    #party-status {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 3px;
+      overflow: hidden;
+    }
+    .status-card {
+      padding: 5px 5px;
+      border-left: 3px solid transparent;
+      transition: border-color 0.2s;
+      overflow: hidden;
+    }
+    .status-card.active-turn  { border-left-color: var(--accent2); }
+    .status-card.dead         { opacity: 0.4; }
+    .status-card-name {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .status-card.active-turn .status-card-name { color: var(--accent2); }
+    .status-bar-row { display: flex; align-items: center; gap: 3px; margin-bottom: 2px; }
+    .status-bar-label { font-size: 0.52rem; color: var(--subtext); width: 12px; flex-shrink: 0; }
+    .status-bar-track {
+      width: 44px;
+      flex-shrink: 0;
+      height: 4px;
+      background: #0a0a20;
+      border: 1px solid #303060;
+      overflow: hidden;
+    }
+    .status-bar-fill { height: 100%; transition: width 0.4s ease; }
+    .status-bar-hp { background: linear-gradient(90deg, #1a8030, #4ade80); }
+    .status-bar-mp { background: linear-gradient(90deg, #1040a0, #60a5fa); }
+    .status-bar-val {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text);
+      min-width: 26px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .status-bar-val.hp-val { color: var(--hp); }
+    .status-bar-val.mp-val { color: var(--mp); }
+    .status-effects-row { display: flex; gap: 2px; margin-top: 2px; flex-wrap: wrap; min-height: 12px; }
+    .status-tag {
+      font-size: 0.48rem;
+      padding: 0px 3px;
+      border: 1px solid;
+      border-radius: 2px;
+      line-height: 1.4;
+      white-space: nowrap;
+    }
+    .st-burn   { border-color: #fb923c; color: #fb923c; background: rgba(251,146,60,0.12); }
+    .st-buff   { border-color: var(--hp);  color: var(--hp);  background: rgba(74,222,128,0.12); }
+    .st-debuff { border-color: var(--atk); color: var(--atk); background: rgba(248,113,113,0.12); }
+    .st-time   { border-color: var(--mp);  color: var(--mp);  background: rgba(96,165,250,0.12); }
+    .st-dark   { border-color: #a78bfa;   color: #a78bfa;   background: rgba(167,139,250,0.12); }
+    .st-atk    { border-color: #f87171;   color: #f87171;   background: rgba(248,113,113,0.12); }
+
+    /* 中间迷你日志 */
+    #mini-log {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding: 4px 6px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      font-size: 0.62rem;
+      line-height: 1.5;
+      background: linear-gradient(180deg, #080818 0%, #101030 100%);
+      border: 1px solid var(--ff6-win);
+    }
+    #mini-log .log-entry {
+      font-size: 0.62rem;
+      white-space: normal;
+      word-break: break-all;
+      line-height: 1.5;
+      padding: 0 0 1px 0;
+    }
+
+    /* 指令窗口 */
+    #command-window {
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+    /* 行动栏标签 */
+    .cmd-actor-info {
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      min-width: 80px;
+      max-width: 120px;
+    }
+    /* 每个指令面板：hidden 时不占位，显示时横排铺满 */
+    #cmd-main, #cmd-skills, #cmd-target-ally, #cmd-target-enemy, #cmd-wait, #cmd-result {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      overflow: hidden;
+    }
+    #cmd-main[hidden], #cmd-skills[hidden], #cmd-target-ally[hidden],
+    #cmd-target-enemy[hidden], #cmd-wait[hidden], #cmd-result[hidden] {
+      display: none;
+    }
+    }
+    .cmd-icon-btn {
+      padding: 2px 8px;
+      background: rgba(10,10,30,0.6);
+      border: 1px solid var(--ff6-win);
+      color: var(--subtext);
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .cmd-icon-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+    .cmd-actor-label { font-size: 0.58rem; color: var(--subtext); letter-spacing: 0.1em; }
+    .cmd-actor-name  { font-size: 0.82rem; font-weight: 700; color: var(--gold); margin-bottom: 2px; }
+    .cmd-buttons     { display: flex; gap: 5px; flex-wrap: nowrap; }
+    /* 技能列表专用：横向滚动条样式 */
+    #skill-buttons::-webkit-scrollbar { height: 3px; }
+    #skill-buttons::-webkit-scrollbar-track { background: transparent; }
+    #skill-buttons::-webkit-scrollbar-thumb { background: var(--ff6-win); border-radius: 2px; }
+
+    /* FF6 风格按钮 */
+    .cmd-btn {
+      padding: 5px 14px;
+      background: linear-gradient(180deg, #1a1a40 0%, #0e0e28 100%);
+      border: 1px solid var(--ff6-win);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-family: inherit;
+      letter-spacing: 0.05em;
+      transition: all 0.1s;
+      min-width: 80px;
+      position: relative;
+    }
+    .cmd-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: rgba(128,144,208,0.4);
+    }
+    .cmd-btn:hover:not(:disabled) {
+      background: linear-gradient(180deg, #2a2a60 0%, #1a1a48 100%);
+      border-color: var(--ff6-win2);
+      color: var(--gold);
+    }
+    .cmd-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .cmd-btn.back-btn { border-color: #303060; color: var(--subtext); }
+    .cmd-btn.back-btn:hover { border-color: var(--ff6-win); color: var(--text); }
+    .cmd-btn.ally-btn {
+      border-color: #306030;
+      color: var(--hp);
+      background: linear-gradient(180deg, #0a2010 0%, #061408 100%);
+    }
+    .cmd-btn.ally-btn:hover:not(:disabled) { border-color: var(--hp); color: #fff; }
+    .cmd-btn.ally-btn.dead-target { opacity: 0.25; cursor: not-allowed; }
+
+    .skill-mp   { font-size: 0.58rem; color: var(--mp); display: block; }
+    .target-hp  { font-size: 0.58rem; color: var(--subtext); display: block; }
+    .cmd-wait   { color: var(--subtext); font-size: 0.78rem; font-style: italic; }
+    .cmd-result-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+    .win-title  { color: var(--gold); text-shadow: 0 0 12px rgba(240,192,96,0.6); }
+    .lose-title { color: var(--atk); }
+
+    /* 战斗统计 */
+    .battle-stats {
+      margin: 8px 0 6px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      font-size: 0.62rem;
+    }
+    .stats-col-title {
+      font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--subtext); margin-bottom: 4px; grid-column: 1/-1;
+      border-bottom: 1px solid var(--border); padding-bottom: 3px;
+    }
+    .stats-entry { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; }
+    .stats-bar-wrap { flex: 1; height: 5px; background: #0a0a20; border: 1px solid #303060; overflow: hidden; }
+    .stats-bar-fill { height: 100%; }
+    .stats-name  { color: var(--subtext); min-width: 36px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stats-val   { color: var(--text); min-width: 30px; text-align: right; }
+    .stats-pct   { color: var(--subtext); min-width: 30px; text-align: right; }
+
+    /* ══════════════════════════════
+       动画系统
+    ══════════════════════════════ */
+
+    /* 吟唱光晕 */
+    .char-sprite-wrap.casting .char-sprite {
+      animation: cast-pulse 0.3s ease-in-out infinite !important;
+    }
+    @keyframes cast-pulse {
+      0%,100% { filter: drop-shadow(0 0 8px #fff) drop-shadow(0 4px 8px rgba(0,0,0,0.7)); }
+      50%      { filter: drop-shadow(0 0 28px var(--cast-color,#fff)) brightness(1.3) drop-shadow(0 4px 8px rgba(0,0,0,0.7)); }
+    }
+
+    /* Boss 受击闪白 */
+    .boss-sprite.hit-flash {
+      animation: boss-hit-flash 0.2s ease-out !important;
+    }
+
+    /* 精英小怪错落布局 */
+    .elite-wrap {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: transform 0.2s;
+    }
+    /* 4只错落坐标：在 #enemy-area 左半战场范围内错落 */
+    .elite-wrap:nth-child(1) { top:  5%; left: 52%; }
+    .elite-wrap:nth-child(2) { top: 28%; left: 20%; }
+    .elite-wrap:nth-child(3) { top: 52%; left: 58%; }
+    .elite-wrap:nth-child(4) { top: 74%; left: 25%; }
+
+    /* minion 模式：两个小弟前排左右，LHW 后排居中 */
+    #enemy-area.minion-layout #boss-display {
+      position: absolute;
+      top: 2%;
+      left: 32%;
+      transform: translateX(-50%) scale(1.1);
+      z-index: 1;
+    }
+    #enemy-area.minion-layout #elite-display .elite-wrap:nth-child(1) { top: 35%; left: 2%; }
+    #enemy-area.minion-layout #elite-display .elite-wrap:nth-child(2) { top: 35%; left: 52%; }
+    #enemy-area.minion-layout .elite-icon img { width: clamp(80px, 14vw, 140px); height: clamp(80px, 14vw, 140px); }
+
+    .elite-icon {
+      font-size: 2.8rem;
+      line-height: 1;
+      filter: drop-shadow(0 0 10px rgba(248,113,113,0.5));
+      transition: filter 0.2s;
+    }
+    .elite-icon img {
+      width: clamp(50px, 9vw, 90px);
+      height: clamp(50px, 9vw, 90px);
+      object-fit: contain;
+      image-rendering: pixelated;
+      display: block;
+      transform: scaleX(-1);
+    }
+    .elite-wrap.dead .elite-icon {
+      filter: grayscale(1) brightness(0.35);
+    }
+    .elite-wrap.active-turn .elite-icon {
+      filter: drop-shadow(0 0 14px rgba(248,113,113,0.95)) brightness(1.2);
+      animation: boss-float 1s ease-in-out infinite;
+    }
+    .elite-wrap.hit-flash .elite-icon {
+      animation: boss-hit-flash 0.2s ease-out !important;
+    }
+    .elite-name-tag {
+      font-size: 0.55rem;
+      color: var(--text);
+      background: rgba(6,6,16,0.82);
+      padding: 1px 5px;
+      border: 1px solid var(--ff6-win);
+      white-space: nowrap;
+    }
+    .elite-hp-bar-wrap {
+      width: 80px;
+      height: 5px;
+      background: #0a0a20;
+      border: 1px solid #303060;
+      overflow: hidden;
+    }
+    .elite-hp-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #8a1010, #f87171);
+      transition: width 0.3s;
+    }
+    @keyframes boss-hit-flash {
+      0%,100% { filter: drop-shadow(0 0 24px rgba(248,113,113,0.6)); }
+      40%     { filter: brightness(4) drop-shadow(0 0 32px #fff); }
+    }
+
+    /* 玩家受击闪白 */
+    .char-sprite-wrap.hit-flash .char-sprite {
+      animation: player-hit-flash 0.2s ease-out !important;
+    }
+    @keyframes player-hit-flash {
+      0%,100% { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.7)); }
+      40%     { filter: brightness(4) drop-shadow(0 0 16px #f88); }
+    }
+
+    /* 屏幕震动 */
+    #battle-scene.screen-shake {
+      animation: screen-shake 0.35s ease-out;
+    }
+    @keyframes screen-shake {
+      0%,100% { transform: translate(0,0); }
+      15%     { transform: translate(-5px, 3px); }
+      30%     { transform: translate(5px, -3px); }
+      50%     { transform: translate(-4px, 4px); }
+      70%     { transform: translate(4px, -2px); }
+      85%     { transform: translate(-2px, 2px); }
+    }
+
+    /* 浮动伤害数字 */
+    .float-num {
+      position: absolute;
+      font-family: 'Courier New', monospace;
+      font-weight: 900;
+      pointer-events: none;
+      text-shadow: 2px 2px 4px #000, -1px -1px 3px #000;
+      white-space: nowrap;
+      transform: translateX(-50%);
+      z-index: 300;
+    }
+    .float-num.damage { font-size: 1.5rem; color: #fff; }
+    .float-num.crit   { font-size: 2.1rem; color: var(--gold); text-shadow: 0 0 12px rgba(240,192,96,0.8), 2px 2px 4px #000; }
+    .float-num.heal   { font-size: 1.2rem; color: var(--hp); }
+    .float-num.miss   { font-size: 1rem;   color: var(--subtext); }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--ff6-win); }
+
+    /* 场景选择覆盖层：hidden 属性需覆盖内联 display:flex */
+    .scene-overlay[hidden] { display: none !important; }
+
+    /* 战斗结算弹出框 */
+    #battle-result-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+    }
+    #battle-result-modal[hidden] { display: none; }
+    #battle-result-box {
+      background: linear-gradient(180deg, #10103a, #080820);
+      border: 2px solid var(--ff6-win);
+      box-shadow: 0 0 40px rgba(80,96,160,0.5), inset 0 0 20px rgba(80,96,160,0.1);
+      width: min(600px, 92vw);
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .result-modal-title {
+      text-align: center;
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+    .result-modal-subtitle {
+      text-align: center;
+      font-size: 0.7rem;
+      color: var(--subtext);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .result-stat-section {
+      background: rgba(80,96,160,0.08);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+    }
+    .result-stat-title {
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+    }
+    .result-stat-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .result-stat-name { font-size: 0.72rem; color: var(--subtext); min-width: 70px; }
+    .result-bar-wrap  { flex: 1; height: 6px; background: #0a0a20; border: 1px solid #303060; overflow: hidden; border-radius: 3px; }
+    .result-bar-fill  { height: 100%; border-radius: 3px; }
+    .result-stat-val  { font-size: 0.75rem; font-weight: 700; color: var(--text); min-width: 40px; text-align: right; }
+    .result-stat-pct  { font-size: 0.65rem; color: var(--subtext); min-width: 36px; text-align: right; }
+    .result-modal-btns { display: flex; gap: 10px; justify-content: center; margin-top: 4px; }
+
+    /* 战场目标选择箭头 */
+    .target-arrow {
+      position: absolute;
+      z-index: 250;
+      font-size: 1.8rem;
+      color: var(--gold);
+      text-shadow: 0 0 10px rgba(240,192,96,0.9), 0 0 20px rgba(240,192,96,0.4);
+      animation: arrow-blink 0.55s step-end infinite;
+      transform: translateX(-50%);
+      pointer-events: none;
+      line-height: 1;
+    }
+    @keyframes arrow-blink {
+      0%,100% { opacity: 1; }
+      50%     { opacity: 0.15; }
+    }
+    .elite-wrap.target-selected .elite-icon {
+      filter: drop-shadow(0 0 18px var(--gold)) brightness(1.35) !important;
+    }
+    .elite-wrap.target-selected .elite-name-tag {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    /* ══════════════════════════════
+       浮动行动框
+    ══════════════════════════════ */
+    #floating-cmd {
+      position: fixed;
+      z-index: 300;
+      width: min(200px, 55vw);
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      transition: top 0.22s ease, left 0.22s ease;
+    }
+    #floating-cmd[hidden] { display: none !important; }
+    /* 浮动框内面板强制竖排 */
+    #floating-cmd #cmd-main,
+    #floating-cmd #cmd-skills,
+    #floating-cmd #cmd-target-ally,
+    #floating-cmd #cmd-target-enemy,
+    #floating-cmd #cmd-wait,
+    #floating-cmd #cmd-result {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+      width: 100%;
+    }
+    #floating-cmd .cmd-actor-info { flex-shrink: 0; }
+    #floating-cmd .cmd-actor-label { font-size: 0.56rem; }
+    #floating-cmd .cmd-actor-name  { font-size: 0.85rem; font-weight: 700; color: var(--gold); }
+    #floating-cmd .cmd-buttons { display: flex; gap: 5px; flex-wrap: nowrap; }
+    /* 目标选择列表（友方/敌方）纵向排列 */
+    #floating-cmd #ally-target-buttons,
+    #floating-cmd #enemy-target-buttons {
+      overflow-x: hidden; overflow-y: auto;
+      flex-direction: column; flex-wrap: wrap;
+      max-height: 220px; width: 100%;
+    }
+    #floating-cmd #ally-target-buttons .cmd-btn,
+    #floating-cmd #enemy-target-buttons .cmd-btn { width: 100%; min-width: unset; text-align: left; }
+    #floating-cmd #ally-target-buttons::-webkit-scrollbar,
+    #floating-cmd #enemy-target-buttons::-webkit-scrollbar { width: 4px; height: 0; }
+    #floating-cmd #ally-target-buttons::-webkit-scrollbar-track,
+    #floating-cmd #enemy-target-buttons::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 2px; }
+    #floating-cmd #ally-target-buttons::-webkit-scrollbar-thumb,
+    #floating-cmd #enemy-target-buttons::-webkit-scrollbar-thumb { background: var(--ff6-win); border-radius: 2px; }
+    .cmd-btn-sm { padding: 3px 8px; font-size: 0.65rem; min-width: 46px; }
+    /* 技能列表纵向排列在浮动框里 */
+    #floating-cmd #skill-buttons { overflow-x: hidden; overflow-y: auto; flex-wrap: wrap; flex-direction: column; padding-bottom: 2px; max-height: 220px; width: 100%; }
+    #floating-cmd #skill-buttons .cmd-btn { width: 100%; min-width: unset; text-align: left; }
+    #floating-cmd #skill-buttons::-webkit-scrollbar { width: 4px; height: 0; }
+    #floating-cmd #skill-buttons::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 2px; }
+    #floating-cmd #skill-buttons::-webkit-scrollbar-thumb { background: var(--ff6-win); border-radius: 2px; }
+
+    /* Toast 提示 */
+    #toast-msg {
+      position: fixed;
+      top: 50px;
+      right: 20px;
+      background: rgba(20,20,50,0.92);
+      border: 1px solid var(--accent);
+      color: var(--accent2);
+      font-size: 0.72rem;
+      padding: 6px 14px;
+      border-radius: 4px;
+      z-index: 600;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    #toast-msg[hidden] { display: none; }
+
+    /* 自动战斗停止按钮（固定悬浮） */
+    #btn-stop-auto {
+      position: fixed;
+      bottom: 94px;
+      right: 12px;
+      z-index: 400;
+      padding: 6px 14px;
+      background: linear-gradient(180deg, #1a0a0a 0%, #0e0606 100%);
+      border: 1px solid var(--hp);
+      color: var(--hp);
+      font-size: 0.75rem;
+      font-family: inherit;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+    }
+    #btn-stop-auto:hover { background: linear-gradient(180deg, #2a1010 0%, #180808 100%); color: #fff; }
+    #btn-stop-auto[hidden] { display: none; }
+
+    /* ══════════════════════════════
+       等级调整 & 角色选择浮层抽屉
+    ══════════════════════════════ */
+    #settings-drawer {
+      position: fixed;
+      top: 44px;
+      right: 6px;
+      width: min(380px, 95vw);
+      max-height: calc(100vh - 52px);
+      overflow-y: auto;
+      z-index: 500;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    #settings-drawer[hidden] { display: none; }
+    #level-panel {
+      padding: 8px 14px 10px;
+      border: 2px solid var(--ff6-win);
+      background: linear-gradient(180deg, #101030, #080818);
+    }
+    #roster-panel {
+      padding: 8px 14px 10px;
+      border: 2px solid var(--ff6-win);
+      background: linear-gradient(180deg, #101030, #080818);
+    }
+    .level-panel-title {
+      font-size: 0.6rem;
+      color: var(--subtext);
+      letter-spacing: 0.12em;
+      white-space: nowrap;
+    }
+    #level-sliders {
+      display: flex;
+      gap: 8px;
+      flex-direction: column;
+      width: 100%;
+      margin-top: 6px;
+    }
+    .level-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+    .level-char-name {
+      font-size: 0.62rem;
+      color: var(--text);
+      white-space: nowrap;
+      min-width: 52px;
+    }
+    .level-slider {
+      -webkit-appearance: none;
+      width: 100px;
+      flex: 1;
+      min-width: 60px;
+      height: 4px;
+      background: #1a1a40;
+      border: 1px solid var(--ff6-win);
+      outline: none;
+      cursor: pointer;
+    }
+    .level-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      background: var(--gold);
+      cursor: pointer;
+      border: 1px solid #a08000;
+    }
+    .level-val {
+      font-size: 0.68rem;
+      color: var(--gold);
+      font-weight: 700;
+      min-width: 28px;
+      text-align: right;
+    }
+    .level-panel-btns {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+    .level-all-input {
+      width: 44px;
+      background: #0e0e28;
+      border: 1px solid var(--ff6-win);
+      color: var(--gold);
+      font-family: inherit;
+      font-size: 0.72rem;
+      padding: 4px 6px;
+      text-align: center;
+      outline: none;
+    }
+    .level-all-input:focus { border-color: var(--ff6-win2); }
+
+    /* ══════════════════════════════
+       角色选择面板（在抽屉内）
+    ══════════════════════════════ */
+    #roster-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    #roster-slots {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .slot-box {
+      flex: 1;
+      min-width: 60px;
+      height: 36px;
+      border: 1px solid var(--ff6-win);
+      background: #0a0a20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.62rem;
+      color: var(--subtext);
+      cursor: pointer;
+      transition: border-color 0.15s;
+      position: relative;
+      gap: 4px;
+    }
+    .slot-box.filled { color: var(--text); border-color: var(--accent2); }
+    .slot-box.filled:hover { border-color: var(--atk); }
+    .slot-box:not(.filled):hover { border-color: var(--ff6-win2); color: var(--text); }
+    .slot-remove {
+      position: absolute;
+      top: 1px; right: 3px;
+      font-size: 0.55rem;
+      color: var(--atk);
+      line-height: 1;
+    }
+    .slot-label { font-size: 0.55rem; color: var(--subtext); white-space: nowrap; }
+    #roster-chars {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .roster-char-btn {
+      padding: 4px 10px;
+      background: #0e0e28;
+      border: 1px solid var(--ff6-win);
+      color: var(--text);
+      font-size: 0.65rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .roster-char-btn:hover { border-color: var(--accent2); color: var(--gold); }
+    .roster-char-btn.in-party { border-color: var(--accent2); color: var(--accent2); opacity: 0.5; cursor: default; }
+
+    /* ── 响应式断点 ── */
+    @media (max-width: 900px) {
+      .char-sprite-wrap:nth-child(1) { top:  4%; right: 22%; }
+      .char-sprite-wrap:nth-child(2) { top: 27%; right:  4%; }
+      .char-sprite-wrap:nth-child(3) { top: 50%; right: 18%; }
+      .char-sprite-wrap:nth-child(4) { top: 72%; right:  2%; }
+    }
+
+    @media (max-width: 600px) {
+      #bottom-ui {
+        grid-template-columns: 1fr;
+        max-height: 140px;
+      }
+      #party-status {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .status-bar-track { width: 36px; }
+      .status-bar-val { min-width: 22px; font-size: 0.7rem; }
+
+      #btn-stop-auto {
+        bottom: auto;
+        top: 8px;
+        right: 8px;
+      }
+      #settings-drawer {
+        top: auto;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        width: 100%;
+        max-height: 70vh;
+        border-radius: 12px 12px 0 0;
+      }
+      #toast-msg {
+        top: 8px;
+        right: 8px;
+      }
+
+      .char-sprite-wrap:nth-child(1) { top:  2%; right: 10%; }
+      .char-sprite-wrap:nth-child(2) { top: 26%; right:  2%; }
+      .char-sprite-wrap:nth-child(3) { top: 50%; right:  8%; }
+      .char-sprite-wrap:nth-child(4) { top: 72%; right:  1%; }
+
+      #scene-select > div:nth-child(2) {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<div style="
+  background:linear-gradient(135deg,#1a0a2e,#0d1a2e);
+  border-bottom:2px solid var(--ff6-win);
+  padding:8px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-shrink:0;
+  flex-wrap:wrap;
+  gap:6px;
+">
+  <div>
+    <span style="font-size:1rem;color:var(--gold);letter-spacing:0.1em;font-weight:700">My Heroes</span>
+    <span style="font-size:0.72rem;color:var(--subtext);margin-left:10px">战斗 Demo · Battle</span>
+  </div>
+  <nav style="display:flex;gap:8px;flex-wrap:wrap">
+    <a href="index.html"    style="padding:5px 12px;border:1px solid var(--ff6-win);color:var(--subtext);font-size:0.75rem;text-decoration:none;transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent2)';this.style.color='var(--accent2)'" onmouseout="this.style.borderColor='var(--ff6-win)';this.style.color='var(--subtext)'">角色库</a>
+    <a href="equipment.html" style="padding:5px 12px;border:1px solid var(--ff6-win);color:var(--subtext);font-size:0.75rem;text-decoration:none;transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent2)';this.style.color='var(--accent2)'" onmouseout="this.style.borderColor='var(--ff6-win)';this.style.color='var(--subtext)'">装备管理</a>
+    <a href="skills.html" style="padding:5px 12px;border:1px solid var(--ff6-win);color:var(--subtext);font-size:0.75rem;text-decoration:none;transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent2)';this.style.color='var(--accent2)'" onmouseout="this.style.borderColor='var(--ff6-win)';this.style.color='var(--subtext)'">技能库</a>
+    <span style="padding:5px 12px;border:1px solid var(--ff6-win);color:var(--gold);font-size:0.75rem;cursor:default">战斗 Demo</span>
+    <a href="status.html" style="padding:5px 12px;border:1px solid var(--ff6-win);color:var(--subtext);font-size:0.75rem;text-decoration:none;transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent2)';this.style.color='var(--accent2)'" onmouseout="this.style.borderColor='var(--ff6-win)';this.style.color='var(--subtext)'">角色状态</a>
+    <button id="btn-settings" style="padding:5px 12px;border:1px solid var(--ff6-win);color:var(--subtext);background:transparent;font-size:0.75rem;font-family:inherit;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--ff6-win)';this.style.color='var(--subtext)'">⚙ 设置</button>
+  </nav>
+</div>
+
+<div id="battle-scene">
+
+  <!-- 场景选择（战斗开始前显示） -->
+  <div id="scene-select" style="
+    position:absolute;inset:0;z-index:500;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+    background:rgba(6,6,16,0.92);
+  " class="scene-overlay">
+    <div style="font-size:0.7rem;letter-spacing:0.15em;color:var(--subtext);text-transform:uppercase">选择战斗场景</div>
+    <div style="display:flex;gap:16px">
+      <button id="btn-scene-boss" style="
+        padding:18px 28px;background:linear-gradient(180deg,#1a1a40,#0e0e28);
+        border:2px solid var(--atk);color:var(--atk);font-family:inherit;
+        font-size:0.9rem;cursor:pointer;min-width:180px;
+        box-shadow:0 0 16px rgba(248,113,113,0.2);
+      ">
+        <div style="font-size:2rem;margin-bottom:8px">👁️</div>
+        <div style="font-weight:700">BOSS 战</div>
+        <div style="font-size:0.7rem;color:var(--subtext);margin-top:4px">暗影巨神</div>
+      </button>
+      <button id="btn-scene-elite" style="
+        padding:18px 28px;background:linear-gradient(180deg,#1a1a40,#0e0e28);
+        border:2px solid var(--accent2);color:var(--accent2);font-family:inherit;
+        font-size:0.9rem;cursor:pointer;min-width:180px;
+        box-shadow:0 0 16px rgba(192,132,252,0.2);
+      ">
+        <div style="font-size:2rem;margin-bottom:8px">⚔️</div>
+        <div style="font-weight:700">精英战</div>
+        <div style="font-size:0.7rem;color:var(--subtext);margin-top:4px">随机精英小怪 ×4</div>
+      </button>
+      <button id="btn-scene-gauntlet" style="
+        padding:18px 28px;background:linear-gradient(180deg,#1a2010,#0e1408);
+        border:2px solid var(--hp);color:var(--hp);font-family:inherit;
+        font-size:0.9rem;cursor:pointer;min-width:180px;
+        box-shadow:0 0 16px rgba(74,222,128,0.2);
+      ">
+        <div style="font-size:2rem;margin-bottom:8px">🏆</div>
+        <div style="font-weight:700">连续战斗</div>
+        <div style="font-size:0.7rem;color:var(--subtext);margin-top:4px">4波连战 → 最终BOSS</div>
+      </button>
+      <button id="btn-scene-minion" style="
+        padding:18px 28px;background:linear-gradient(180deg,#1a100a,#0e0806);
+        border:2px solid #fb923c;color:#fb923c;font-family:inherit;
+        font-size:0.9rem;cursor:pointer;min-width:180px;
+        box-shadow:0 0 16px rgba(251,146,60,0.2);
+      ">
+        <div style="font-size:2rem;margin-bottom:8px">😤</div>
+        <div style="font-weight:700">LHW 挑战</div>
+        <div style="font-size:0.7rem;color:var(--subtext);margin-top:4px">BOSS + 葡萄牙7号 + 阿根廷10号</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- 敌人区域 -->
+  <div id="enemy-area">
+    <!-- Boss 模式内容（默认显示） -->
+    <div id="boss-display">
+      <div class="boss-sprite" id="boss-icon">
+        <img src="assets/boss/shadow_colossus.png" id="boss-img"
+          style="width:110px;height:110px;object-fit:contain;image-rendering:pixelated;
+          filter:drop-shadow(0 0 24px rgba(248,113,113,0.6));transform:scaleX(-1);"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <span style="display:none;font-size:6rem">👁️</span>
+      </div>
+      <div id="boss-status-window" class="ff6-window">
+        <div class="boss-name-label" id="boss-name">暗影巨神</div>
+      <div class="ff6-bar-row">
+        <span class="ff6-bar-label">HP</span>
+        <div class="ff6-bar-track"><div class="ff6-bar-fill ff6-bar-hp" id="boss-hp-bar" style="width:100%"></div></div>
+        <span class="ff6-bar-val" id="boss-hp-val">1200 / 1200</span>
+      </div>
+      <div class="ff6-bar-row">
+        <span class="ff6-bar-label">MP</span>
+        <div class="ff6-bar-track"><div class="ff6-bar-fill ff6-bar-mp" id="boss-mp-bar" style="width:100%"></div></div>
+        <span class="ff6-bar-val" id="boss-mp-val">300 / 300</span>
+      </div>
+      <div id="boss-status-tags" style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px;min-height:14px"></div>
+    </div>
+    </div><!-- /#boss-display -->
+
+    <!-- 精英模式：绝对定位错落布局（默认隐藏） -->
+    <div id="elite-display" hidden style="position:absolute;inset:0;pointer-events:none;"></div>
+  </div>
+
+  <!-- 角色立绘区 -->
+  <div id="party-sprites">
+    <!-- 动态生成 -->
+  </div>
+
+  <!-- 战斗日志 -->
+  <div id="battle-log-window" class="ff6-window">
+    <div id="battle-log"></div>
+  </div>
+
+  <!-- 动画层（最顶层，不拦截点击） -->
+  <div id="anim-layer" style="position:absolute;inset:0;pointer-events:none;z-index:200"></div>
+
+</div>
+
+<!-- 底部 UI -->
+<div id="bottom-ui">
+  <!-- 左：迷你日志 -->
+  <div id="mini-log" class="ff6-window"></div>
+
+  <!-- 右：角色状态 -->
+  <div id="party-status" class="ff6-window">
+    <!-- 动态生成 -->
+  </div>
+</div>
+
+<!-- 浮动行动框 -->
+<div id="floating-cmd" class="ff6-window" hidden>
+  <div id="cmd-main">
+    <div class="cmd-actor-info">
+      <div class="cmd-actor-label">COMMAND</div>
+      <div class="cmd-actor-name" id="actor-name">—</div>
+    </div>
+    <div class="cmd-buttons">
+      <button class="cmd-btn" id="btn-attack">攻击</button>
+      <button class="cmd-btn" id="btn-skills">技能 ▶</button>
+    </div>
+    <div class="cmd-buttons" style="margin-top:2px">
+      <button class="cmd-btn" id="btn-auto" style="border-color:var(--subtext);color:var(--subtext)">自动战斗 ▶</button>
+    </div>
+    <div class="cmd-buttons" style="margin-top:3px">
+      <button class="cmd-btn cmd-btn-sm" id="btn-defend">防御</button>
+      <button class="cmd-btn cmd-btn-sm" id="btn-items">道具</button>
+      <button class="cmd-btn cmd-btn-sm" id="btn-standby">待机</button>
+      <button class="cmd-btn cmd-btn-sm" id="btn-flee">逃跑</button>
+    </div>
+  </div>
+
+  <div id="cmd-skills" hidden>
+    <div class="cmd-actor-label" style="flex-shrink:0">SKILL</div>
+    <div class="cmd-buttons" id="skill-buttons"></div>
+  </div>
+
+  <div id="cmd-target-ally" hidden>
+    <div class="cmd-actor-label">SELECT TARGET</div>
+    <div class="cmd-buttons" id="ally-target-buttons"></div>
+  </div>
+
+  <div id="cmd-target-enemy" hidden>
+    <div class="cmd-actor-label">SELECT ENEMY</div>
+    <div class="cmd-buttons" id="enemy-target-buttons"></div>
+  </div>
+
+  <div id="cmd-wait" hidden>
+    <span class="cmd-wait" id="wait-msg">...</span>
+  </div>
+
+  <div id="cmd-result" hidden>
+    <div class="cmd-result-title" id="result-title"></div>
+    <div id="battle-stats-area" class="battle-stats"></div>
+    <div class="cmd-buttons" style="margin-top:4px">
+      <button class="cmd-btn" id="btn-restart">再来一局</button>
+      <a href="index.html" class="cmd-btn back-btn" style="text-decoration:none;text-align:center">角色库</a>
+    </div>
+  </div>
+</div>
+
+<!-- Toast 提示 -->
+<div id="toast-msg" hidden></div>
+
+<!-- 自动战斗停止按钮（自动模式时悬浮显示） -->
+<button id="btn-stop-auto" hidden>停止自动 ■</button>
+
+<!-- 设置抽屉（等级调整 + 角色选择） -->
+<div id="settings-drawer" hidden>
+  <div id="level-panel" class="ff6-window">
+    <div class="level-panel-title">等级调整 · LV ADJUST</div>
+    <div id="level-sliders"></div>
+    <!-- 敌人等级行 -->
+    <div class="level-panel-btns" style="margin-top:6px">
+      <span class="level-char-name" style="white-space:nowrap">Boss</span>
+      <input class="level-slider" type="range" min="1" max="99" value="1" id="boss-level-slider">
+      <span class="level-val" id="lv-val-boss">Lv.1</span>
+      <span style="width:12px"></span>
+      <span class="level-char-name" style="white-space:nowrap;color:var(--accent2)">精英</span>
+      <input class="level-slider" type="range" min="1" max="99" value="1" id="elite-level-slider" style="border-color:var(--accent)">
+      <span class="level-val" id="lv-val-elite" style="color:var(--accent2)">Lv.1</span>
+    </div>
+    <!-- 全员同步 + 应用行 -->
+    <div class="level-panel-btns" style="margin-top:6px">
+      <span class="level-char-name" style="white-space:nowrap">全员同步到</span>
+      <input type="number" id="input-all-level" min="1" max="99" value="1" class="level-all-input">
+      <button class="cmd-btn" id="btn-set-all">同步</button>
+      <span style="flex:1"></span>
+      <button class="cmd-btn" id="btn-apply-level" style="border-color:var(--gold);color:var(--gold)">应用并重开</button>
+    </div>
+  </div>
+  <div id="roster-panel" class="ff6-window">
+    <div class="level-panel-title">上阵成员 · PARTY SELECT（点击换人，最多4人）</div>
+    <div id="roster-slots"></div>
+    <div id="roster-chars"></div>
+  </div>
+</div>
+
+<!-- 战斗结算弹出框 -->
+<div id="battle-result-modal" hidden>
+  <div id="battle-result-box" class="ff6-window">
+    <div>
+      <div class="result-modal-title" id="result-modal-title"></div>
+      <div class="result-modal-subtitle" id="result-modal-subtitle"></div>
+    </div>
+    <div id="result-modal-stats"></div>
+    <div class="result-modal-btns">
+      <button class="cmd-btn" id="btn-restart-modal">再来一局</button>
+      <a href="index.html" class="cmd-btn back-btn" style="text-decoration:none;text-align:center">角色库</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// === DATA LAYER ===
+// ============================================================
+
+const AVATAR_ICONS = {
+  sheru_faniru: '🧝', anjielina: '🛡️',
+  kobayashi_ryutan: '🍴', meiou_setsuna: '⌛',
+  xia_yuyao: '🔥', sang: '⚔️', camille: '💎', uum: '🪚', jenny: '⚔️',
+  jessica: '🏹', tiya: '🛡️', clarete: '🗡️', stephanie: '🐉', cross: '🔪'
+}
+
+const PORTRAITS = {
+  sheru_faniru:     'assets/portraits/sheru.png',
+  anjielina:        'assets/portraits/angelina.png',
+  kobayashi_ryutan: 'assets/portraits/ryutan.png',
+  meiou_setsuna:    'assets/portraits/setsuna.png',
+  xia_yuyao:        'assets/portraits/xiayuyao.png',
+  sang:             'assets/portraits/sang.png',
+  camille:          'assets/portraits/camille.png',
+  uum:              'assets/portraits/uum.png',
+  jenny:            'assets/portraits/jenny.png',
+  alicia:           'assets/portraits/alicia.png',
+  xiaoyao:          'assets/portraits/xiaoyao.png',
+  luofa:            'assets/portraits/luofa.png',
+  dennis:           'assets/portraits/dennis.png',
+  nalong:           'assets/portraits/nalong.png',
+  meriel:           'assets/portraits/meriel.png',
+  mathew:           'assets/portraits/mathew.png',
+  grifon:           'assets/portraits/grifon.png',
+  jessica:          'assets/portraits/jessica.png',
+  tiya:             'assets/portraits/tiya.png',
+  clarete:          'assets/portraits/clarete.png',
+  stephanie:        'assets/portraits/stephanie.png',
+  cross:            'assets/portraits/cross.png',
+  // 敌方
+  portugal7:        'assets/portraits/portugal7.png',
+  argentina10:      'assets/portraits/argentina10.png',
+}
+
+// 冲刺动作图（物理攻击时切换，弹回后恢复站立图）
+const DASH_PORTRAITS = {
+  kobayashi_ryutan: 'assets/portraits/ryutan_dash.png',
+  uum:              'assets/portraits/uum_dash.png',
+  jenny:            'assets/portraits/jenny_dash.png',
+  // 其他角色冲刺图画好后在这里添加：
+  // anjielina:  'assets/portraits/angelina_dash.png',
+  // xia_yuyao:  'assets/portraits/xiayuyao_dash.png',
+  // sang:       'assets/portraits/sang_dash.png',
+}
+
+// Canvas 去白底：把接近白色的像素改为透明
+const _bgRemovedCache = {}
+function removeWhiteBg(src) {
+  if (_bgRemovedCache[src]) return Promise.resolve(_bgRemovedCache[src])
+  return new Promise(resolve => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width  = img.width
+      canvas.height = img.height
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0)
+      const data = ctx.getImageData(0, 0, canvas.width, canvas.height)
+      const d = data.data
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i+1], b = d[i+2]
+        // 亮度 > 240 且饱和度低 → 视为白/浅色背景
+        if (r > 240 && g > 240 && b > 240) {
+          d[i+3] = 0
+        }
+        // 亮度 < 15 → 视为黑色背景
+        if (r < 15 && g < 15 && b < 15) {
+          d[i+3] = 0
+        }
+      }
+      ctx.putImageData(data, 0, 0)
+      const url = canvas.toDataURL('image/png')
+      _bgRemovedCache[src] = url
+      resolve(url)
+    }
+    img.onerror = () => resolve(null)
+    img.src = src
+  })
+}
+
+const RESIST_MULTIPLIER = { absorb: -1.0, immune: 0, resist: 0.5, weak: 2.0, normal: 1.0 }
+
+// ── 小林龙胆被动：料理触发 ──
+const RYUTAN_DISHES = [
+  {
+    name: '巧克力蛋糕',
+    icon: '🍰',
+    apply(target, logs) {
+      const amount = 80
+      applyHeal(target, amount)
+      logs.push({ text: `🍰 巧克力蛋糕！${target.name} 回复了 ${amount} 点 HP！`, cls: 'log-heal' })
+    }
+  },
+  {
+    name: '烤鸡',
+    icon: '🍗',
+    apply(target, logs) {
+      target.atkBuff  = (target.atkBuff  || 0) + 15
+      target.magBuff  = (target.magBuff  || 0) + 15
+      logs.push({ text: `🍗 烤鸡！${target.name} 的物理与魔法伤害提升！`, cls: 'log-sys' })
+    }
+  },
+  {
+    name: '鸡尾酒',
+    icon: '🍹',
+    apply(target, logs) {
+      const amount = 60
+      target.currentMp = Math.min(target.maxMp, target.currentMp + amount)
+      logs.push({ text: `🍹 鸡尾酒！${target.name} 回复了 ${amount} 点 MP！`, cls: 'log-magic' })
+    }
+  },
+]
+
+function tryRyutanPassive(actor, logs) {
+  if (actor.id !== 'kobayashi_ryutan') return
+  // 概率：20% 起始，每级 +0.41%，99级时恰好达到 60%（上限）
+  const level = actor.level || 1
+  const chance = Math.min(0.60, 0.20 + (level - 1) * (0.40 / 98))
+  if (Math.random() > chance) return
+  const alive = players.filter(p => p.currentHp > 0)
+  if (alive.length === 0) return
+  const dish   = RYUTAN_DISHES[Math.floor(Math.random() * RYUTAN_DISHES.length)]
+  const target = alive[Math.floor(Math.random() * alive.length)]
+  logs.push({ text: `✨ 料理被动触发！(${Math.round(chance * 100)}%) 龙胆为 ${target.name} 奉上了${dish.icon}${dish.name}！`, cls: 'log-sys' })
+  dish.apply(target, logs)
+}
+
+// ── 夏雨瑶被动：物理攻击附带灼烧 ──
+// ── 夏雨瑶被动：烈焰之舞 ── 每次攻击/技能积累1层（最多4），叠满后立即对全体敌人爆发火焰伤害+灼烧
+function tryXiaBurnPassive(actor, target, dmg, logs, opts = {}) {
+  if (actor.id !== 'xia_yuyao') return
+  // 旧灼烧逻辑（forceBurn技能仍可附加灼烧）
+  if (opts.forceBurn) {
+    const rate = opts.burnRate || 0.20
+    const burnPower = Math.max(1, Math.round(dmg * rate))
+    target.statusEffects = target.statusEffects || []
+    target.statusEffects.push({ type: 'burn', turnsLeft: 2, power: burnPower })
+    const label = rate > 0.20 ? '强化灼烧' : '灼烧'
+    logs.push({ text: `🔥 ${label}！${target.name} 每回合将受到 ${burnPower} 点持续伤害！`, cls: 'log-burn' })
+  }
+  // 烈焰之舞积累
+  actor._flameDance = (actor._flameDance || 0) + 1
+  if (actor._flameDance < 4) {
+    logs.push({ text: `🔥 烈焰之舞：${actor.name} 积累至 ${actor._flameDance}/4 层！`, cls: 'log-sys' })
+  } else {
+    actor._flameDance = 0
+    // 爆发：对全体敌人造成火焰伤害
+    const firePower = JENNY_RIFT_EXPLODE_POWER
+    const burnPower = Math.max(1, Math.floor(firePower * 0.30))
+    logs.push({ text: `🔥🔥 烈焰之舞爆发！夏雨瑶的烈焰席卷全场！`, cls: 'log-crit' })
+    for (const e of getAliveEnemies()) {
+      const dmg = Math.max(1, Math.floor(firePower * actor.magDamageBonus))
+      recordDmg(actor, e, dmg)
+      logs.push({ text: `🔥 ${e.name} 受到 ${dmg} 点烈焰伤害！`, cls: 'log-burn' })
+      e.statusEffects = e.statusEffects || []
+      e.statusEffects.push({ type: 'burn', turnsLeft: 3, power: burnPower })
+      logs.push({ text: `🔥 ${e.name} 陷入烈焰灼烧！每回合 ${burnPower} 点伤害，持续3回合！`, cls: 'log-burn' })
+    }
+  }
+}
+
+// ── 桑被动：铁血觉醒 ──
+// 1. 受到伤害后，根据损失HP比例提升攻击和防御（最高+40%基础值）
+// 2. 对攻击者反击20%的物理伤害
+function applySangPassive(sang, attacker, dmgReceived, logs) {
+  if (sang.id !== 'sang' || sang.currentHp <= 0) return
+
+  // 损失HP比例 → 攻击/防御加成（线性，0%损失=0加成，100%损失=40%加成）
+  const lostRatio  = 1 - sang.currentHp / sang.maxHp
+  const buffPct    = Math.floor(lostRatio * 40)   // 0~40
+  const baseAtk    = sang.stats.attack
+  const baseDef    = sang.stats.defense
+  // 直接设置为：基础值 × (1 + buffPct/100)，每次受伤重新计算
+  sang.atkBuff  = Math.floor(baseAtk * buffPct / 100)
+  sang.defBuff  = Math.floor(baseDef * buffPct / 100)
+  if (buffPct > 0) {
+    logs.push({ text: `⚡ 桑的铁血觉醒！攻击+${sang.atkBuff} 防御+${sang.defBuff}（损失${Math.floor(lostRatio*100)}% HP）`, cls: 'log-sys' })
+  }
+
+  // 反击：对攻击者造成桑物理攻击的20%伤害（不触发链式反击）
+  if (attacker && attacker.currentHp > 0 && dmgReceived > 0) {
+    const counterDmg = Math.max(1, Math.floor((sang.stats.attack + sang.atkBuff) * 0.20))
+    applyDamage(attacker, counterDmg)
+    logs.push({ text: `⚡ 桑反击 ${attacker.name}，造成 ${counterDmg} 点伤害！`, cls: 'log-phys' })
+  }
+}
+
+// 魔法元素特效定义
+const ELEMENT_EFFECTS = {
+  fire: {
+    label: '灼烧',
+    apply(attacker, targets, dmg, logs) {
+      for (const t of targets) {
+        if (t.currentHp <= 0) continue
+        t.statusEffects.push({ type: 'burn', turnsLeft: 2, power: Math.round(dmg * 0.15) })
+        logs.push({ text: `${t.name} 陷入灼烧状态！（每回合 ${Math.round(dmg * 0.15)} 点持续伤害）`, cls: 'log-burn' })
+      }
+    }
+  },
+  dark: {
+    label: '暗影吸取',
+    apply(attacker, targets, dmg, logs) {
+      if (attacker.isEnemy) return
+      if (attacker.id !== 'meiou_setsuna') return  // 暗影吸取仅冥王雪奈专属
+      const healAmount = Math.round(dmg * 0.25)
+      const alivePlayers = players.filter(p => p.currentHp > 0)
+      for (const p of alivePlayers) {
+        applyHeal(p, healAmount)
+      }
+      logs.push({ text: `暗影之力回流，队伍全员回复了 ${healAmount} 点 HP！`, cls: 'log-drain' })
+    }
+  },
+  time: {
+    label: '时间停止',
+    apply(attacker, targets, dmg, logs) {
+      for (const t of targets) {
+        if (t.currentHp <= 0) continue
+        t.skipNextTurn = true
+        logs.push({ text: `${t.name} 被时间封印，下回合无法行动！`, cls: 'log-magic' })
+      }
+    }
+  }
+}
+
+// 技能战斗数值表
+// 技能数据库 — 运行时从 skills.json 加载，key 为技能名
+let SKILL_DATA = {}
+
+async function loadSkills() {
+  const res  = await fetch('data/skills.json')
+  const data = await res.json()
+  // 同时建立 id→skill 和 name→skill 两个索引
+  const byId   = {}
+  const byName = {}
+  for (const s of data.skills) {
+    byId[s.id]     = s
+    byName[s.name] = s
+  }
+  return { byId, byName }
+}
+
+// 每角色战斗用技能（前3个）
+// 战斗技能不再硬编码，由 makeCombatant 根据等级动态解锁
+// 每角色最多显示5个技能（等级最高的优先）
+const BATTLE_SKILLS = {}  // 保留空对象供兼容检查，实际由 charData.skills 决定
+
+const BOSS_TEMPLATE = {
+  id: 'shadow_colossus',
+  name: '凯夫卡',
+  icon: '🤡',
+  isEnemy: true,
+  base_stats: {
+    hp: 20000, mp: 300, attack: 88, defense: 65,
+    magic_defense: 55, speed: 45, agility: 30, intelligence: 40
+  },
+  growth_rates: {
+    hp: 0, mp: 10, attack: 3, defense: 2,
+    magic_defense: 2, speed: 0, agility: 0, intelligence: 1
+  },
+  resistances: { dark: 'absorb', holy: 'weak', fire: 'resist', time: 'resist' },
+  skills: [
+    { skill_id: 'boss_shadow_strike', name: '混乱之爪',  mp_cost: 0  },
+    { skill_id: 'boss_dark_burst',    name: '无心天使',  mp_cost: 40, hpThreshold: 0.6 },
+    { skill_id: 'boss_eye_of_doom',   name: '究极',      mp_cost: 80, hpThreshold: 0.3 },
+  ]
+}
+
+// ── 精英小怪模板库 ──
+const ELITE_TEMPLATES = [  {
+    id: 'shadow_knight', name: '暗影骑士', icon: '🗡️',
+    base_stats: { hp:680, mp:120, attack:95, defense:80, magic_defense:45, speed:58, agility:55, intelligence:30 },
+    growth_rates: { hp:40, mp:5, attack:2, defense:1, magic_defense:1, speed:0, agility:0, intelligence:1 },
+    resistances: { dark:'resist', holy:'weak', fire:'normal' },
+    skills: [
+      { name:'暗刃斩', type:'physical', element:'dark', target:'single', base_power:70, mp_cost:0 },
+      { name:'黑暗冲锋', type:'physical', element:'dark', target:'all_enemies', base_power:40, mp_cost:20 },
+    ]
+  },
+  {
+    id: 'void_mage', name: '虚空法师', icon: '🔮',
+    base_stats: { hp:480, mp:220, attack:40, defense:35, magic_defense:85, speed:72, agility:65, intelligence:95 },
+    growth_rates: { hp:35, mp:8, attack:1, defense:1, magic_defense:2, speed:0, agility:0, intelligence:2 },
+    resistances: { dark:'resist', time:'resist', holy:'weak' },
+    skills: [
+      { name:'虚空脉冲', type:'magic', element:'dark', target:'single', base_power:80, mp_cost:0 },
+      { name:'虚空爆发', type:'magic', element:'dark', target:'all_enemies', base_power:45, mp_cost:30 },
+    ]
+  },
+  {
+    id: 'blood_beast', name: '血腥兽', icon: '🐺',
+    base_stats: { hp:820, mp:80, attack:88, defense:60, magic_defense:30, speed:80, agility:88, intelligence:20 },
+    growth_rates: { hp:48, mp:3, attack:2, defense:1, magic_defense:1, speed:0, agility:0, intelligence:0 },
+    resistances: { fire:'weak', ice:'resist', dark:'normal' },
+    skills: [
+      { name:'野蛮撕咬', type:'physical', element:null, target:'single', base_power:65, mp_cost:0 },
+      { name:'连环爪击', type:'physical', element:null, target:'single', base_power:32, mp_cost:0, hits:2 },
+    ]
+  },
+  {
+    id: 'curse_witch', name: '诅咒女巫', icon: '🧙',
+    base_stats: { hp:520, mp:200, attack:45, defense:40, magic_defense:90, speed:65, agility:60, intelligence:88 },
+    growth_rates: { hp:38, mp:7, attack:1, defense:1, magic_defense:2, speed:0, agility:0, intelligence:2 },
+    resistances: { dark:'absorb', holy:'weak', time:'resist' },
+    skills: [
+      { name:'诅咒箭', type:'magic', element:'dark', target:'single', base_power:70, mp_cost:0 },
+      { name:'黑暗诅咒', type:'magic', element:'dark', target:'all_enemies', base_power:35, mp_cost:25 },
+    ]
+  }
+]
+
+function makeEliteCombatant(tpl, level) {
+  level = Math.min(99, Math.max(1, level || 1))
+  const base = tpl.base_stats
+  const gr   = tpl.growth_rates || {}
+  const stats = {}
+  for (const key of Object.keys(base)) {
+    stats[key] = Math.round(base[key] + (gr[key] || 0) * (level - 1))
+  }
+  const derived = calcDerivedForCombatant(stats)
+  // 合并技能库数据
+  const skills = tpl.skills.map(s => {
+    const libDef = s.skill_id ? (_skillsById[s.skill_id] || {}) : {}
+    return { ...libDef, ...s }
+  })
+  return {
+    id:           tpl.id + '_' + Math.random().toString(36).slice(2,6),
+    name:         tpl.name,
+    icon:         tpl.icon,
+    isEnemy:      true,
+    level,
+    currentHp:    stats.hp,
+    maxHp:        stats.hp,
+    currentMp:    stats.mp,
+    maxMp:        stats.mp,
+    stats,
+    ...derived,
+    resistances:  tpl.resistances || {},
+    skills,
+    atkBuff:      0,
+    statusEffects: [],
+    skipNextTurn: false,
+  }
+}
+
+function calcDerivedForCombatant(stats) {
+  return {
+    physCrit:        Math.min(0.75, stats.agility * 0.0015),
+    physEvade:       Math.min(0.40, stats.agility * 0.0010),
+    magCrit:         Math.min(0.60, stats.intelligence * 0.0012),
+    magDamageBonus:  1 + stats.intelligence / 100,
+  }
+}
+
+function makeCombatant(charData, level) {
+  level = Math.min(99, Math.max(1, level || 1))
+  const base = charData.base_stats
+  const gr   = charData.growth_rates || {}
+  const stats = {}
+  for (const key of Object.keys(base)) {
+    stats[key] = Math.round(base[key] + (gr[key] || 0) * (level - 1))
+  }
+
+  // 叠加装备属性
+  const equippedItems = []
+  if (_itemsDb && _equipSave) {
+    const slots = _equipSave.equipped[charData.id] || {}
+    for (const itemId of Object.values(slots)) {
+      if (itemId && _itemsDb[itemId]) equippedItems.push(_itemsDb[itemId])
+    }
+    // 固定加成
+    for (const item of equippedItems) {
+      for (const [k, v] of Object.entries(item.stats || {})) {
+        if (stats[k] !== undefined) stats[k] += v
+      }
+    }
+    // 百分比加成（在固定加成之后乘）
+    for (const item of equippedItems) {
+      for (const [k, v] of Object.entries(item.percent_stats || {})) {
+        if (stats[k] !== undefined && v > 0) stats[k] = Math.round(stats[k] * (1 + v / 100))
+      }
+    }
+  }
+
+  const derived = calcDerivedForCombatant(stats)
+
+  // 按等级解锁技能，合并技能库数据
+  const unlockedSkills = (charData.skills || [])
+    .filter(sk => sk.level <= level)
+    .sort((a, b) => a.level - b.level)
+
+  const skillNames = unlockedSkills.map(sk => sk.name)
+
+  // 把解锁的技能合并进 SKILL_DATA（name→def），供战斗引擎查询
+  for (const sk of unlockedSkills) {
+    const libDef = sk.skill_id ? (_skillsById[sk.skill_id] || {}) : {}
+    // charData 里的 mp_cost 优先于库里的值
+    SKILL_DATA[sk.name] = { ...libDef, mp_cost: sk.mp_cost ?? libDef.mp_cost ?? 0 }
+  }
+
+  // 收集装备特效
+  const equipSpecialEffects = equippedItems.flatMap(i => i.special_effects || [])
+  const equipSkillGrants    = equippedItems.map(i => i.skill_grant).filter(Boolean)
+
+  // 装备追加暴击率（上限不变）
+  const extraPhysCrit = equipSpecialEffects
+    .filter(e => e.type === 'phys_crit_rate').reduce((s, e) => s + e.value / 100, 0)
+  const extraMagCrit  = equipSpecialEffects
+    .filter(e => e.type === 'magic_crit_rate').reduce((s, e) => s + e.value / 100, 0)
+
+  return {
+    id:           charData.id,
+    name:         charData.name,
+    icon:         AVATAR_ICONS[charData.id] || '👤',
+    role:         charData.role,
+    isEnemy:      false,
+    level,
+    currentHp:    stats.hp,
+    maxHp:        stats.hp,
+    currentMp:    stats.mp,
+    maxMp:        stats.mp,
+    stats,
+    ...derived,
+    physCrit:     Math.min(0.75, derived.physCrit + extraPhysCrit),
+    magCrit:      Math.min(0.60, derived.magCrit  + extraMagCrit),
+    resistances:  charData.resistances || {},
+    battleSkills: skillNames,
+    equipSpecialEffects,
+    equipSkillGrants,
+    atkBuff:      0,
+    magBuff:      0,
+    defBuff:      0,
+    statusEffects: [],
+    cooldowns:    {},   // { skillName: remainingTurns }
+    buffTimers:   [],   // [{ type, value, turnsLeft }]
+    skipNextTurn: false,
+  }
+}
+
+function makeBossCombatant(level) {
+  level = Math.min(99, Math.max(1, level || 1))
+  const base = BOSS_TEMPLATE.base_stats
+  const gr   = BOSS_TEMPLATE.growth_rates
+  const stats = {}
+  for (const key of Object.keys(base)) {
+    stats[key] = Math.round(base[key] + (gr[key] || 0) * (level - 1))
+  }
+  const derived = calcDerivedForCombatant(stats)
+  return {
+    id:           BOSS_TEMPLATE.id,
+    name:         BOSS_TEMPLATE.name,
+    icon:         BOSS_TEMPLATE.icon,
+    isEnemy:      true,
+    level,
+    currentHp:    stats.hp,
+    maxHp:        stats.hp,
+    currentMp:    stats.mp,
+    maxMp:        stats.mp,
+    stats,
+    ...derived,
+    resistances:  BOSS_TEMPLATE.resistances,
+    skills:       BOSS_TEMPLATE.skills.map(s => {
+      const base = _skillsById[s.skill_id] || {}
+      return { ...base, ...s }   // template 里的字段（mp_cost、hpThreshold）覆盖库里的默认值
+    }),
+    atkBuff:      0,
+    statusEffects: [],
+    skipNextTurn: false,
+  }
+}
+
+async function loadCharacters() {
+  const res  = await fetch('data/characters.json')
+  const data = await res.json()
+  return data.characters
+}
+
+// ============================================================
+// === BATTLE ENGINE ===
+// ============================================================
+
+let battlePhase = 'INIT'
+let players     = []
+let boss        = null
+let enemies     = []        // 所有敌人（boss战=[boss]，精英战=[e1,e2,e3,e4]）
+let battleMode  = 'boss'    // 'boss' | 'elite' | 'gauntlet' | 'minion'
+
+// LHW Boss + 小弟模板
+const LHW_BOSS_TEMPLATE = {
+  id: 'lhw', name: 'LHW', icon: '😤',
+  isEnemy: true,
+  base_stats: { hp: 15000, mp: 200, attack: 95, defense: 70, magic_defense: 60, speed: 55, agility: 45, intelligence: 35 },
+  growth_rates: { hp: 0, mp: 5, attack: 2, defense: 1, magic_defense: 1, speed: 0, agility: 0, intelligence: 0 },
+  resistances: { fire: 'normal', dark: 'normal', holy: 'normal' },
+  skills: [
+    { skill_id: 'lhw_rage', name: '暴怒冲击', type: 'physical', element: null, target: 'single', base_power: 80, mp_cost: 0 },
+    { skill_id: 'lhw_roar', name: '咆哮', type: 'magic', element: null, target: 'all_enemies', base_power: 50, mp_cost: 30, hpThreshold: 0.5 },
+  ]
+}
+const MINION_TEMPLATES = [
+  {
+    id: 'portugal7', name: '葡萄牙7号', icon: '🇵🇹',
+    base_stats: { hp: 8000, mp: 100, attack: 70, defense: 50, magic_defense: 40, speed: 75, agility: 70, intelligence: 25 },
+    growth_rates: { hp: 0, mp: 0, attack: 0, defense: 0, magic_defense: 0, speed: 0, agility: 0, intelligence: 0 },
+    resistances: {},
+    skills: [
+      { name: '吐口水', type: 'physical', element: null, target: 'single', base_power: 95, mp_cost: 0 },
+      { name: '急停射门', type: 'physical', element: null, target: 'single', base_power: 130, mp_cost: 20 },
+      { name: '跳水', type: 'support', element: null, target: 'self', base_power: 0, mp_cost: 0, divePrank: true },
+    ]
+  },
+  {
+    id: 'argentina10', name: '阿根廷10号', icon: '🇦🇷',
+    base_stats: { hp: 8000, mp: 100, attack: 65, defense: 45, magic_defense: 45, speed: 78, agility: 82, intelligence: 30 },
+    growth_rates: { hp: 0, mp: 0, attack: 0, defense: 0, magic_defense: 0, speed: 0, agility: 0, intelligence: 0 },
+    resistances: {},
+    skills: [
+      { name: '拔牙', type: 'physical', element: null, target: 'single', base_power: 100, mp_cost: 0 },
+      { name: '过人突破', type: 'physical', element: null, target: 'all_enemies', base_power: 70, mp_cost: 20 },
+      { name: '宴请八方', type: 'magic', element: null, target: 'all_enemies', base_power: 70, mp_cost: 0, poisonFeast: true, poisonPower: 80, poisonTurns: 4, hpThreshold: 0.3 },
+    ]
+  }
+]
+
+// 连续战斗波次配置
+const GAUNTLET_WAVES = [
+  { type: 'elite', count: 4, label: '第一波' },
+  { type: 'elite', count: 4, label: '第二波' },
+  { type: 'elite', count: 3, label: '第三波' },
+  { type: 'boss',  count: 1, label: '最终决战' },
+]
+let gauntletWave = 0  // 当前波次索引
+let eliteLevel  = 1
+let turnQueue   = []
+let currentActor = null
+
+function buildTurnQueue(combatants) {
+  return [...combatants]
+    .filter(u => u.currentHp > 0)
+    .sort((a, b) => b.stats.speed - a.stats.speed)
+}
+
+function calcPhysicalDamage(attacker, defender, basePower, opts = {}) {
+  const atk = attacker.stats.attack + (attacker.atkBuff || 0)
+  let defVal = defender.stats.defense + (defender.defBuff || 0)
+  if (opts.defPierce) defVal = Math.floor(defVal * (1 - opts.defPierce))
+
+  let raw
+  if (basePower) {
+    raw = basePower * 2 + Math.floor(atk * 0.5) - Math.floor(defVal * 0.4)
+  } else {
+    raw = Math.floor(atk * 1.0) - Math.floor(defVal * 0.5)
+  }
+  raw = Math.max(1, raw)
+
+  // 克罗斯机会主义：目标HP < 50% 时物理伤害+30%
+  if (attacker.id === 'cross' && defender.currentHp / defender.maxHp < 0.5) {
+    raw = Math.floor(raw * 1.3)
+  }
+  // 克罗斯终结标记：hpThreshold=0.5 时额外+50%（技能自带低血加成）
+  if (opts.hpThreshold && defender.currentHp / defender.maxHp < opts.hpThreshold) {
+    raw = Math.floor(raw * 1.5)
+  }
+
+  if (Math.random() < defender.physEvade) return { dmg: 0, evaded: true, crit: false }
+
+  // 鹰眼暴击叠加层 + 终结之枪额外暴击率
+  const eagleBonus = (attacker._eagleCritStacks || 0) * 0.20
+  const skillBonus = (opts.bonusCritRate || 0) / 100
+  const critRate = Math.min(0.95, attacker.physCrit + eagleBonus + skillBonus)
+  const crit = Math.random() < critRate
+  // 鹰眼：暴击时额外+30%伤害，并叠加层数（上限3层）
+  let critMult = crit ? 1.5 : 1
+  if (crit && attacker.id === 'dennis') {
+    critMult = 1.8
+    attacker._eagleCritStacks = Math.min(3, (attacker._eagleCritStacks || 0) + 1)
+  }
+  // 杰西卡致命猎手：暴击倍率×1.8；如有猎手蓄力，本次伤害+40%
+  if (crit && attacker.id === 'jessica') {
+    critMult = 1.8
+  }
+  if (attacker.id === 'jessica' && attacker._hunterBoost) {
+    raw = Math.floor(raw * 1.4)
+    attacker._hunterBoost = false
+  }
+  // 斯蒂芬妮龙魂共鸣：下次技能伤害+50%（isSkill时消耗）
+  if (attacker.id === 'stephanie' && attacker._dragonSoulBoost && opts.isSkill) {
+    raw = Math.floor(raw * 1.5)
+    attacker._dragonSoulBoost = false
+  }
+  // 马修气势：技能伤害+8%/层
+  if (attacker.id === 'mathew' && (attacker._momentum || 0) > 0 && opts.isSkill) {
+    critMult = critMult * (1 + attacker._momentum * 0.08)
+  }
+  // 宝藏加持
+  if (attacker._treasureBoost) {
+    critMult = critMult * (1 + attacker._treasureBoost)
+    attacker._treasureBoost = 0
+  }
+  return { dmg: Math.floor(raw * critMult), evaded: false, crit }
+}
+
+function calcMagicDamage(attacker, defender, skill) {
+  const magBonus = attacker.magDamageBonus + (attacker.magBuff || 0) / 100
+  // 无视魔防技能
+  const magDefVal = skill.ignoreMagDef ? 0 : Math.floor(defender.stats.magic_defense * 0.15)
+  // 召唤伤害加成（小瑶被动）
+  const summonBonus = (skill.summonSkill && attacker._summonBonus > 0)
+    ? (1 + attacker._summonBonus / 100) : 1
+  // 格利风恶魔形态：法术伤害×2
+  const demonBonus = (attacker.id === 'grifon' && attacker._demonForm > 0) ? 2.0 : 1.0
+  let raw = Math.max(1, Math.floor(skill.base_power * magBonus * summonBonus * demonBonus) - magDefVal)
+
+  // 装备：火系伤害加成
+  if (skill.element === 'fire') {
+    const fireBoost = (attacker.equipSpecialEffects || [])
+      .filter(e => e.type === 'fire_damage_boost')
+      .reduce((s, e) => s + e.value, 0)
+    if (fireBoost > 0) raw = Math.floor(raw * (1 + fireBoost / 100))
+  }
+
+  // 装备：元素减伤
+  if (skill.element) {
+    const resistVal = (defender.equipSpecialEffects || [])
+      .filter(e => e.type === 'resist_damage' && e.element === skill.element)
+      .reduce((s, e) => s + e.value, 0)
+    if (resistVal > 0) raw = Math.floor(raw * (1 - resistVal / 100))
+  }
+
+  const crit = Math.random() < attacker.magCrit
+  let magCritMult = crit ? 1.5 : 1
+  if (attacker._treasureBoost) {
+    magCritMult = magCritMult * (1 + attacker._treasureBoost)
+    attacker._treasureBoost = 0
+  }
+  return { dmg: Math.max(1, Math.floor(raw * magCritMult)), crit }
+}
+
+
+function applyDamage(target, dmg) {
+  // 堕落标记：受伤+15%/层
+  if (dmg > 0 && (target._demonMarks || 0) > 0) {
+    dmg = Math.floor(dmg * (1 + target._demonMarks * 0.15))
+  }
+  // 乌姆圣光护盾先吸收
+  if (target.shield && target.shield > 0 && dmg > 0) {
+    const absorbed = Math.min(target.shield, dmg)
+    target.shield -= absorbed
+    dmg -= absorbed
+    if (target.shield <= 0) target.shield = 0
+  }
+  // 雷光护盾：每层每次吸收固定伤害值
+  if (dmg > 0 && (target.statusEffects || []).some(e => e.type === 'thunderShield')) {
+    const tsBuff = target.statusEffects.find(e => e.type === 'thunderShield')
+    const absorbed = Math.min(tsBuff.power, dmg)
+    dmg -= absorbed
+  }
+  target.currentHp = Math.max(0, target.currentHp - dmg)
+}// 反弹物理伤害（在 applyDamage 之后调用）
+function applyReflect(attacker, defender, dmg, logs) {
+  const reflectVal = (defender.equipSpecialEffects || [])
+    .filter(e => e.type === 'reflect_damage')
+    .reduce((s, e) => s + e.value, 0)
+  if (reflectVal <= 0 || dmg <= 0) return
+  const reflectDmg = Math.max(1, Math.floor(dmg * reflectVal / 100))
+  applyDamage(attacker, reflectDmg)
+  logs.push({ text: `${defender.name} 的装备反弹了 ${reflectDmg} 点伤害给 ${attacker.name}！`, cls: 'log-phys' })
+}
+
+// 处理对玩家造成伤害后的被动触发（桑的铁血觉醒）
+function afterDamageToPlayer(attacker, target, dmg, logs) {
+  if (dmg <= 0 || target.isEnemy) return
+  applySangPassive(target, attacker, dmg, logs)
+  applyTiyaShieldCounter(target, attacker, logs)
+  // 乌姆幻化计数（无论是否为乌姆，都检查队伍里是否有乌姆并计数）
+  const uum = players.find(p => p.id === 'uum' && p.currentHp > 0)
+  if (uum) checkUumPhantomPassive(uum, logs)
+}
+
+function applyHeal(target, amount) {
+  target.currentHp = Math.min(target.maxHp, target.currentHp + amount)
+}
+
+// 统计包装：在 executeAction 里所有造成伤害和治疗的地方使用
+function recordDmg(attacker, target, dmg) {
+  applyDamage(target, dmg)
+  if (dmg <= 0) return
+  if (attacker && !attacker.isEnemy && target.isEnemy && _stats[attacker.id]) {
+    _stats[attacker.id].dmgDealt += dmg
+  }
+  if (attacker && attacker.isEnemy && !target.isEnemy) {
+    _stats.bossReceived = (_stats.bossReceived || 0) + dmg
+    if (_stats[target.id]) _stats[target.id].dmgTaken += dmg
+  }
+  // 阿根廷10号被击杀后，葡萄牙7号心情大悦
+  if (battleMode === 'minion' && target.id === 'argentina10' && target.currentHp <= 0) {
+    const pt7 = enemies.find(e => e.id === 'portugal7')
+    if (pt7 && pt7.currentHp > 0) {
+      pt7.currentHp = pt7.maxHp
+      pt7._diving = false
+      const atkBoost = Math.floor(pt7.stats.attack * 0.5)
+      pt7.atkBuff = (pt7.atkBuff || 0) + atkBoost
+      pt7.buffTimers = pt7.buffTimers || []
+      pt7.buffTimers.push({ type: 'atkBuff', value: atkBoost, turnsLeft: 2 })
+      // 用 setTimeout 延迟输出，确保在当前伤害日志之后显示
+      setTimeout(() => {
+        appendLog(`🎉 阿根廷10号倒下了！葡萄牙7号心情大悦，血量全满，攻击力大幅提升！`, 'log-crit')
+        renderBattlefield()
+      }, 50)
+    }
+  }
+}
+
+function recordHeal(healer, target, amount) {
+  const before = target.currentHp
+  applyHeal(target, amount)
+  const actual = target.currentHp - before
+  if (actual > 0 && healer && !healer.isEnemy && _stats[healer.id]) {
+    _stats[healer.id].healDone += actual
+  }
+}
+
+function getAlivePlayers() { return players.filter(p => p.currentHp > 0) }
+
+function bossChooseSkill() {
+  const hpRatio = boss.currentHp / boss.maxHp
+  const roll = Math.random()
+
+  // LHW：只有2个技能，单独处理
+  if (boss.id === 'lhw') {
+    if (hpRatio < 0.5 && boss.currentMp >= 30) return boss.skills[1] // 咆哮（低血量优先）
+    if (roll < 0.6) return boss.skills[0]
+    return boss.skills[boss.currentMp >= 30 ? 1 : 0]
+  }
+
+  if (hpRatio < 0.3) {
+    if (roll < 0.45 && boss.currentMp >= 80) return boss.skills[2] // 究极
+    if (roll < 0.75 && boss.currentMp >= 40) return boss.skills[1] // 无心天使
+    return boss.skills[0]
+  } else if (hpRatio < 0.6) {
+    if (roll < 0.55 && boss.currentMp >= 40) return boss.skills[1]
+    return boss.skills[0]
+  } else {
+    if (roll < 0.70) return boss.skills[0]
+    if (boss.currentMp >= 40) return boss.skills[1]
+    return boss.skills[0]
+  }
+}
+
+function executeAction(actor, skillName, targets) {
+  const logs = []
+
+  if (skillName === '__attack__') {
+    // 普通攻击
+    for (const target of targets) {
+      const result = calcPhysicalDamage(actor, target, 0)
+      if (result.evaded) {
+        logs.push({ text: `${actor.name} 攻击了 ${target.name}，但被闪避了！`, cls: 'log-evade' })
+      } else {
+        let finalDmg = applyClarteMystic(actor, result.dmg, '__attack__', logs)
+        recordDmg(actor, target, finalDmg)
+        const prefix = result.crit ? '[暴击!] ' : ''
+        const cls = result.crit ? 'log-crit' : (actor.isEnemy ? 'log-enemy' : 'log-phys')
+        logs.push({ text: `${prefix}${actor.name} 攻击 ${target.name}，造成 ${finalDmg} 点伤害！`, cls })
+        tryRyutanPassive(actor, logs)
+        tryXiaBurnPassive(actor, target, result.dmg, logs)
+        applyReflect(actor, target, result.dmg, logs)
+        applyJennyRift(actor, target, logs)
+        applyLuofaPassive(actor, target, result.dmg, logs)
+        applyMathewMomentum(actor, false, logs)
+        applyJessicaHunterPassive(actor, result.crit, logs)
+      }
+    }
+    return logs
+  }
+
+  const skillDef = SKILL_DATA[skillName] || null
+
+  // Boss 技能
+  if (actor.isEnemy) {
+    const bSkill = actor.skills.find(s => s.name === skillName)
+    if (!bSkill) return logs
+    actor.currentMp = Math.max(0, actor.currentMp - bSkill.mp_cost)
+
+    if (bSkill.type === 'physical') {
+      for (const target of targets) {
+        const result = calcPhysicalDamage(actor, target, bSkill.base_power)
+        if (result.evaded) {
+          logs.push({ text: `${actor.name} 的 ${bSkill.name} 被 ${target.name} 闪避了！`, cls: 'log-evade' })
+        } else {
+          recordDmg(actor, target, result.dmg)
+          const prefix = result.crit ? '[暴击!] ' : ''
+          logs.push({ text: `${prefix}${actor.name} 使用 ${bSkill.name}，${target.name} 受到 ${result.dmg} 点伤害！`, cls: result.crit ? 'log-crit' : 'log-enemy' })
+          afterDamageToPlayer(actor, target, result.dmg, logs)
+        }
+      }
+    } else if (bSkill.type === 'magic') {
+      let totalDmg = 0
+      for (const target of targets) {
+        const result = calcMagicDamage(actor, target, bSkill)
+        recordDmg(actor, target, result.dmg)
+        totalDmg += result.dmg
+        const prefix = result.crit ? '[暴击!] ' : ''
+        logs.push({ text: `${prefix}${actor.name} 使用 ${bSkill.name}，${target.name} 受到 ${result.dmg} 点魔法伤害！`, cls: result.crit ? 'log-crit' : 'log-enemy' })
+        afterDamageToPlayer(actor, target, result.dmg, logs)
+      }
+      const effect = ELEMENT_EFFECTS[bSkill.element]
+      if (effect) effect.apply(actor, targets, totalDmg, logs)
+      // 究极：附加屏幕紫色闪烁特效
+      if (bSkill.name === '究极') {
+        const scene = document.getElementById('battle-scene')
+        const flash = document.createElement('div')
+        flash.style.cssText = 'position:absolute;inset:0;z-index:205;pointer-events:none;background:rgba(180,80,255,0.35);'
+        scene.appendChild(flash)
+        flash.animate([{opacity:0},{opacity:1},{opacity:0.6},{opacity:0}],{duration:800,easing:'ease-out'}).onfinish = () => flash.remove()
+      }
+    } else if (bSkill.divePrank) {
+      // 跳水：假死持续2回合，结束后7号和LHW永久伤害+20%
+      actor._diving = true
+      actor._diveTimer = 2
+      actor.currentHp = 1
+      logs.push({ text: `🤿 葡萄牙7号发动【跳水】！假装晕倒在地，持续2回合！`, cls: 'log-drain' })
+      const lhw = enemies.find(e => e.id === 'lhw')
+      if (lhw && lhw.currentHp > 0) {
+        const rage = Math.floor(lhw.stats.attack * 0.2)
+        lhw.atkBuff = (lhw.atkBuff || 0) + rage
+        lhw.buffTimers = lhw.buffTimers || []
+        lhw.buffTimers.push({ type: 'atkBuff', value: rage, turnsLeft: 3 })
+        logs.push({ text: `😡 LHW 被激怒！攻击力提升 ${rage} 点，持续3回合！`, cls: 'log-crit' })
+      }
+    } else if (bSkill.poisonFeast) {
+      // 宴请八方：对全体玩家造成毒性伤害+中毒
+      logs.push({ text: `🍽️ 阿根廷10号发动【宴请八方】！毒性大餐席卷全场！`, cls: 'log-crit' })
+      for (const t of getAlivePlayers()) {
+        const dmg = Math.max(1, Math.floor(bSkill.base_power * 1.5))
+        recordDmg(actor, t, dmg)
+        logs.push({ text: `☠️ ${t.name} 受到 ${dmg} 点毒性伤害！`, cls: 'log-burn' })
+        if (!t.statusEffects.some(e => e.type === 'poison')) {
+          t.statusEffects.push({ type: 'poison', turnsLeft: bSkill.poisonTurns || 4, power: bSkill.poisonPower || 80 })
+          logs.push({ text: `☠️ ${t.name} 陷入中毒状态！每回合受到 ${bSkill.poisonPower || 80} 点毒伤！`, cls: 'log-burn' })
+        }
+      }
+    }
+    return logs
+  }
+
+  // 玩家技能
+  if (!skillDef) return logs
+  // 冷却注册（统一在此处理，不依赖技能类型分支）
+  // 格利风恶魔形态：无视冷却，不注册
+  if (skillDef.cooldown && !(actor.id === 'grifon' && actor._demonForm > 0)) {
+    actor.cooldowns = actor.cooldowns || {}
+    actor.cooldowns[skillName] = skillDef.cooldown
+  }
+  actor.currentMp = Math.max(0, actor.currentMp - (actor.battleSkillsCost?.[skillName] || 0))
+
+  if (skillDef.type === 'heal') {
+    for (const target of targets) {
+      // healScaling：治疗量随施法者智力成长（1级=healFlat，99级≈500）
+      let healAmt = skillDef.healFlat || 0
+      if (skillDef.healScaling) {
+        const intBonus = actor.magDamageBonus || 1   // 1 + int/100
+        healAmt = Math.floor(healAmt * intBonus)
+      }
+      recordHeal(actor, target, healAmt)
+      logs.push({ text: `${actor.name} 使用 ${skillName}，${target.name} 回复了 ${healAmt} 点 HP！`, cls: 'log-heal' })
+    }
+  } else if (skillDef.type === 'support') {
+    for (const target of targets) {
+      if (skillDef.healFlat) {
+        recordHeal(actor, target, skillDef.healFlat)
+        logs.push({ text: `${actor.name} 的 ${skillName}，${target.name} 回复了 ${skillDef.healFlat} 点 HP！`, cls: 'log-heal' })
+      }
+      if (skillDef.atkBuff) {
+        const buffVal = skillDef.atkBuff
+        target.atkBuff = (target.atkBuff || 0) + buffVal
+        target.buffTimers = target.buffTimers || []
+        if (skillDef.buffTurns) {
+          target.buffTimers.push({ type: 'atkBuff', value: buffVal, turnsLeft: skillDef.buffTurns })
+          logs.push({ text: `⚔ ${target.name} 的攻击力提升 ${buffVal}，持续 ${skillDef.buffTurns} 回合！`, cls: 'log-sys' })
+        } else {
+          logs.push({ text: `${target.name} 的攻击力提升！`, cls: 'log-sys' })
+        }
+      }
+      // 百分比攻击加成（剑意激励等）
+      if (skillDef.atkBuffPct) {
+        const pctVal = skillDef.atkBuffPct
+        const flatVal = Math.floor(target.stats.attack * pctVal / 100)
+        target.atkBuff = (target.atkBuff || 0) + flatVal
+        target.buffTimers = target.buffTimers || []
+        if (skillDef.buffTurns) {
+          target.buffTimers.push({ type: 'atkBuff', value: flatVal, turnsLeft: skillDef.buffTurns })
+          logs.push({ text: `⚔ ${target.name} 的攻击力提升 ${pctVal}%（+${flatVal}），持续 ${skillDef.buffTurns} 回合！`, cls: 'log-sys' })
+        }
+      }
+      if (skillDef.magBuff) {
+        const buffVal = skillDef.magBuff
+        target.magBuff = (target.magBuff || 0) + buffVal
+        // 有持续回合数时注册 buffTimer，到期自动扣回
+        if (skillDef.buffTurns) {
+          target.buffTimers = target.buffTimers || []
+          target.buffTimers.push({ type: 'magBuff', value: buffVal, turnsLeft: skillDef.buffTurns })
+          logs.push({ text: `✨ ${target.name} 的魔法伤害提升 ${buffVal}%，持续 ${skillDef.buffTurns} 回合！`, cls: 'log-drain' })
+        } else {
+          logs.push({ text: `${target.name} 的魔法伤害提升！`, cls: 'log-magic' })
+        }
+      }
+      if (skillDef.selfDefBuff) {
+        actor.defBuff = (actor.defBuff || 0) + 40
+        logs.push({ text: `${actor.name} 展开烈焰之翼！本回合物理防御大幅提升！`, cls: 'log-sys' })
+      }
+      if (skillDef.defBuff) {
+        actor.defBuff = (actor.defBuff || 0) + skillDef.defBuff
+        logs.push({ text: `${actor.name} 的防御力提升！`, cls: 'log-sys' })
+      }
+      // 持续治疗 HoT（圣光治愈等）
+      if (skillDef.hotHeal) {
+        target.statusEffects = target.statusEffects || []
+        // 覆盖同目标已有的 hot 效果
+        target.statusEffects = target.statusEffects.filter(e => e.type !== 'hot')
+        target.statusEffects.push({
+          type: 'hot',
+          turnsLeft: skillDef.hotTurns || 5,
+          power: skillDef.hotHeal,
+          dispel: !!skillDef.dispelDebuff
+        })
+        logs.push({ text: `✨ ${actor.name} 为 ${target.name} 施加圣光治愈，每回合恢复 ${skillDef.hotHeal} HP，持续 ${skillDef.hotTurns} 回合！`, cls: 'log-heal' })
+      }
+      // 圣光护盾（乌姆/提雅：施加护盾）
+      if (skillDef.shieldRate) {
+        if (actor.id === 'tiya' || actor.id === 'stephanie') {
+          const shieldVal = Math.max(100, Math.floor((actor.stats.defense + (actor.defBuff || 0)) * 0.80))
+          actor.shield = (actor.shield || 0) + shieldVal
+          const label = actor.id === 'tiya' ? '铁壁守护' : '龙鳞壁障'
+          logs.push({ text: `🛡️ ${label}！${actor.name} 获得 ${shieldVal} 点护盾！`, cls: 'log-sys' })
+        } else {
+          applyUumShield(actor, targets, logs)
+        }
+      }
+      // 复活技能
+      if (skillDef.revive) {
+        const reviveHp = Math.floor(target.maxHp * (skillDef.reviveHpRate || 0.50))
+        target.currentHp = reviveHp
+        target.statusEffects = []
+        target.buffTimers    = []
+        target.skipNextTurn  = false
+        logs.push({ text: `✨ ${actor.name} 使用 ${skillName}，${target.name} 复活了！恢复 ${reviveHp} 点 HP！`, cls: 'log-heal' })
+      }
+      // 群体复活（圣光复苏）
+      if (skillDef.reviveAll) {
+        const deadPlayers = players.filter(p => p.currentHp <= 0)
+        for (const p of deadPlayers) {
+          const hp = Math.floor(p.maxHp * (skillDef.reviveHpRate || 0.40))
+          p.currentHp = hp
+          p.statusEffects = []
+          p.buffTimers    = []
+          p.skipNextTurn  = false
+          logs.push({ text: `🌟 ${p.name} 在圣光中复活！恢复 ${hp} 点 HP！`, cls: 'log-heal' })
+        }
+        if (deadPlayers.length === 0) logs.push({ text: `${actor.name} 使用 ${skillName}，队伍无人倒下。`, cls: 'log-sys' })
+      }
+      // 回响恩典：为目标施加回响状态
+      if (skillDef.echoTurns) {
+        target._echoPending = skillDef.echoTurns
+        logs.push({ text: `💠 ${actor.name} 为 ${target.name} 编织水晶回响！接下来 ${skillDef.echoTurns} 个行动回合技能将产生共鸣！`, cls: 'log-heal' })
+      }
+    }
+  } else if (skillDef.type === 'physical') {
+    // 船长之怒：5连击，血量越低威力越强
+    if (skillDef.furyHits) {
+      const lostPct = 1 - actor.currentHp / actor.maxHp
+      const furyBonus = Math.floor(lostPct * 100)  // 0~100%加成
+      for (const target of targets) {
+        for (let h = 0; h < skillDef.furyHits; h++) {
+          const bp = skillDef.base_power + Math.floor(skillDef.base_power * furyBonus / 100)
+          const result = calcPhysicalDamage(actor, target, bp, {})
+          if (result.evaded) {
+            logs.push({ text: `${actor.name} 船长之怒第${h+1}击被闪避！`, cls: 'log-evade' })
+          } else {
+            recordDmg(actor, target, result.dmg)
+            const prefix = result.crit ? '[暴击!] ' : ''
+            logs.push({ text: `${prefix}☠️ 船长之怒第${h+1}击，${target.name} 受到 ${result.dmg} 点伤害！`, cls: result.crit ? 'log-crit' : 'log-phys' })
+            applyNalongPassive(actor, target, logs)
+          }
+        }
+      }
+      if (furyBonus > 0) logs.push({ text: `☠️ 纳隆血量损失${Math.round(lostPct*100)}%，船长之怒威力提升 ${furyBonus}%！`, cls: 'log-crit' })
+      return logs
+    }
+    // 梅里艾尔：双枪乱射（4次随机目标）
+    if (skillDef.randomTargets && skillDef.hits) {
+      const aliveEnemies = getAliveEnemies()
+      if (aliveEnemies.length === 0) return logs
+      for (let h = 0; h < skillDef.hits; h++) {
+        const t = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)]
+        const result = calcPhysicalDamage(actor, t, skillDef.base_power, {})
+        if (result.evaded) {
+          logs.push({ text: `${actor.name} 的乱射第${h+1}击被闪避！`, cls: 'log-evade' })
+        } else {
+          recordDmg(actor, t, result.dmg)
+          const prefix = result.crit ? '[暴击!] ' : ''
+          logs.push({ text: `${prefix}🔫 双枪第${h+1}击命中 ${t.name}，造成 ${result.dmg} 点伤害！`, cls: result.crit ? 'log-crit' : 'log-phys' })
+        }
+      }
+      return logs
+    }
+    // 末日双斧：3击威力递增
+    if (skillDef.tripleHit) {
+      const scales = skillDef.tripleHitScale || [1.0, 1.3, 1.6]
+      for (const target of targets) {
+        for (let h = 0; h < scales.length; h++) {
+          const bp = Math.floor(skillDef.base_power * scales[h])
+          const result = calcPhysicalDamage(actor, target, bp, { defPierce: skillDef.defPierce })
+          if (result.evaded) {
+            logs.push({ text: `${actor.name} 的 ${skillName} 第${h+1}击被闪避了！`, cls: 'log-evade' })
+          } else {
+            recordDmg(actor, target, result.dmg)
+            const prefix = result.crit ? '[暴击!] ' : ''
+            logs.push({ text: `${prefix}${actor.name} 末日双斧第${h+1}击，造成 ${result.dmg} 点伤害！`, cls: result.crit ? 'log-crit' : 'log-phys' })
+            applyLuofaPassive(actor, target, result.dmg, logs)
+          }
+        }
+      }
+      return logs
+    }
+    const hitCount = skillDef.hits || 1
+    for (const target of targets) {
+      for (let h = 0; h < hitCount; h++) {
+        // 死亡丧钟：HP越低威力越高（最高+80%）
+        const lostBonus = skillDef.id === 'sang_death_knell'
+          ? Math.floor((1 - actor.currentHp / actor.maxHp) * 80)
+          : 0
+        const bp = skillDef.speedBonus
+          ? skillDef.base_power + Math.floor(actor.stats.agility * 0.4)
+          : skillDef.base_power + lostBonus
+        const result = calcPhysicalDamage(actor, target, bp, { defPierce: skillDef.defPierce, bonusCritRate: skillDef.bonusCritRate || 0, isSkill: true, hpThreshold: skillDef.hpThreshold || 0 })
+        if (result.evaded) {
+          logs.push({ text: `${actor.name} 的 ${skillName} 被闪避了！`, cls: 'log-evade' })
+        } else {
+          let finalDmg = applyClarteMystic(actor, result.dmg, skillName, logs)
+          recordDmg(actor, target, finalDmg)
+          const prefix = result.crit ? '[暴击!] ' : ''
+          const hitLabel = hitCount > 1 ? `（第${h+1}击）` : ''
+          logs.push({ text: `${prefix}${actor.name} 使用 ${skillName}${hitLabel}，造成 ${finalDmg} 点伤害！`, cls: result.crit ? 'log-crit' : 'log-phys' })
+          // 龙胆料理被动
+          tryRyutanPassive(actor, logs)
+          // 夏雨瑶灼烧被动
+          tryXiaBurnPassive(actor, target, result.dmg, logs, {
+            forceBurn: !!skillDef.forceBurn,
+            burnRate:  skillDef.burnRate || 0.20
+          })
+          applyReflect(actor, target, result.dmg, logs)
+          // 生命汲取
+          if (skillDef.lifeSteal) {
+            const heal = Math.max(1, Math.floor(result.dmg * skillDef.lifeSteal))
+            recordHeal(actor, actor, heal)
+            logs.push({ text: `${actor.name} 吸取了 ${heal} 点生命！`, cls: 'log-heal' })
+          }
+          // 流血效果（噬魂电锯等）
+          if (skillDef.bleed && result.dmg > 0) {
+            const already = (target.statusEffects || []).some(e => e.type === 'bleed')
+            if (!already) {
+              target.statusEffects = target.statusEffects || []
+              target.statusEffects.push({ type: 'bleed', turnsLeft: skillDef.bleedTurns || 5, power: skillDef.bleedPower || 25 })
+              logs.push({ text: `🩸 ${target.name} 陷入流血状态！每回合受到 ${skillDef.bleedPower || 25} 点伤害！`, cls: 'log-atk' })
+            }
+          }
+          // 圣光裂痕（珍妮每次物理命中 + addRift 技能）
+          if (actor.id === 'jenny' || skillDef.addRift) {
+            applyJennyRift(actor, target, logs)
+          }
+          // 罗法狂战士被动
+          applyLuofaPassive(actor, target, result.dmg, logs)
+          // 丹尼斯鹰眼：暴击叠层提示 / 终结之枪触发后归零
+          if (actor.id === 'dennis' && result.crit) {
+            const stacks = actor._eagleCritStacks || 0
+            if (stacks > 0) logs.push({ text: `🦅 鹰眼：暴击率已叠加 ${stacks} 层（+${stacks * 20}%）！`, cls: 'log-crit' })
+          }
+          if (actor.id === 'dennis' && skillDef.bonusCritRate) {
+            actor._eagleCritStacks = 0
+          }
+          // 杰西卡致命猎手：暴击后下次物理伤害+40%
+          applyJessicaHunterPassive(actor, result.crit, logs)
+          // 斯蒂芬妮龙魂共鸣：物理技能命中后25%概率下次+50%
+          applyStephanieDragonSoul(actor, logs)
+          // 溅射：对其他存活敌人造成主目标伤害的 splashRate 倍伤害
+          if (skillDef.splashRate && result.dmg > 0) {
+            const splashDmg = Math.max(1, Math.floor(result.dmg * skillDef.splashRate))
+            const others = getAliveEnemies().filter(e => e !== target)
+            for (const other of others) {
+              applyDamage(other, splashDmg)
+              logs.push({ text: `💥 毁灭溅射！${other.name} 受到 ${splashDmg} 点溅射伤害！`, cls: 'log-phys' })
+            }
+          }
+          // 克罗斯夺取：窃取目标MP为自身所用
+          if (skillDef.stealMp && finalDmg > 0) {
+            const stolen = Math.min(skillDef.stealMp, target.currentMp || 0)
+            if (stolen > 0) {
+              target.currentMp = Math.max(0, (target.currentMp || 0) - stolen)
+              actor.currentMp  = Math.min(actor.maxMp, actor.currentMp + stolen)
+              logs.push({ text: `💰 夺取！克罗斯窃取了 ${stolen} 点 MP！`, cls: 'log-sys' })
+            }
+          }
+          if (skillDef.poisonChance && Math.random() < skillDef.poisonChance) {
+            target.statusEffects = target.statusEffects || []
+            if (!target.statusEffects.some(e => e.type === 'poison')) {
+              target.statusEffects.push({ type: 'poison', turnsLeft: skillDef.poisonTurns || 3, power: skillDef.poisonPower || 30 })
+              logs.push({ text: `☠️ ${target.name} 陷入中毒状态！每回合受到 ${skillDef.poisonPower || 30} 点毒伤！`, cls: 'log-burn' })
+            }
+          }
+          // 纳隆：掠夺一击回血
+          if (skillDef.lifeStealFlat) {
+            const heal = Math.max(1, Math.floor(actor.maxHp * skillDef.lifeStealFlat))
+            applyHeal(actor, heal)
+            logs.push({ text: `💰 掠夺！${actor.name} 回复了 ${heal} 点 HP！`, cls: 'log-heal' })
+          }
+          // 纳隆被动：击倒触发海盗之魂
+          applyNalongPassive(actor, target, logs)
+        }
+      }
+      // 马修：气势消耗（技能使用后）
+      applyMathewMomentum(actor, true, logs)
+      // 马修：破甲拳额外气势加成提示（已在calcPhysicalDamage里处理）
+      // 马修：无极连击全部命中后眩晕
+      if (skillDef.stunOnAllHit && skillDef.hits) {
+        for (const target of targets) {
+          if (target.currentHp <= 0) continue
+          target.skipNextTurn = true
+          logs.push({ text: `💥 无极连击！${target.name} 陷入眩晕，下回合无法行动！`, cls: 'log-crit' })
+        }
+      }
+    }
+    // 狂暴冲击：攻击后自身防御降低
+    if (skillDef.selfDefDebuff) {
+      actor.stats.defense = Math.max(0, actor.stats.defense - skillDef.selfDefDebuffVal)
+      actor.statusEffects = actor.statusEffects || []
+      actor.statusEffects.push({ type: 'selfDefDebuff', turnsLeft: skillDef.selfDefDebuffTurns || 1, value: skillDef.selfDefDebuffVal || 30 })
+      logs.push({ text: `💢 ${actor.name} 防御降低 ${skillDef.selfDefDebuffVal} 点，持续 ${skillDef.selfDefDebuffTurns || 1} 回合！`, cls: 'log-sys' })
+    }
+  } else if (skillDef.type === 'magic') {
+    if (skillDef.skipTurn) {
+      for (const target of targets) {
+        target.skipNextTurn = true
+        logs.push({ text: `${actor.name} 使用 ${skillName}！${target.name} 下回合将无法行动！`, cls: 'log-magic' })
+      }
+    } else {
+      let totalDmg = 0
+      for (const target of targets) {
+        const result = calcMagicDamage(actor, target, skillDef)
+        recordDmg(actor, target, result.dmg)
+        totalDmg += result.dmg
+        const prefix = result.crit ? '[暴击!] ' : ''
+        logs.push({ text: `${prefix}${actor.name} 使用 ${skillName}，${target.name} 受到 ${result.dmg} 点魔法伤害！`, cls: result.crit ? 'log-crit' : 'log-magic' })
+      }
+      // 触发元素特效
+      const effect = ELEMENT_EFFECTS[skillDef.element]
+      if (effect) effect.apply(actor, targets, totalDmg, logs)
+      // 驱散目标增益（水晶之枪等 dispel:true 技能）
+      if (skillDef.dispel) {
+        for (const target of targets) {
+          if (target.currentHp <= 0) continue
+          let dispelled = false
+          if ((target.atkBuff || 0) > 0) { target.atkBuff = 0; dispelled = true }
+          if ((target.magBuff || 0) > 0) { target.magBuff = 0; dispelled = true }
+          if ((target.defBuff || 0) > 0) { target.defBuff = 0; dispelled = true }
+          if ((target.buffTimers || []).length > 0) { target.buffTimers = []; dispelled = true }
+          if (dispelled) logs.push({ text: `💧 ${target.name} 的所有增益效果被驱散！`, cls: 'log-magic' })
+        }
+      }
+      // 魔法技能附加流血（虚空裂隙）
+      if (skillDef.bleed) {
+        for (const target of targets) {
+          if (target.currentHp <= 0) continue
+          const already = (target.statusEffects || []).some(e => e.type === 'bleed')
+          if (!already) {
+            target.statusEffects = target.statusEffects || []
+            target.statusEffects.push({ type: 'bleed', turnsLeft: skillDef.bleedTurns || 3, power: skillDef.bleedPower || 20 })
+            logs.push({ text: `🩸 ${target.name} 陷入流血状态！每回合受到 ${skillDef.bleedPower || 20} 点伤害！`, cls: 'log-atk' })
+          }
+        }
+      }
+      // 血祭吞噬：利用流血效果额外造成伤害（不消耗流血）
+      if (skillDef.consumeBleed) {
+        for (const target of targets) {
+          if (target.currentHp <= 0) continue
+          const bleedEff = (target.statusEffects || []).find(e => e.type === 'bleed')
+          if (bleedEff) {
+            const bonusDmg = Math.floor(bleedEff.power * bleedEff.turnsLeft * (skillDef.bleedMultiplier || 4.0))
+            recordDmg(actor, target, bonusDmg)
+            logs.push({ text: `💀 血祭吞噬！吸取流血之力，额外造成 ${bonusDmg} 点伤害！`, cls: 'log-crit' })
+          }
+        }
+      }
+      // 连锁闪电：跳跃攻击逻辑
+      if (skillDef.chainLightning && targets.length > 0) {
+        executeChainLightning(actor, skillDef, targets[0], logs)
+        tryAliciaPassive(actor, skillDef, targets, logs)
+        return logs
+      }
+      // 雷光守护：为全员施加雷光护盾（持续N回合每回合吸收伤害）
+      if (skillDef.thunderShield) {
+        for (const t of targets) {
+          if (t.currentHp <= 0) continue
+          t.statusEffects = t.statusEffects || []
+          t.statusEffects = t.statusEffects.filter(e => e.type !== 'thunderShield')
+          t.statusEffects.push({ type: 'thunderShield', turnsLeft: skillDef.thunderShieldTurns || 3, power: skillDef.thunderShieldPower || 80 })
+          logs.push({ text: `⚡ ${t.name} 获得雷光护盾！每回合吸收 ${skillDef.thunderShieldPower || 80} 点伤害，持续 ${skillDef.thunderShieldTurns || 3} 回合！`, cls: 'log-heal' })
+        }
+        return logs
+      }
+      // 爱丽西娅被动：雷神之怒
+      tryAliciaPassive(actor, skillDef, targets, logs)
+      // 小瑶：减速 debuff
+      if (skillDef.slowDebuff) {
+        for (const t of targets) {
+          if (t.currentHp <= 0) continue
+          t.statusEffects = t.statusEffects || []
+          t.statusEffects = t.statusEffects.filter(e => e.type !== 'slow')
+          t.statusEffects.push({ type: 'slow', turnsLeft: skillDef.slowTurns || 2, speedReduction: 0.3 })
+          logs.push({ text: `🐇 ${t.name} 被精灵封印，行动减速${skillDef.slowTurns || 2}回合！`, cls: 'log-magic' })
+        }
+      }
+      // 小瑶：魔防降低 debuff
+      if (skillDef.magDefDown) {
+        for (const t of targets) {
+          if (t.currentHp <= 0) continue
+          t.statusEffects = t.statusEffects || []
+          t.statusEffects.push({ type: 'magDefDown', turnsLeft: skillDef.magDefDownTurns || 2, value: skillDef.magDefDownVal || 15 })
+          t.stats.magic_defense = Math.max(0, t.stats.magic_defense - (skillDef.magDefDownVal || 15))
+          logs.push({ text: `👁 ${t.name} 的魔防被虚空之眼侵蚀，降低 ${skillDef.magDefDownVal || 15} 点！`, cls: 'log-magic' })
+        }
+      }
+      // 小瑶被动：召唤大师
+      applyXiaoyaoPassive(actor, skillDef, logs)
+      // 格利风被动：魔化（每次施法后叠层，3层触发恶魔形态）
+      applyGrifonDemonization(actor, logs)
+      // 梅里艾尔：攻击力降低 debuff
+      if (skillDef.atkDebuff) {
+        for (const t of targets) {
+          if (t.currentHp <= 0) continue
+          const debuffVal = Math.floor(t.stats.attack * skillDef.atkDebuff / 100)
+          t.stats.attack = Math.max(0, t.stats.attack - debuffVal)
+          t.statusEffects = t.statusEffects || []
+          t.statusEffects.push({ type: 'atkDebuff', turnsLeft: skillDef.atkDebuffTurns || 2, value: debuffVal })
+          logs.push({ text: `☠️ ${t.name} 被海盗诅咒！攻击力降低 ${debuffVal} 点，持续 ${skillDef.atkDebuffTurns || 2} 回合！`, cls: 'log-magic' })
+        }
+      }
+      // 梅里艾尔：宝藏秘术（为全体队友施加treasureBoost）
+      if (skillDef.treasureBoost) {
+        for (const t of targets) {
+          if (t.currentHp <= 0) continue
+          t._treasureBoost = (skillDef.treasureBoostVal || 40) / 100
+          logs.push({ text: `💰 ${t.name} 获得宝藏加持！下一次技能伤害+${skillDef.treasureBoostVal || 40}%！`, cls: 'log-heal' })
+        }
+      }
+      // 梅里艾尔：骷髅旗（全体防御下降+概率跳回合）
+      if (skillDef.defDebuff) {
+        for (const t of targets) {
+          if (t.currentHp <= 0) continue
+          const debuffVal = skillDef.defDebuff
+          t.statusEffects = t.statusEffects || []
+          t.statusEffects.push({ type: 'defDebuff', turnsLeft: skillDef.defDebuffTurns || 3, value: debuffVal })
+          t.stats.defense = Math.max(0, t.stats.defense - debuffVal)
+          logs.push({ text: `🏴‍☠️ ${t.name} 防御降低 ${debuffVal} 点！`, cls: 'log-magic' })
+          if (skillDef.skipChance && Math.random() < skillDef.skipChance) {
+            t.skipNextTurn = true
+            logs.push({ text: `🏴‍☠️ ${t.name} 被骷髅旗震慑，下回合无法行动！`, cls: 'log-magic' })
+          }
+        }
+      }
+    }
+  }
+
+  return logs
+}
+
+function checkBattleEnd() {
+  if (enemies.every(e => e.currentHp <= 0)) {
+    // gauntlet：若还有下一波则返回 WAVE_CLEAR
+    if (battleMode === 'gauntlet' && gauntletWave < GAUNTLET_WAVES.length - 1) return 'WAVE_CLEAR'
+    return 'WIN'
+  }
+  if (getAlivePlayers().length === 0) return 'LOSE'
+  return null
+}
+
+function getSkillMpCost(charId, skillName) {
+  const char = players.find(p => p.id === charId)
+  if (!char) return 0
+  // 海盗之魂：本回合MP免费
+  if (char._pirateRageTurn) return 0
+  return char._rawSkills?.find(s => s.name === skillName)?.mp_cost ?? 0
+}
+
+// ============================================================
+// ============================================================
+// === ANIMATION LAYER ===
+// ============================================================
+
+let _animMode = true   // 动画常驻开启
+
+// 元素颜色映射
+const ELEMENT_COLORS = {
+  fire:     '#ff5020',
+  dark:     '#a040ff',
+  time:     '#40a0ff',
+  holy:     '#ffffa0',
+  water:    '#40c8ff',
+  physical: '#fff060',
+  null:     '#ffffff',
+}
+
+// 将屏幕坐标转换为 #battle-scene 内的局部坐标
+function getScenePos(el) {
+  const scene = document.getElementById('battle-scene').getBoundingClientRect()
+  const rect  = el.getBoundingClientRect()
+  return {
+    x: rect.left + rect.width  / 2 - scene.left,
+    y: rect.top  + rect.height / 2 - scene.top,
+  }
+}
+
+// 找到玩家的立绘 DOM 元素（第 N 个 .char-sprite-wrap）
+function getActorSpriteEl(actor) {
+  const idx = players.indexOf(actor)
+  if (idx < 0) return null
+  return document.querySelector(`#party-sprites .char-sprite-wrap:nth-child(${idx + 1})`)
+}
+
+// 获取目标的屏幕元素（Boss 或玩家）
+function getTargetEl(target) {
+  if (target.isEnemy) {
+    const isBoss = battleMode === 'boss' || (battleMode === 'gauntlet' && GAUNTLET_WAVES[gauntletWave]?.type === 'boss')
+    if (isBoss) return document.getElementById('boss-icon')
+    // minion 模式：LHW(index 0) 用 boss-icon，小弟用 elite-icon
+    if (battleMode === 'minion') {
+      const idx = enemies.indexOf(target)
+      if (idx === 0) return document.getElementById('boss-icon')
+      return document.getElementById(`elite-icon-${idx - 1}`)
+    }
+    const idx = enemies.indexOf(target)
+    return idx >= 0 ? document.getElementById(`elite-icon-${idx}`) : null
+  }
+  const idx = players.indexOf(target)
+  if (idx < 0) return null
+  return document.querySelector(`#party-sprites .char-sprite-wrap:nth-child(${idx + 1}) .char-sprite`)
+}
+
+// 创建投射物 DOM 元素（支持自定义尺寸和颜色）
+function createProjectile(element, size, overrideColor) {
+  const el  = document.createElement('div')
+  const sz  = size || 24
+  const col = overrideColor || ELEMENT_COLORS[element] || ELEMENT_COLORS.null
+  el.style.cssText = `position:absolute;pointer-events:none;border-radius:50%;z-index:210;width:${sz}px;height:${sz}px;`
+
+  if (element === 'fire') {
+    el.style.cssText += `background:radial-gradient(circle at 40% 35%, #fff 0%, #ff9020 35%, #ff3000 70%, #800000 100%);
+      box-shadow:0 0 ${sz}px ${sz/2}px ${col}, 0 0 ${sz*2}px ${sz/2}px rgba(255,80,0,0.3);`
+  } else if (element === 'dark') {
+    el.style.cssText += `background:radial-gradient(circle at 40% 35%, #e0a0ff 0%, #8020d0 50%, #200040 100%);
+      box-shadow:0 0 ${sz}px ${sz/3}px ${col}, 0 0 ${sz*1.5}px ${sz/3}px rgba(160,40,255,0.3);`
+  } else if (element === 'time') {
+    el.style.cssText += `width:${sz}px;height:${sz}px;font-size:${sz*0.9}px;line-height:1;
+      background:transparent;border-radius:0;display:flex;align-items:center;justify-content:center;`
+    el.textContent = '⌛'
+  } else if (element === 'holy') {
+    el.style.cssText += `background:radial-gradient(circle at 40% 35%, #fff 0%, #ffffa0 60%, #c0c000 100%);
+      box-shadow:0 0 ${sz}px ${sz/3}px ${col};`
+  } else if (element === 'water') {
+    // 水晶之枪：横向细长，槍尖朝左飞向目标
+    el.style.cssText = `position:absolute;pointer-events:none;z-index:210;
+      width:${sz*3}px;height:${sz*0.4}px;border-radius:${sz*0.2}px 0 0 ${sz*0.2}px;
+      background:linear-gradient(90deg, #fff 0%, #80e8ff 20%, #0090d0 60%, transparent 100%);
+      box-shadow:0 0 ${sz*0.6}px ${sz*0.4}px ${col}, 0 0 ${sz*1.5}px ${sz*0.3}px rgba(64,200,255,0.5);
+      transform-origin:right center;`
+  } else if (element === 'physical') {
+    el.style.cssText = `position:absolute;pointer-events:none;z-index:210;
+      width:${sz*3}px;height:4px;border-radius:2px;
+      background:linear-gradient(90deg, transparent, ${col}, #fff, transparent);
+      box-shadow:0 0 8px 2px ${col};`
+  } else if (element === 'arrow') {
+    // 杰西卡弓箭：细长箭矢，紫金配色，尖端朝左飞向目标
+    el.style.cssText = `position:absolute;pointer-events:none;z-index:210;
+      width:${sz*3}px;height:${Math.max(3, Math.round(sz*0.18))}px;
+      background:linear-gradient(90deg, transparent 0%, #c084fc 15%, #f0c060 55%, #fff 82%, transparent 100%);
+      box-shadow:0 0 ${sz*0.5}px ${sz*0.3}px rgba(192,132,252,0.75), 0 0 ${sz}px ${sz*0.15}px rgba(240,192,96,0.5);
+      transform-origin:right center;`
+  } else {
+    // 自定义颜色投射物（香料爆击等）
+    el.style.cssText += `background:radial-gradient(circle at 40% 35%, #fff 0%, ${col} 60%, ${col}88 100%);
+      box-shadow:0 0 ${sz}px ${sz/3}px ${col};`
+  }
+  return el
+}
+
+// 技能专属动画配置表（技能名 → 动画参数）
+const SKILL_ANIM = {
+  // 雪露：火系
+  '火花':     { type: 'projectile', element: 'fire',     size: 20, flyTime: 300, arc: 40  },
+  '烈焰冲击': { type: 'projectile', element: 'fire',     size: 32, flyTime: 380, arc: 80  },
+  '精灵炎舞': { type: 'projectile', element: 'fire',     size: 22, flyTime: 340, arc: 60, multi: true },
+  '末日':       { type: 'meteor',   element: 'fire',     count: 8, flyTime: 600 },
+  '魔力赋予': { type: 'buff',       element: null,       color: '#c084fc' },
+
+  // 安洁莉娜：物理冲刺
+  '骑枪突刺': { type: 'dash',       element: 'physical', dashScale: 1.1, afterImg: '⚔' },
+  '连环枪刺': { type: 'dash',       element: 'physical', dashScale: 1.0, hits: 3, afterImg: '⚔' },
+  '圣光治愈': { type: 'buff',       element: 'holy',     color: '#ffffaa' },
+  '天马激励': { type: 'buff',       element: 'holy',     color: '#ffd060', toAll: true },
+  '苍穹骑冲': { type: 'dash',       element: 'physical', dashScale: 1.3, arcUp: true, afterImg: '🏹' },
+
+  // 龙胆：料理刀光
+  '刀工突刺':    { type: 'dash',      element: 'physical', dashScale: 1.0, afterImg: '🍴' },
+  '极·刀工连斩': { type: 'dash',      element: 'physical', dashScale: 1.0, hits: 5, afterImg: '🍴' },
+  '香料爆击':    { type: 'projectile', element: null,      size: 18, flyTime: 280, arc: 30, color: '#fb923c' },
+  '战斗套餐':    { type: 'buff',       element: null,      color: '#4ade80', toAll: true },
+  '极·食戟':     { type: 'dash',       element: 'physical', dashScale: 1.1, hits: 4, afterImg: '🍴' },
+
+  // 雪奈：时间/暗系
+  '时间停止': { type: 'projectile', element: 'time',  size: 22, flyTime: 350, arc: 20  },
+  '冥王水晶': { type: 'projectile', element: 'dark',  size: 28, flyTime: 360, arc: 50  },
+  '黑暗升华': { type: 'buff',       element: 'dark',  color: '#a040ff' },
+  '死亡反转': { type: 'projectile', element: 'dark',  size: 24, flyTime: 340, arc: 40, multi: true },
+  '时间禁域': { type: 'projectile', element: 'time',  size: 40, flyTime: 450, arc: 80, multi: true },
+
+  // 夏雨瑶：爪击冲刺
+  '爪击':       { type: 'dash', element: 'physical', dashScale: 1.05, afterImg: '🔥' },
+  '烈焰冲斩':   { type: 'dash', element: 'physical', dashScale: 1.15, afterImg: '🔥', castColor: '#ff5020' },
+  '疾风连爪':   { type: 'dash', element: 'physical', dashScale: 1.0,  hits: 4, afterImg: '🔥' },
+  '天焱裂地斩': { type: 'dash', element: 'physical', dashScale: 1.3,  arcUp: true, afterImg: '🔥', castColor: '#ff2000' },
+  '翼盾格挡':   { type: 'buff', element: null, color: '#f87171' },
+
+  // 桑：黑暗骑士冲刺
+  '暗黑斩':   { type: 'dash', element: 'dark',     dashScale: 1.1, afterImg: '⚔', castColor: '#a040ff' },
+  '生命汲取': { type: 'dash', element: 'dark',     dashScale: 1.0, afterImg: '⚔', castColor: '#800080' },
+  '黑暗光环': { type: 'buff', element: 'dark',     color: '#a040ff' },
+  '死亡丧钟': { type: 'dash', element: 'dark',     dashScale: 1.3, arcUp: true, afterImg: '💀', castColor: '#600060' },
+  '黑暗再生': { type: 'buff', element: 'dark',  color: '#c084fc' },
+
+  // 珍妮
+  '圣剑连斩': { type: 'dash', element: 'holy', dashScale: 1.1, hits: 4, afterImg: '✦', castColor: '#ffffa0' },
+  '剑意激励': { type: 'buff', element: 'holy', color: '#ffffa0', toAll: true },
+  '月痕':     { type: 'dash', element: 'holy', dashScale: 1.3, arcUp: true, hits: 5, afterImg: '🌙', castColor: '#e0d8ff' },
+  '圣光复生': { type: 'buff', element: 'holy', color: '#ffffa0' },
+
+  // 乌姆
+  '噬魂电锯': { type: 'dash', element: 'dark', dashScale: 1.15, afterImg: '🪚', castColor: '#8000c0' },
+  '圣光护盾': { type: 'buff', element: 'holy',  color: '#ffffa0', toAll: true },
+  '虚空裂隙': { type: 'projectile', element: 'dark', size: 32, flyTime: 360, arc: 50, multi: true },
+  '血祭吞噬': { type: 'dash', element: 'dark', dashScale: 1.3, arcUp: true, afterImg: '🩸', castColor: '#cc0000' },
+  '暗影复苏': { type: 'buff', element: 'dark', color: '#a040ff' },
+
+  // 卡米尔
+  '水之祝福': { type: 'buff',       element: 'water', color: '#60d0ff' },
+  '圣波净化': { type: 'buff',       element: 'water', color: '#80e8ff', toAll: true },
+  '水晶之枪': { type: 'projectile', element: 'water', size: 30, flyTime: 350, arc: 30 },
+  '圣光复苏': { type: 'buff',       element: 'holy',  color: '#ffffa0', toAll: true },
+  '回响恩典': { type: 'buff',       element: 'water', color: '#60d0ff' },
+
+  // 爱丽西娅
+  '雷击':       { type: 'projectile', element: 'thunder', size: 30, flyTime: 280, arc: 20, color: '#faff00' },
+  '连锁闪电':   { type: 'projectile', element: 'thunder', size: 26, flyTime: 280, arc: 30, multi: true, color: '#faff00' },
+  '雷光守护':   { type: 'buff',       element: 'thunder', color: '#faff00', toAll: true },
+  '闪电烈怒':   { type: 'lightning', element: 'thunder', count: 6, flyTime: 500, color: '#faff00' },
+
+  // 小瑶
+  '精灵召唤':   { type: 'projectile', element: null,  size: 22, flyTime: 320, arc: 50, color: '#a0ffb0' },
+  '虚空之眼':   { type: 'projectile', element: 'dark', size: 28, flyTime: 360, arc: 40, multi: true, color: '#8040c0' },
+  '召唤护盾':   { type: 'buff',       element: null,  color: '#a0ffb0', toAll: true },
+  '精灵祝福':   { type: 'buff',       element: null,  color: '#a0ffb0', toAll: true },
+  '黑龙降临':   { type: 'meteor',     element: 'dark', count: 8, flyTime: 600, color: '#6000a0' },
+
+  // 罗法
+  '斧裂':       { type: 'dash', element: 'physical', dashScale: 1.2, afterImg: '🪓', castColor: '#cc2200' },
+  '旋风斩':     { type: 'meteor', element: 'physical', count: 4, flyTime: 400, color: '#cc4400' },
+  '狂暴冲击':   { type: 'dash', element: 'physical', dashScale: 1.4, arcUp: true, afterImg: '🪓', castColor: '#ff2200' },
+  '末日双斧':   { type: 'dash', element: 'physical', dashScale: 1.2, hits: 3, afterImg: '🪓', castColor: '#aa0000' },
+
+  // 丹尼斯
+  '精准射击':   { type: 'projectile', element: null, size: 14, flyTime: 200, arc: 10, color: '#ffd060' },
+  '散弹轰击':   { type: 'projectile', element: null, size: 12, flyTime: 220, arc: 20, multi: true, color: '#ffd060' },
+  '穿甲弹':     { type: 'projectile', element: null, size: 18, flyTime: 180, arc: 5,  color: '#ff8020' },
+  '终结之枪':   { type: 'projectile', element: null, size: 28, flyTime: 160, arc: 5,  color: '#ffffff', castColor: '#ffd060' },
+
+  // 纳隆
+  '海盗短枪':   { type: 'projectile', element: null, size: 14, flyTime: 220, arc: 15, color: '#a06020' },
+  '掠夺一击':   { type: 'dash', element: 'physical', dashScale: 1.1, afterImg: '💰', castColor: '#c08000' },
+  '火药桶':     { type: 'meteor', element: 'fire', count: 5, flyTime: 480, color: '#ff6000' },
+  '船长之怒':   { type: 'dash', element: 'physical', dashScale: 1.2, hits: 5, afterImg: '☠️', castColor: '#804000' },
+
+  // 梅里艾尔
+  '双枪乱射':   { type: 'projectile', element: null, size: 12, flyTime: 200, arc: 25, multi: true, color: '#ffd060' },
+  '海盗诅咒':   { type: 'projectile', element: 'dark', size: 24, flyTime: 320, arc: 30, color: '#804080' },
+  '宝藏秘术':   { type: 'buff', element: null, color: '#ffd060', toAll: true },
+  '骷髅旗':     { type: 'projectile', element: 'dark', size: 30, flyTime: 360, arc: 40, multi: true, color: '#400080' },
+
+  // 马修
+  '重拳':     { type: 'dash', element: 'physical', dashScale: 1.1, hits: 2, afterImg: '👊', castColor: '#4060ff' },
+  '旋风踢':   { type: 'meteor', element: 'physical', count: 4, flyTime: 380, color: '#4060ff' },
+  '破甲拳':   { type: 'dash', element: 'physical', dashScale: 1.4, arcUp: true, afterImg: '💥', castColor: '#2040dd' },
+  '无极连击': { type: 'dash', element: 'physical', dashScale: 1.1, hits: 8, afterImg: '👊', castColor: '#0020cc' },
+
+  // 格利风
+  '召唤地狱犬': { type: 'projectile', element: 'dark', size: 28, flyTime: 340, arc: 40, color: '#6000c0' },
+  '恶魔之眼':   { type: 'projectile', element: 'dark', size: 32, flyTime: 360, arc: 40, multi: true, color: '#800080' },
+  '深渊召唤':   { type: 'meteor',     element: 'dark', count: 5, flyTime: 550, color: '#5000a0' },
+  '格利风显现': { type: 'projectile', element: 'dark', size: 48, flyTime: 400, arc: 20, color: '#300060', castColor: '#8000ff' },
+
+  // 杰西卡：弓箭弹道
+  '疾风箭':     { type: 'projectile', element: 'arrow', size: 18, flyTime: 180, arc: 5,  castColor: '#c084fc' },
+  '双矢连射':   { type: 'projectile', element: 'arrow', size: 16, flyTime: 200, arc: 8,  castColor: '#c084fc', multi: true },
+  '箭雨':       { type: 'projectile', element: 'arrow', size: 15, flyTime: 260, arc: 80, multi: true, castColor: '#a060d0' },
+  '穿云破甲箭': { type: 'projectile', element: 'arrow', size: 22, flyTime: 150, arc: 2,  castColor: '#f0c060' },
+
+  // 提雅：剑盾冲刺 + 增益
+  '盾击':   { type: 'dash', element: 'physical', dashScale: 1.1, afterImg: '🛡️', castColor: '#4060c0' },
+  '毁灭':   { type: 'dash', element: 'physical', dashScale: 1.2, afterImg: '⚔',  castColor: '#6080d0' },
+  '铁壁守护': { type: 'buff', element: null, color: '#4060c0' },
+  '湮灭':   { type: 'dash', element: 'physical', dashScale: 1.15, hits: 2, afterImg: '🛡️', castColor: '#3050b0' },
+  '战吼':   { type: 'buff', element: null, color: '#f0c060', toAll: true },
+
+  // 克拉蕾特：高速斩击
+  '影斩':       { type: 'dash', element: 'physical', dashScale: 1.2, afterImg: '🗡️', castColor: '#cc0020' },
+  '血舞':       { type: 'dash', element: 'physical', dashScale: 1.1, hits: 3, afterImg: '🗡️', castColor: '#aa0010' },
+  '虚步刺杀':   { type: 'dash', element: 'dark',     dashScale: 1.3, arcUp: true, afterImg: '🗡️', castColor: '#800000' },
+  '赤焰爆裂斩': { type: 'dash', element: 'physical', dashScale: 1.25, afterImg: '🗡️', castColor: '#ff1010' },
+  '死刑':       { type: 'dash', element: 'dark',     dashScale: 1.4, arcUp: true, afterImg: '💀', castColor: '#cc0000' },
+
+  // 斯蒂芬妮：龙骑士枪击 + 巨龙吐息
+  '龙枪突刺': { type: 'dash', element: 'physical', dashScale: 1.1, afterImg: '🐉', castColor: '#4080cc' },
+  '腾空斩':   { type: 'dash', element: 'physical', dashScale: 1.35, arcUp: true, afterImg: '🐉', castColor: '#6090dd' },
+  '龙枪横扫': { type: 'dash', element: 'physical', dashScale: 1.2, afterImg: '🐉', castColor: '#5088cc' },
+  '龙鳞壁障': { type: 'buff', element: null, color: '#4080cc' },
+  '巨龙吐息': { type: 'meteor', element: 'fire', count: 8, flyTime: 580, color: '#ff4400', castColor: '#ff2200' },
+
+  // 克罗斯：盗贼快攻
+  '飞刃':     { type: 'dash', element: 'physical', dashScale: 1.1, afterImg: '🔪', castColor: '#4040cc' },
+  '夺取':     { type: 'dash', element: 'physical', dashScale: 1.0, afterImg: '💰', castColor: '#8060a0' },
+  '影踏连斩': { type: 'dash', element: 'physical', dashScale: 1.1, hits: 3, afterImg: '🔪', castColor: '#3030aa' },
+  '破绽':     { type: 'projectile', element: 'dark', size: 20, flyTime: 260, arc: 20, color: '#5050cc' },
+  '终结标记': { type: 'dash', element: 'dark', dashScale: 1.4, arcUp: true, afterImg: '💀', castColor: '#2020aa' },
+}
+
+// ── 冲刺动画（物理攻击：角色冲向目标再弹回）──
+function playDashAnimation(actorEl, toEl, cfg) {
+  return new Promise(resolve => {
+    if (!actorEl || !toEl) { resolve(); return }
+
+    // 冲刺图切换：找到对应角色的 dash portrait
+    const spriteEl   = actorEl.querySelector('.char-sprite')
+    const actorId    = actorEl.closest('#party-sprites')
+      ? players[Array.from(document.querySelectorAll('#party-sprites .char-sprite-wrap')).indexOf(actorEl)]?.id
+      : null
+    const dashSrc    = actorId && DASH_PORTRAITS[actorId] ? DASH_PORTRAITS[actorId] : null
+    const origSrc    = spriteEl?.src || null
+
+    // 切换到冲刺图（去白底处理）
+    if (spriteEl && dashSrc) {
+      removeWhiteBg(dashSrc).then(url => { spriteEl.src = url || dashSrc })
+    }
+
+    const from   = getScenePos(spriteEl || actorEl)
+    const to     = getScenePos(toEl)
+    const dx     = to.x - from.x
+    const dy     = to.y - from.y
+    const scale  = cfg.dashScale || 1.0
+    const arcUp  = cfg.arcUp || false
+
+    // 冲刺目标：停在距 Boss 30px 处
+    const dist   = Math.sqrt(dx*dx + dy*dy)
+    const stopX  = (dist > 0 ? dx/dist * Math.max(0, dist - 40) : 0)
+    const stopY  = (dist > 0 ? dy/dist * Math.max(0, dist - 40) : 0) + (arcUp ? -50 : 0)
+
+    const hits  = cfg.hits || 1
+    const hitDuration = 110  // 每次命中持续时间（ms）
+
+    // 拖影效果：在起点留一个半透明复制
+    const ghost = actorEl.querySelector('.char-sprite')?.cloneNode(true)
+    if (ghost) {
+      ghost.style.cssText += 'opacity:0.3;position:absolute;top:0;left:0;filter:drop-shadow(0 0 8px #fff);pointer-events:none;'
+      actorEl.appendChild(ghost)
+      setTimeout(() => ghost.remove(), 400)
+    }
+
+    // 武器特效文字（在冲刺中途出现）
+    function spawnWeapon(x, y, nth) {
+      const animLayer = document.getElementById('anim-layer')
+      if (!animLayer || !cfg.afterImg) return
+      const w = document.createElement('div')
+      w.textContent = cfg.afterImg
+      w.style.cssText = `position:absolute;left:${x}px;top:${y}px;
+        font-size:${1.4 + nth*0.1}rem;z-index:220;pointer-events:none;
+        transform:translate(-50%,-50%) rotate(${-30 + nth*15}deg);`
+      animLayer.appendChild(w)
+      w.animate(
+        [{opacity:1, transform:`translate(-50%,-50%) rotate(${-30+nth*15}deg) scale(1)`},
+         {opacity:0, transform:`translate(-50%,-80%) rotate(${-10+nth*15}deg) scale(1.3)`}],
+        { duration: 350, easing:'ease-out', fill:'forwards' }
+      ).onfinish = () => w.remove()
+    }
+
+    let hitsDone = 0
+    function doHit() {
+      if (hitsDone >= hits) {
+        // 弹回原位
+        actorEl.animate(
+          [{ transform: `translate(${stopX}px,${stopY}px) scale(${scale})` },
+           { transform: 'translate(0,0) scale(1)' }],
+          { duration: 200, easing: 'ease-in', fill: 'forwards' }
+        ).onfinish = () => {
+          actorEl.style.transform = ''
+          // 弹回后恢复站立图
+          if (spriteEl && origSrc) {
+            removeWhiteBg(origSrc).then(url => { spriteEl.src = url || origSrc })
+          }
+          resolve()
+        }
+        return
+      }
+      const spreadX = to.x + (hitsDone - (hits-1)/2) * 18
+      spawnWeapon(spreadX, to.y, hitsDone)
+      hitsDone++
+      setTimeout(doHit, hitDuration)
+    }
+
+    // 冲向目标
+    actorEl.animate(
+      [{ transform:'translate(0,0) scale(1)' },
+       { transform:`translate(${stopX}px,${stopY}px) scale(${scale})` }],
+      { duration: 200, easing:'ease-out', fill:'forwards' }
+    ).onfinish = () => {
+      actorEl.style.transform = `translate(${stopX}px,${stopY}px) scale(${scale})`
+      doHit()
+    }
+  })
+}
+
+// ── Buff 动画（光环扩散到目标）──
+function playBuffAnimation(actorEl, cfg) {
+  return new Promise(resolve => {
+    const animLayer = document.getElementById('anim-layer')
+    if (!actorEl || !animLayer) { resolve(); return }
+    const col  = cfg.color || '#c084fc'
+    const pos  = getScenePos(actorEl.querySelector('.char-sprite') || actorEl)
+
+    // 光环从施法者位置扩散
+    const ring = document.createElement('div')
+    ring.style.cssText = `position:absolute;left:${pos.x}px;top:${pos.y}px;
+      width:20px;height:20px;border-radius:50%;
+      border:3px solid ${col};pointer-events:none;z-index:210;
+      transform:translate(-50%,-50%);`
+    animLayer.appendChild(ring)
+    ring.animate(
+      [{transform:'translate(-50%,-50%) scale(0.5)', opacity:1},
+       {transform:'translate(-50%,-50%) scale(3.5)', opacity:0}],
+      { duration: 600, easing:'ease-out', fill:'forwards' }
+    ).onfinish = () => { ring.remove(); resolve() }
+
+    // 闪光粒子
+    for (let i = 0; i < 6; i++) {
+      const spark = document.createElement('div')
+      const angle = (i / 6) * Math.PI * 2
+      const r = 40 + Math.random() * 20
+      spark.style.cssText = `position:absolute;left:${pos.x}px;top:${pos.y}px;
+        width:5px;height:5px;border-radius:50%;background:${col};
+        pointer-events:none;z-index:215;transform:translate(-50%,-50%);`
+      animLayer.appendChild(spark)
+      const ex = Math.cos(angle) * r, ey = Math.sin(angle) * r
+      spark.animate(
+        [{transform:'translate(-50%,-50%) scale(1)', opacity:1},
+         {transform:`translate(calc(-50% + ${ex}px), calc(-50% + ${ey}px)) scale(0)`, opacity:0}],
+        { duration: 500, delay: i * 30, easing:'ease-out', fill:'forwards' }
+      ).onfinish = () => spark.remove()
+    }
+  })
+}
+
+// ── 流星雨动画（末日专属）──
+// 多颗流星从屏幕上方随机位置以斜线轨迹砸向 Boss 区域
+// ── 闪电烈怒动画：闪电图片从上方依次劈向每个目标 ──
+function playLightningAnimation(animLayer, cfg, targetPositions) {
+  return new Promise(resolve => {
+    if (!animLayer || !targetPositions.length) { resolve(); return }
+
+    const count    = Math.min(cfg.count || 6, targetPositions.length || 1)
+    const duration = cfg.flyTime || 500
+
+    // 全屏紫色闪光背景
+    const flash = document.createElement('div')
+    flash.style.cssText = `position:absolute;inset:0;z-index:205;pointer-events:none;
+      background:radial-gradient(ellipse at 50% 40%, rgba(140,80,255,0.3) 0%, transparent 70%);`
+    animLayer.appendChild(flash)
+    flash.animate([{opacity:0},{opacity:1},{opacity:0}],
+      { duration: duration * 1.8, easing:'ease-in-out', fill:'forwards' }
+    ).onfinish = () => flash.remove()
+
+    let finished = 0
+
+    for (let i = 0; i < count; i++) {
+      const pos   = targetPositions[i % targetPositions.length]
+      const delay = i * (duration / count * 0.5)
+      const scale = 0.9 + Math.random() * 0.4
+      const boltW = 160 * scale
+      const boltH = 200 * scale
+      const rot   = (Math.random() - 0.5) * 20  // 轻微随机旋转
+
+      setTimeout(() => {
+        const bolt = document.createElement('img')
+        bolt.src = 'assets/portraits/lightning_fury.png'
+        bolt.style.cssText = `
+          position:absolute;pointer-events:none;z-index:215;
+          width:${boltW}px;height:${boltH}px;
+          object-fit:contain;
+          left:${pos.x - boltW / 2}px;
+          top:${pos.y - boltH * 0.55}px;
+          transform:rotate(${rot}deg);
+          filter:drop-shadow(0 0 16px #c080ff) drop-shadow(0 0 32px #8040ff);
+          opacity:0;
+        `
+        animLayer.appendChild(bolt)
+
+        // 瞬间闪现，然后缓慢消失
+        bolt.animate([
+          { opacity: 0,   transform: `rotate(${rot}deg) scale(0.85)` },
+          { opacity: 1,   transform: `rotate(${rot}deg) scale(1.05)`, offset: 0.08 },
+          { opacity: 0.9, transform: `rotate(${rot}deg) scale(1)`,    offset: 0.2  },
+          { opacity: 0,   transform: `rotate(${rot}deg) scale(0.95)` },
+        ], {
+          duration: duration,
+          easing: 'ease-out',
+          fill: 'forwards'
+        }).onfinish = () => {
+          bolt.remove()
+          finished++
+          if (finished >= count) resolve()
+        }
+      }, delay)
+    }
+  })
+}
+
+function playMeteorAnimation(animLayer, cfg, targetPositions) {
+  return new Promise(resolve => {
+    if (!animLayer) { resolve(); return }
+
+    const scene    = document.getElementById('battle-scene').getBoundingClientRect()
+    // 使用传入的目标位置，若无则回退到 boss-icon
+    const fallbackEl  = document.getElementById('boss-icon')
+    const fallbackPos = fallbackEl ? getScenePos(fallbackEl) : { x: scene.width * 0.2, y: scene.height * 0.4 }
+    const positions   = (targetPositions && targetPositions.length > 0) ? targetPositions : [fallbackPos]
+
+    const count    = cfg.count || 8
+    const flyTime  = cfg.flyTime || 600
+    let   finished = 0
+
+    // 全屏轻微变暗（蓄力感）
+    const overlayColor = cfg.color ? cfg.color + '22' : 'rgba(255,60,0,0.08)'
+    const overlay = document.createElement('div')
+    overlay.style.cssText = `position:absolute;inset:0;background:${overlayColor};
+      z-index:205;pointer-events:none;`
+    animLayer.appendChild(overlay)
+    overlay.animate([{opacity:0},{opacity:1},{opacity:0}],
+      { duration: flyTime + 200, easing:'ease-in-out', fill:'forwards' }
+    ).onfinish = () => overlay.remove()
+
+    for (let i = 0; i < count; i++) {
+      const delay = i * (flyTime / count * 0.7)
+
+      // 落点：轮流落向各个目标，加随机偏移
+      const basePos = positions[i % positions.length]
+      const startX = basePos.x + (Math.random() - 0.3) * scene.width * 0.6
+      const startY = -40
+
+      // 终点：Boss 周围随机散落
+      const spread = 60
+      const endX   = basePos.x + (Math.random() - 0.5) * spread
+      const endY   = basePos.y + (Math.random() - 0.5) * spread * 0.5
+
+      setTimeout(() => {
+        // 流星球体
+        const sz   = 16 + Math.random() * 18
+        const mc   = cfg.color || '#ff9030'
+        const meteor = document.createElement('div')
+        meteor.style.cssText = `position:absolute;pointer-events:none;z-index:215;
+          width:${sz}px;height:${sz}px;border-radius:50%;
+          background:radial-gradient(circle at 35% 30%, #fff 0%, ${mc} 30%, ${mc}aa 65%, #000 100%);
+          box-shadow:0 0 ${sz}px ${sz/2}px ${mc}, 0 0 ${sz*2}px ${sz/2}px ${mc}66;
+          left:${startX}px;top:${startY}px;transform:translate(-50%,-50%);`
+        animLayer.appendChild(meteor)
+
+        // 拖尾（长条渐变）
+        const tail = document.createElement('div')
+        const tailLen = 40 + sz * 1.5
+        const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI
+        tail.style.cssText = `position:absolute;pointer-events:none;z-index:214;
+          width:${tailLen}px;height:${Math.max(3, sz*0.4)}px;border-radius:99px;
+          background:linear-gradient(90deg, transparent, ${mc}99, ${mc});
+          transform-origin:100% 50%;
+          transform:rotate(${angle + 180}deg) translateY(-50%);`
+        animLayer.appendChild(tail)
+
+        const startTime = performance.now()
+        function af(now) {
+          const t    = Math.min(1, (now - startTime) / flyTime)
+          const ease = 1 - Math.pow(1 - t, 3)  // ease-out cubic
+          const cx   = startX + (endX - startX) * ease
+          const cy   = startY + (endY - startY) * ease
+          meteor.style.left = cx + 'px'
+          meteor.style.top  = cy + 'px'
+          tail.style.left   = cx + 'px'
+          tail.style.top    = cy + 'px'
+          if (t < 1) {
+            requestAnimationFrame(af)
+          } else {
+            // 命中爆炸
+            meteor.animate([
+              { transform:'translate(-50%,-50%) scale(1)', opacity:1 },
+              { transform:'translate(-50%,-50%) scale(3)',  opacity:0 }
+            ], { duration: 250, easing:'ease-out', fill:'forwards' }
+            ).onfinish = () => { meteor.remove(); tail.remove() }
+
+            // 爆炸光圈
+            const burst = document.createElement('div')
+            burst.style.cssText = `position:absolute;z-index:216;pointer-events:none;
+              left:${endX}px;top:${endY}px;width:10px;height:10px;border-radius:50%;
+              background:transparent;border:3px solid #ff8030;transform:translate(-50%,-50%);`
+            animLayer.appendChild(burst)
+            burst.animate([
+              { transform:'translate(-50%,-50%) scale(0.5)', opacity:1 },
+              { transform:`translate(-50%,-50%) scale(${3 + sz/10})`, opacity:0 }
+            ], { duration: 300, easing:'ease-out', fill:'forwards' }
+            ).onfinish = () => { burst.remove(); finished++; if (finished >= count) resolve() }
+          }
+        }
+        requestAnimationFrame(af)
+      }, delay)
+    }
+  })
+}
+
+// 主施法动画函数（重写，按技能名匹配专属动画）
+function playSkillAnimation(actor, skillDef, targets) {
+  if (!_animMode) return Promise.resolve()
+
+  const skillName = skillDef?.name || ''
+  const cfg       = SKILL_ANIM[skillName] || null
+  const isPhysical = skillDef?.type === 'physical'
+  const element   = cfg?.element ?? (skillDef?.element || (isPhysical ? 'physical' : null))
+
+  // 决定动画类型
+  const animType = cfg?.type || (isPhysical ? 'dash' : 'projectile')
+
+  // 吟唱发光
+  const castColor = cfg?.castColor || ELEMENT_COLORS[element] || '#fff'
+  const castTime  = animType === 'dash' ? 200 : 500
+  const actorEl   = getActorSpriteEl(actor)
+
+  return new Promise(resolve => {
+    if (actorEl) {
+      actorEl.style.setProperty('--cast-color', castColor)
+      actorEl.classList.add('casting')
+    }
+
+    setTimeout(async () => {
+      if (actorEl) actorEl.classList.remove('casting')
+
+      const animLayer = document.getElementById('anim-layer')
+      if (!animLayer) { resolve(); return }
+
+      if (animType === 'dash') {
+        // 物理冲刺
+        const toEl = getTargetEl(targets[0])
+        await playDashAnimation(actorEl, toEl, cfg || { dashScale: 1.0, afterImg: '⚔' })
+
+      } else if (animType === 'meteor') {
+        // 流星雨：收集所有目标的屏幕位置，分散砸向每个目标
+        const targetPositions = targets
+          .map(t => getTargetEl(t))
+          .filter(Boolean)
+          .map(el => getScenePos(el))
+        await playMeteorAnimation(animLayer, cfg || {}, targetPositions)
+
+      } else if (animType === 'lightning') {
+        // 闪电图片从上砸下，依次轰炸每个目标
+        const targetPositions = targets
+          .map(t => getTargetEl(t))
+          .filter(Boolean)
+          .map(el => getScenePos(el))
+        await playLightningAnimation(animLayer, cfg || {}, targetPositions)
+
+      } else if (animType === 'buff') {
+        // 增益光环
+        await playBuffAnimation(actorEl, cfg || { color: '#c084fc' })
+
+      } else {
+        // 投射物（魔法默认）
+        const projCfg  = cfg || {}
+        const size     = projCfg.size || 24
+        const flyTime  = projCfg.flyTime || 380
+        const arc      = projCfg.arc || 60
+        const multi    = projCfg.multi || false
+        const projColor = projCfg.color || null
+
+        const fromEl = actorEl?.querySelector('.char-sprite') || actorEl
+        const hitTargets = multi ? targets : [targets[0]]
+
+        await Promise.all(hitTargets.map((target, ti) => new Promise(res => {
+          const toEl = getTargetEl(target)
+          if (!fromEl || !toEl) { res(); return }
+
+          const from = getScenePos(fromEl)
+          const to   = getScenePos(toEl)
+          const midX = (from.x + to.x) / 2 + (ti - (hitTargets.length-1)/2) * 30
+          const midY = Math.min(from.y, to.y) - arc
+
+          const proj = createProjectile(element, size, projColor)
+          proj.style.left = from.x + 'px'
+          proj.style.top  = from.y + 'px'
+          animLayer.appendChild(proj)
+
+          const startTime = performance.now()
+          const delay = ti * 80
+          setTimeout(() => {
+            function af(now) {
+              const t    = Math.min(1, (now - startTime - delay) / flyTime)
+              if (t < 0) { requestAnimationFrame(af); return }
+              const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t
+              const bx = (1-ease)**2*from.x + 2*(1-ease)*ease*midX + ease**2*to.x
+              const by = (1-ease)**2*from.y + 2*(1-ease)*ease*midY + ease**2*to.y
+              proj.style.left = (bx - (proj.offsetWidth||size)/2) + 'px'
+              proj.style.top  = (by - (proj.offsetHeight||size)/2) + 'px'
+              if (element === 'fire') proj.style.transform = `rotate(${t*360}deg) scale(${1+t*0.4})`
+              // 水系（水晶之枪）：保持朝向目标的角度
+              if (element === 'water') {
+                const angle = Math.atan2(to.y - from.y, to.x - from.x) * 180 / Math.PI
+                proj.style.transform = `rotate(${angle}deg)`
+                proj.style.left = (bx - proj.offsetWidth + 4) + 'px'
+                proj.style.top  = (by - proj.offsetHeight/2) + 'px'
+              }
+              // 箭矢：始终朝向目标（实时计算切线方向）
+              if (element === 'arrow') {
+                const dx = to.x - bx
+                const dy = to.y - by
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI
+                proj.style.transform = `rotate(${angle}deg)`
+                proj.style.left = (bx - proj.offsetWidth * 0.85) + 'px'
+                proj.style.top  = (by - (proj.offsetHeight||4)/2) + 'px'
+              }
+              if (t < 1) requestAnimationFrame(af)
+              else { proj.remove(); res() }
+            }
+            requestAnimationFrame(af)
+          }, delay)
+        })))
+      }
+      resolve()
+    }, castTime)
+  })
+}
+
+// 命中特效 + 浮动伤害数字
+function showHitEffects(targets, logs) {
+  if (!_animMode) return
+  const animLayer = document.getElementById('anim-layer')
+  if (!animLayer) return
+
+  // 解析 logs 里的伤害/治疗数字
+  const numbers = []
+  logs.forEach(log => {
+    const isCrit  = log.text.includes('[暴击!]')
+    const isHeal  = log.cls === 'log-heal'
+    const isMiss  = log.cls === 'log-evade'
+    if (isMiss) { numbers.push({ val: 'MISS', type: 'miss' }); return }
+    const m = log.text.match(/(\d+)\s*点/)
+    if (!m) return
+    numbers.push({ val: m[1], type: isCrit ? 'crit' : isHeal ? 'heal' : 'damage' })
+  })
+
+  // 对每个目标播放受击动画
+  targets.forEach((target, ti) => {
+    const tEl = getTargetEl(target)
+    if (!tEl) return
+
+    // 受击闪白
+    let flashEl
+    if (target.isEnemy) {
+      const isBossOnly = battleMode === 'boss' || (battleMode === 'gauntlet' && GAUNTLET_WAVES[gauntletWave]?.type === 'boss')
+      if (isBossOnly) {
+        flashEl = document.getElementById('boss-icon')
+      } else if (battleMode === 'minion') {
+        const idx = enemies.indexOf(target)
+        if (idx === 0) flashEl = document.getElementById('boss-icon')
+        else flashEl = document.querySelector(`#elite-display .elite-wrap:nth-child(${idx})`)
+      } else {
+        const idx = enemies.indexOf(target)
+        flashEl = idx >= 0 ? document.querySelector(`#elite-display .elite-wrap:nth-child(${idx+1})`) : null
+      }
+    } else {
+      flashEl = document.querySelector(`#party-sprites .char-sprite-wrap:nth-child(${players.indexOf(target)+1})`)
+    }
+    if (flashEl) {
+      flashEl.classList.add('hit-flash')
+      setTimeout(() => flashEl.classList.remove('hit-flash'), 250)
+    }
+
+    // 屏幕震动（暴击或技能命中时）
+    const hasCrit = numbers.some(n => n.type === 'crit')
+    if (hasCrit || numbers.length > 0) {
+      const scene = document.getElementById('battle-scene')
+      scene.classList.add('screen-shake')
+      setTimeout(() => scene.classList.remove('screen-shake'), 400)
+    }
+
+    // 浮动数字
+    const pos = getScenePos(tEl)
+    numbers.forEach((n, ni) => {
+      const numEl = document.createElement('div')
+      numEl.className = `float-num ${n.type}`
+      numEl.textContent = n.val
+      numEl.style.left = (pos.x + (ni - (numbers.length-1)/2) * 28) + 'px'
+      numEl.style.top  = (pos.y - 20) + 'px'
+      animLayer.appendChild(numEl)
+
+      const floatH = n.type === 'crit' ? -80 : -55
+      const dur    = n.type === 'crit' ? 1100 : 900
+      numEl.animate(
+        [{ transform:'translateX(-50%) translateY(0)', opacity:1 },
+         { transform:`translateX(-50%) translateY(${floatH}px)`, opacity:0 }],
+        { duration: dur, delay: ni * 80, easing:'ease-out', fill:'forwards' }
+      ).onfinish = () => numEl.remove()
+    })
+  })
+}
+
+// === UI LAYER ===
+// ============================================================
+
+function renderPlayerSide() {
+  // ── 立绘区 ──
+  const spritesContainer = document.getElementById('party-sprites')
+  spritesContainer.innerHTML = ''
+  players.forEach((p, i) => {
+    const isActive = currentActor && currentActor.id === p.id
+    const isDead   = p.currentHp <= 0
+    const wrap = document.createElement('div')
+    wrap.className = 'char-sprite-wrap' +
+      (isActive ? ' active-turn' : '') +
+      (isDead   ? ' dead' : '')
+
+    const imgEl = document.createElement('img')
+    imgEl.className = 'char-sprite'
+    imgEl.alt = p.name
+
+    const src = PORTRAITS[p.id]
+    if (src) {
+      removeWhiteBg(src).then(url => {
+        imgEl.src = url || src
+      })
+    } else {
+      imgEl.style.display = 'none'
+      const emojiSpan = document.createElement('span')
+      emojiSpan.style.cssText = 'font-size:3.5rem;line-height:1'
+      emojiSpan.textContent = AVATAR_ICONS[p.id] || '👤'
+      wrap.appendChild(emojiSpan)
+    }
+
+    if (isActive) {
+      const arrow = document.createElement('div')
+      arrow.className = 'cursor-arrow'
+      arrow.textContent = '►'
+      wrap.appendChild(arrow)
+    }
+    wrap.appendChild(imgEl)
+    const nameTag = document.createElement('div')
+    nameTag.className = 'char-sprite-name'
+    nameTag.textContent = p.name
+    wrap.appendChild(nameTag)
+
+    spritesContainer.appendChild(wrap)
+  })
+
+  // 底部状态栏
+  const statusContainer = document.getElementById('party-status')
+  statusContainer.innerHTML = ''
+  players.forEach(p => {
+    const isActive = currentActor && currentActor.id === p.id
+    const isDead   = p.currentHp <= 0
+    const hpPct    = Math.max(0, p.currentHp / p.maxHp * 100)
+    const mpPct    = Math.max(0, p.currentMp / p.maxMp * 100)
+
+    // 收集所有状态标签
+    const tags = []
+    // debuff：灼烧
+    for (const e of (p.statusEffects || [])) {
+      if (e.type === 'burn')          tags.push(`<span class="status-tag st-burn">🔥燃烧 ${e.turnsLeft}T</span>`)
+      if (e.type === 'hot')           tags.push(`<span class="status-tag st-buff">💚圣光 +${e.power} ${e.turnsLeft}T</span>`)
+      if (e.type === 'bleed')         tags.push(`<span class="status-tag st-atk">🩸流血 ${e.power}/T ${e.turnsLeft}T</span>`)
+      if (e.type === 'thunderShield') tags.push(`<span class="status-tag st-buff">⚡雷盾 -${e.power} ${e.turnsLeft}T</span>`)
+      if (e.type === 'slow')         tags.push(`<span class="status-tag st-time">🐇减速 ${e.turnsLeft}T</span>`)
+      if (e.type === 'magDefDown')   tags.push(`<span class="status-tag st-atk">👁魔防↓ ${e.turnsLeft}T</span>`)
+      if (e.type === 'poison')       tags.push(`<span class="status-tag st-burn">☠️中毒 ${e.power}/T ${e.turnsLeft}T</span>`)
+      if (e.type === 'atkDebuff')    tags.push(`<span class="status-tag st-atk">⚔️攻击↓ ${e.turnsLeft}T</span>`)
+      if (e.type === 'defDebuff')    tags.push(`<span class="status-tag st-atk">🛡防御↓ ${e.turnsLeft}T</span>`)
+      if (e.type === 'selfDefDebuff') tags.push(`<span class="status-tag st-atk">💢防御↓ ${e.turnsLeft}T</span>`)
+    if (p.id === 'dennis' && (p._eagleCritStacks || 0) > 0) tags.push(`<span class="status-tag st-buff">🦅鹰眼 ${p._eagleCritStacks}层</span>`)
+    if (p.id === 'nalong' && p._pirateRageTurn) tags.push(`<span class="status-tag st-buff">☠️海盗之魂</span>`)
+    if (p._treasureBoost > 0) tags.push(`<span class="status-tag st-buff">💰宝藏加持</span>`)
+    if (p.id === 'mathew' && (p._momentum || 0) > 0) tags.push(`<span class="status-tag st-buff">💪气势 ${p._momentum}/5层</span>`)
+    if (p.id === 'xia_yuyao' && (p._flameDance || 0) > 0) tags.push(`<span class="status-tag st-burn">🔥烈焰之舞 ${p._flameDance}/4层</span>`)
+    }
+    // debuff：时间停止
+    if (p.skipNextTurn) tags.push(`<span class="status-tag st-time">⌛封印 1T</span>`)
+    if ((p.shield || 0) > 0) tags.push(`<span class="status-tag st-buff">🛡护盾 ${p.shield}</span>`)
+    if ((p._phantomTurns || 0) > 0) tags.push(`<span class="status-tag st-dark">👻幻化 ${p._phantomTurns}T</span>`)
+    if ((p._echoPending  || 0) > 0) tags.push(`<span class="status-tag st-buff">💠回响 ${p._echoPending}T</span>`)
+    if (p._hunterBoost) tags.push(`<span class="status-tag st-atk">🏹猎手蓄力</span>`)
+    if (p._dragonSoulBoost) tags.push(`<span class="status-tag st-buff">🐉龙魂共鸣</span>`)
+    if (p.id === 'grifon' && (p._demonStacks || 0) > 0 && !(p._demonForm > 0)) tags.push(`<span class="status-tag st-dark">😈魔化 ${p._demonStacks}/3</span>`)
+    if (p.id === 'grifon' && (p._demonForm || 0) > 0) tags.push(`<span class="status-tag st-dark">👿恶魔 ${p._demonForm}T</span>`)
+    if (p.id === 'xiaoyao' && (p._summonBonus || 0) > 0) tags.push(`<span class="status-tag st-buff">🐉召唤+${p._summonBonus}%</span>`)
+    // buff：有持续时间的强化（buffTimers）
+    for (const bt of (p.buffTimers || [])) {
+      if (bt.type === 'magBuff') tags.push(`<span class="status-tag st-dark">✨魔强+${bt.value}% ${bt.turnsLeft}T</span>`)
+      if (bt.type === 'atkBuff') tags.push(`<span class="status-tag st-buff">⚔攻强+${bt.value} ${bt.turnsLeft}T</span>`)
+      if (bt.type === 'defBuff') tags.push(`<span class="status-tag st-buff">🛡防强+${bt.value} ${bt.turnsLeft}T</span>`)
+    }
+    // buff：无持续时间的临时加成（atkBuff/defBuff 来自被动等）
+    const permAtk = (p.atkBuff || 0) - (p.buffTimers || []).filter(bt=>bt.type==='atkBuff').reduce((s,bt)=>s+bt.value,0)
+    const permDef = (p.defBuff || 0) - (p.buffTimers || []).filter(bt=>bt.type==='defBuff').reduce((s,bt)=>s+bt.value,0)
+    if (permAtk > 0) tags.push(`<span class="status-tag st-buff">⚔+${permAtk}</span>`)
+    if (permDef > 0) tags.push(`<span class="status-tag st-buff">🛡+${permDef}</span>`)
+    if ((p.magBuff || 0) > 0 && !(p.buffTimers || []).some(bt=>bt.type==='magBuff')) {
+      tags.push(`<span class="status-tag st-dark">✨魔+${p.magBuff}%</span>`)
+    }
+
+    const tagsHtml = tags.join('')
+
+    const card = document.createElement('div')
+    card.className = 'status-card ff6-window' +
+      (isActive ? ' active-turn' : '') +
+      (isDead   ? ' dead' : '')
+    card.innerHTML = `
+      <div class="status-card-name">${p.name.split('·')[0].split(' ')[0]}</div>
+      <div class="status-bar-row">
+        <span class="status-bar-label">HP</span>
+        <div class="status-bar-track"><div class="status-bar-fill status-bar-hp" style="width:${hpPct}%"></div></div>
+        <span class="status-bar-val hp-val">${p.currentHp}</span>
+      </div>
+      <div class="status-bar-row">
+        <span class="status-bar-label">MP</span>
+        <div class="status-bar-track"><div class="status-bar-fill status-bar-mp" style="width:${mpPct}%"></div></div>
+        <span class="status-bar-val mp-val">${p.currentMp}</span>
+      </div>
+      <div class="status-effects-row">${tagsHtml}</div>`
+    statusContainer.appendChild(card)
+  })
+}
+
+function renderBossBar() {
+  const hpPct = Math.max(0, boss.currentHp / boss.maxHp * 100)
+  const mpPct = Math.max(0, boss.currentMp / boss.maxMp * 100)
+  document.getElementById('boss-hp-bar').style.width = hpPct + '%'
+  document.getElementById('boss-mp-bar').style.width = mpPct + '%'
+  document.getElementById('boss-hp-val').textContent = `${boss.currentHp} / ${boss.maxHp}`
+  document.getElementById('boss-mp-val').textContent = `${boss.currentMp} / ${boss.maxMp}`
+
+  // 去白底处理 Boss 图片
+  const bossImg = document.getElementById('boss-img')
+  if (bossImg && bossImg.src && !bossImg._bgRemoved) {
+    bossImg._bgRemoved = true
+    removeWhiteBg(bossImg.src).then(url => { if (url) bossImg.src = url })
+  }
+
+  const icon = document.getElementById('boss-icon')
+  if (hpPct < 40) icon.classList.add('rage')
+  else            icon.classList.remove('rage')
+
+  // Boss 状态标签
+  const bossTags = []
+  for (const e of (boss.statusEffects || [])) {
+    if (e.type === 'burn') bossTags.push(`<span class="status-tag st-burn">🔥燃烧 ${e.turnsLeft}T</span>`)
+  }
+  if (boss.skipNextTurn) bossTags.push(`<span class="status-tag st-time">⌛封印 1T</span>`)
+  if ((boss._demonMarks || 0) > 0) bossTags.push(`<span class="status-tag st-dark">👁堕落 ${boss._demonMarks}/3层</span>`)
+  document.getElementById('boss-status-tags').innerHTML = bossTags.join('')
+}
+
+function renderBattlefield() {
+  if (battleMode === 'boss') {
+    renderBossBar()
+  } else if (battleMode === 'gauntlet') {
+    const wave = GAUNTLET_WAVES[gauntletWave]
+    if (wave.type === 'boss') renderBossBar()
+    else renderEliteGrid()
+  } else if (battleMode === 'minion') {
+    renderBossBar()
+    renderEliteGrid()
+  } else {
+    renderEliteGrid()
+  }
+  renderPlayerSide()
+}
+
+function renderEliteGrid() {
+  const container = document.getElementById('elite-display')
+  if (!container) return
+  container.innerHTML = ''
+  // minion 模式：跳过 index 0（LHW 已用 boss-display 显示），只渲染小弟
+  const renderList = battleMode === 'minion' ? enemies.slice(1) : enemies
+  renderList.forEach((e, i) => {
+    const isDead   = e.currentHp <= 0
+    const hpPct    = Math.max(0, e.currentHp / e.maxHp * 100)
+    const isActive = currentActor && currentActor.id === e.id
+    const tags = []
+    for (const eff of (e.statusEffects || [])) {
+      if (eff.type === 'burn')  tags.push(`<span class="status-tag st-burn" style="font-size:0.44rem">🔥${eff.turnsLeft}T</span>`)
+      if (eff.type === 'bleed') tags.push(`<span class="status-tag st-atk"  style="font-size:0.44rem">🩸${eff.turnsLeft}T</span>`)
+    }
+    if ((e._demonMarks || 0) > 0) tags.push(`<span class="status-tag st-dark" style="font-size:0.44rem">👁${e._demonMarks}</span>`)
+    if (e.skipNextTurn) tags.push(`<span class="status-tag st-time" style="font-size:0.44rem">⌛</span>`)
+
+    const wrap = document.createElement('div')
+    wrap.className = 'elite-wrap' +
+      (isDead ? ' dead' : '') +
+      (isActive ? ' active-turn' : '')
+    wrap.innerHTML = `
+      <span id="elite-icon-${i}" class="elite-icon">${PORTRAITS[e.id] ? `<img src="${PORTRAITS[e.id]}" alt="${e.name}">` : e.icon}</span>
+      <div class="elite-name-tag">${e.name}</div>
+      <div class="elite-hp-bar-wrap">
+        <div class="elite-hp-bar-fill" style="width:${hpPct}%"></div>
+      </div>
+      ${tags.length ? `<div style="display:flex;gap:2px;flex-wrap:wrap;justify-content:center">${tags.join('')}</div>` : ''}
+    `
+    container.appendChild(wrap)
+    // 去白底
+    if (PORTRAITS[e.id]) {
+      const img = wrap.querySelector('img')
+      if (img && !img._bgRemoved) {
+        img._bgRemoved = true
+        removeWhiteBg(PORTRAITS[e.id]).then(url => { if (url && img) img.src = url })
+      }
+    }
+  })
+}
+
+function appendLog(text, cls = 'log-sys') {
+  // 原始日志容器（隐藏，保留供历史查询）
+  const log = document.getElementById('battle-log')
+  const p = document.createElement('p')
+  p.className = 'log-entry ' + cls
+  p.textContent = text
+  log.appendChild(p)
+  log.scrollTop = log.scrollHeight
+
+  // 同步到底部迷你日志（最多保留5行）
+  const miniLog = document.getElementById('mini-log')
+  if (miniLog) {
+    const mp = document.createElement('p')
+    mp.className = 'log-entry ' + cls
+    mp.textContent = text
+    miniLog.appendChild(mp)
+    miniLog.scrollTop = miniLog.scrollHeight
+  }
+}
+
+function showPanel(id) {
+  for (const pid of ['cmd-main', 'cmd-skills', 'cmd-target-ally', 'cmd-target-enemy', 'cmd-wait', 'cmd-result']) {
+    document.getElementById(pid).hidden = (pid !== id)
+  }
+}
+
+function buildSkillButtons(actor) {
+  const container = document.getElementById('skill-buttons')
+  container.innerHTML = ''
+
+  for (const skillName of actor.battleSkills) {
+    const mpCost   = actor._rawSkills?.find(s => s.name === skillName)?.mp_cost ?? 0
+    const cdLeft   = actor.cooldowns?.[skillName] || 0
+    const skillDef = SKILL_DATA[skillName]
+    // single_dead_ally / all_dead_ally：只有队伍有人倒下才可用
+    const reviveReady = (skillDef?.target === 'single_dead_ally' || skillDef?.target === 'all_dead_ally')
+      ? players.some(p => p.currentHp <= 0) : true
+    const canUse   = actor.currentMp >= mpCost && cdLeft === 0 && reviveReady
+    const btn = document.createElement('button')
+    btn.className = 'cmd-btn'
+    btn.disabled = !canUse
+    const cdLabel = cdLeft > 0 ? ` CD:${cdLeft}` : (mpCost > 0 ? mpCost + ' MP' : 'Free')
+    btn.innerHTML = `${skillName}<span class="skill-mp">${cdLabel}</span>`
+    btn.addEventListener('click', () => {
+      if (!canUse) return
+      const skillDef = SKILL_DATA[skillName]
+      if (skillDef?.target === 'single_ally') {
+        actor.currentMp -= mpCost
+        showAllyTargetPicker(actor, skillName, false, (target) => {
+          handleSkillUse(actor, skillName, [target])
+        })
+      } else if (skillDef?.target === 'single_dead_ally') {
+        const hasDead = players.some(p => p.currentHp <= 0)
+        if (!hasDead) return
+        actor.currentMp -= mpCost
+        showAllyTargetPicker(actor, skillName, true, (target) => {
+          handleSkillUse(actor, skillName, [target])
+        })
+      } else if (
+        (battleMode === 'elite' || battleMode === 'gauntlet' || battleMode === 'minion') &&
+        (skillDef?.target === 'single' || !skillDef?.target) &&
+        (skillDef?.type === 'physical' || skillDef?.type === 'magic') &&
+        getAliveEnemies().length > 1
+      ) {
+        // 精英模式多怪：单体技能用战场箭头选择目标
+        actor.currentMp -= mpCost
+        showBattlefieldTargetPicker(actor, skillName, (target) => {
+          handleSkillUse(actor, skillName, [target])
+        })
+      } else {
+        actor.currentMp -= mpCost
+        handleSkillUse(actor, skillName)
+      }
+    })
+    container.appendChild(btn)
+  }
+
+  const backBtn = document.createElement('button')
+  backBtn.className = 'cmd-btn back-btn'
+  backBtn.textContent = '返回'
+  backBtn.addEventListener('click', () => showPanel('cmd-main'))
+  container.appendChild(backBtn)
+}
+
+// ============================================================
+// === MAIN ===
+// ============================================================
+
+function getAliveEnemies() { return enemies.filter(e => e.currentHp > 0) }
+
+function getSkillTargets(actor, skillDef) {
+  const target = skillDef?.target || 'single'
+  const aliveEnemies = getAliveEnemies()
+  if (target === 'self')           return [actor]
+  if (target === 'all_enemies')    return actor.isEnemy ? getAlivePlayers() : aliveEnemies
+  if (target === 'all_allies')     return actor.isEnemy ? getAliveEnemies() : getAlivePlayers()
+  if (target === 'all_dead_ally')  return players.filter(p => p.currentHp <= 0)
+  // single_ally 需要玩家选择，不在此处自动解析
+  if (actor.isEnemy) {
+    const alive = getAlivePlayers()
+    return [alive[Math.floor(Math.random() * alive.length)]]
+  }
+  // 玩家单体技能：自动集火 HP 比例最低的存活敌人
+  if (aliveEnemies.length === 0) return []
+  return [aliveEnemies.reduce((a, b) => a.currentHp / a.maxHp <= b.currentHp / b.maxHp ? a : b)]
+}
+
+// ── 战场目标箭头选择 ──
+
+function renderTargetArrows() {
+  document.querySelectorAll('.target-arrow').forEach(el => el.remove())
+  document.querySelectorAll('.elite-wrap.target-selected').forEach(el => {
+    el.classList.remove('target-selected')
+    el.querySelector('.elite-name-tag') && (el.querySelector('.elite-name-tag').style.borderColor = '')
+  })
+
+  const aliveEnemies = getAliveEnemies()
+  const displayEl = document.getElementById('elite-display')
+  if (!displayEl) return
+  const displayRect = displayEl.getBoundingClientRect()
+
+  aliveEnemies.forEach((e, i) => {
+    const rawIdx = enemies.indexOf(e)
+    // minion 模式：小弟的 elite-icon id 从 0 开始（跳过 index 0 的 LHW）
+    const iconId = battleMode === 'minion' ? `elite-icon-${rawIdx - 1}` : `elite-icon-${rawIdx}`
+    const iconEl = document.getElementById(iconId)
+    if (!iconEl) return
+
+    const wrap = iconEl.closest('.elite-wrap')
+    if (i === _targetSelectIdx && wrap) wrap.classList.add('target-selected')
+
+    const iconRect = iconEl.getBoundingClientRect()
+    const arrow = document.createElement('div')
+    arrow.className = 'target-arrow'
+    arrow.textContent = '▼'
+    arrow.style.left = (iconRect.left + iconRect.width / 2 - displayRect.left) + 'px'
+    arrow.style.top  = (iconRect.top - displayRect.top - 34) + 'px'
+    if (i !== _targetSelectIdx) {
+      arrow.style.fontSize   = '0.85rem'
+      arrow.style.color      = 'rgba(255,255,255,0.25)'
+      arrow.style.textShadow = 'none'
+      arrow.style.animation  = 'none'
+    }
+    displayEl.appendChild(arrow)
+  })
+}
+
+function confirmTargetSelection() {
+  const target = getAliveEnemies()[_targetSelectIdx]
+  const cb = _targetSelectCb
+  cancelTargetSelection()
+  if (target && cb) cb(target)
+}
+
+function cancelTargetSelection() {
+  _targetSelectMode = false
+  _targetSelectCb   = null
+  document.querySelectorAll('.target-arrow').forEach(el => el.remove())
+  document.querySelectorAll('.elite-wrap.target-selected').forEach(el => {
+    el.classList.remove('target-selected')
+  })
+  // 恢复 pointer-events
+  document.querySelectorAll('#elite-display .elite-wrap').forEach(el => {
+    el.style.cursor = ''
+    el.style.pointerEvents = ''
+    if (el._targetClickHandler) {
+      el.removeEventListener('click', el._targetClickHandler)
+      delete el._targetClickHandler
+    }
+  })
+  document.getElementById('elite-display').style.pointerEvents = 'none'
+}
+
+function showBattlefieldTargetPicker(actor, skillName, onSelect) {
+  const aliveEnemies = getAliveEnemies()
+  if (aliveEnemies.length === 0) return
+  if (aliveEnemies.length === 1) { onSelect(aliveEnemies[0]); return }
+
+  _targetSelectMode = true
+  _targetSelectIdx  = 0
+  _targetSelectCb   = onSelect
+
+  // 底部显示提示
+  showPanel('cmd-target-enemy')
+  document.getElementById('enemy-target-buttons').innerHTML =
+    '<span style="color:var(--subtext);font-size:0.65rem;letter-spacing:0.05em">← → 方向键切换 · Enter 确认 · Esc 取消 · 或点击目标</span>'
+
+  renderTargetArrows()
+
+  // 开启精英区域点击
+  const displayEl = document.getElementById('elite-display')
+  displayEl.style.pointerEvents = 'auto'
+  aliveEnemies.forEach((e, i) => {
+    const rawIdx = enemies.indexOf(e)
+    // minion 模式小弟从第1个 elite-wrap 开始（LHW 不在 elite-display 里）
+    const wrapNth = battleMode === 'minion' ? rawIdx : rawIdx + 1
+    const wrap = document.querySelector(`#elite-display .elite-wrap:nth-child(${wrapNth})`)
+    if (!wrap) return
+    wrap.style.cursor = 'pointer'
+    wrap.style.pointerEvents = 'auto'
+    wrap._targetClickHandler = () => {
+      _targetSelectIdx = i
+      renderTargetArrows()
+      setTimeout(() => confirmTargetSelection(), 80)
+    }
+    wrap.addEventListener('click', wrap._targetClickHandler)
+  })
+}
+
+// 弹出敌方目标选择面板（精英模式单体技能用），选完后回调 onSelect(target)
+function showEnemyTargetPicker(actor, skillName, onSelect) {
+  const container = document.getElementById('enemy-target-buttons')
+  container.innerHTML = ''
+
+  for (const e of enemies) {
+    const isDead = e.currentHp <= 0
+    const hpPct  = Math.round(e.currentHp / e.maxHp * 100)
+    const btn = document.createElement('button')
+    btn.className = 'cmd-btn' + (isDead ? '' : ' ally-btn')
+    btn.style.cssText = isDead ? '' : 'border-color:var(--atk);color:var(--atk);background:rgba(248,113,113,0.08)'
+    btn.disabled = isDead
+    btn.innerHTML = `${e.icon} ${e.name}<span class="target-hp">HP ${e.currentHp}/${e.maxHp} (${hpPct}%)</span>`
+    btn.addEventListener('click', () => {
+      if (isDead) return
+      onSelect(e)
+    })
+    container.appendChild(btn)
+  }
+
+  const backBtn = document.createElement('button')
+  backBtn.className = 'cmd-btn back-btn'
+  backBtn.textContent = '返回'
+  backBtn.addEventListener('click', () => showPanel('cmd-skills'))
+  container.appendChild(backBtn)
+
+  showPanel('cmd-target-enemy')
+}
+
+// 弹出己方目标选择面板，选完后回调 onSelect(target)
+function showAllyTargetPicker(actor, skillName, deadOnly, onSelect) {
+  const container = document.getElementById('ally-target-buttons')
+  container.innerHTML = ''
+
+  for (const p of players) {
+    const isDead   = p.currentHp <= 0
+    // deadOnly 模式：只列出倒下的角色；普通模式：只列出存活的角色
+    if (deadOnly ? !isDead : isDead) continue
+    const hpPct  = Math.round(p.currentHp / p.maxHp * 100)
+    const btn = document.createElement('button')
+    btn.className = 'cmd-btn ally-btn'
+    btn.innerHTML = deadOnly
+      ? `${p.icon} ${p.name}<span class="target-hp">已倒下</span>`
+      : `${p.icon} ${p.name}<span class="target-hp">HP ${p.currentHp}/${p.maxHp} (${hpPct}%)</span>`
+    btn.addEventListener('click', () => onSelect(p))
+    container.appendChild(btn)
+  }
+
+  const backBtn = document.createElement('button')
+  backBtn.className = 'cmd-btn back-btn'
+  backBtn.textContent = '返回'
+  backBtn.addEventListener('click', () => showPanel('cmd-skills'))
+  container.appendChild(backBtn)
+
+  showPanel('cmd-target-ally')
+}
+
+function handlePlayerAttack(actor) {
+  const aliveEnemies = getAliveEnemies()
+  if (aliveEnemies.length === 0) { afterPlayerAction(); return }
+  // 集火 HP 比例最低的敌人
+  const target = aliveEnemies.reduce((a, b) => a.currentHp/a.maxHp <= b.currentHp/b.maxHp ? a : b)
+  if (_animMode) {
+    const fakeSkillDef = actor.id === 'jessica'
+      ? { type: 'projectile', element: 'arrow', name: '__attack__' }
+      : { type: 'physical', element: null }
+    playSkillAnimation(actor, fakeSkillDef, [target]).then(() => {
+      const logs = executeAction(actor, '__attack__', [target])
+      logs.forEach(l => appendLog(l.text, l.cls))
+      showHitEffects([target], logs)
+      renderBattlefield()
+      setTimeout(() => afterPlayerAction(), 400)
+    })
+  } else {
+    const logs = executeAction(actor, '__attack__', [target])
+    logs.forEach(l => appendLog(l.text, l.cls))
+    renderBattlefield()
+    afterPlayerAction()
+  }
+}
+
+async function handleSkillUse(actor, skillName, presetTargets) {
+  showPanel('cmd-wait')
+  document.getElementById('wait-msg').textContent = `${actor.name} 使用了 ${skillName}...`
+
+  const skillDef = SKILL_DATA[skillName]
+  const targets  = presetTargets || getSkillTargets(actor, skillDef)
+
+  // 播放施法动画
+  await playSkillAnimation(actor, skillDef, targets)
+
+  // 执行战斗逻辑
+  const logs = executeAction(actor, skillName, targets)
+  logs.forEach(l => appendLog(l.text, l.cls))
+
+  // 命中特效 + 浮动数字
+  const dmgTargets = (skillDef?.target === 'all_allies' || skillDef?.target === 'self' || skillDef?.revive || skillDef?.shieldRate)
+    ? [] : targets
+  showHitEffects(dmgTargets, logs)
+  renderBattlefield()
+
+  // 幻化：若施法者处于幻化状态，500ms后再施放一次相同技能
+  if (actor._phantomTurns > 0) {
+    await new Promise(r => setTimeout(r, 600))
+    appendLog(`👻 幻化！${actor.name} 再次使用 ${skillName}！`, 'log-drain')
+    await playSkillAnimation(actor, skillDef, targets)
+    const logs2 = executeAction(actor, skillName, targets)
+    logs2.forEach(l => appendLog(l.text, l.cls))
+    showHitEffects(dmgTargets, logs2)
+    renderBattlefield()
+    // 用完一次后才倒计时
+    actor._phantomTurns--
+    if (actor._phantomTurns === 0) {
+      appendLog(`${actor.name} 的幻化状态结束了。`, 'log-sys')
+    }
+  }
+
+  // 回响恩典：若施法者处于回响状态，自动复制一次当前技能（不复制"回响恩典"本身）
+  if ((actor._echoPending || 0) > 0 && skillName !== '回响恩典') {
+    await new Promise(r => setTimeout(r, 600))
+    appendLog(`💠 回响！${actor.name} 的 ${skillName} 产生共鸣再次发动！`, 'log-heal')
+    await playSkillAnimation(actor, skillDef, targets)
+    const echoLogs = executeAction(actor, skillName, targets)
+    echoLogs.forEach(l => appendLog(l.text, l.cls))
+    showHitEffects(dmgTargets, echoLogs)
+    renderBattlefield()
+    actor._echoPending--
+    if (actor._echoPending === 0) {
+      appendLog(`${actor.name} 的回响恩典效果结束了。`, 'log-sys')
+    }
+  }
+
+  setTimeout(() => afterPlayerAction(), _animMode ? 500 : 0)
+}
+
+function afterPlayerAction() {
+  // 纳隆海盗之魂：行动结束后清除本回合MP免费标记
+  if (currentActor && currentActor.id === 'nalong') {
+    currentActor._pirateRageTurn = false
+  }
+  const result = checkBattleEnd()
+  if (result) { endBattle(result); return }
+  nextTurn()
+}
+
+// ── 乌姆被动：幻化 ── 每场战斗受到5次攻击后进入幻化状态，接下来2回合技能施放2次
+function checkUumPhantomPassive(uum, logs) {
+  if (!uum || uum.id !== 'uum' || uum.currentHp <= 0) return
+  uum._hitCount = (uum._hitCount || 0) + 1
+  if (uum._hitCount >= 5 && !uum._phantomTurns) {
+    uum._hitCount = 0
+    uum._phantomTurns = 2
+    logs.push({ text: `👻 乌姆触发幻化！接下来2回合所有技能施放2次！`, cls: 'log-drain' })
+  }
+}
+
+// ── 杰西卡被动：致命猎手 —— 暴击后下次攻击物理伤害+40%
+function applyJessicaHunterPassive(actor, wasCrit, logs) {
+  if (actor.id !== 'jessica') return
+  if (wasCrit) {
+    actor._hunterBoost = true
+    logs.push({ text: `🏹 致命猎手！杰西卡下次攻击物理伤害提升40%！`, cls: 'log-crit' })
+  }
+}
+
+// ── 克拉蕾特被动：奥义·赤焰 —— 任何命中有15%概率使本次伤害×4
+// 死刑技能触发概率翻倍（30%）
+// 返回倍率（触发时=4，未触发=1）
+function applyClarteMystic(actor, dmg, skillName, logs) {
+  if (actor.id !== 'clarete') return dmg
+  const rate = skillName === '死刑' ? 0.30 : 0.15
+  if (Math.random() >= rate) return dmg
+  const boosted = dmg * 4
+  logs.push({ text: `🔴 奥义·赤焰！克拉蕾特的赤焰爆发，伤害暴增至 ${boosted}！`, cls: 'log-crit' })
+  return boosted
+}
+
+// ── 斯蒂芬妮被动：龙魂共鸣 —— 物理技能命中后25%概率下次技能伤害+50%
+function applyStephanieDragonSoul(actor, logs) {
+  if (actor.id !== 'stephanie') return
+  if (Math.random() < 0.25) {
+    actor._dragonSoulBoost = true
+    logs.push({ text: `🐉 龙魂共鸣！斯蒂芬妮下次技能伤害提升50%！`, cls: 'log-crit' })
+  }
+}
+
+// ── 提雅被动：盾反 —— 受到物理攻击后30%概率对攻击者反击（防御值×40%）
+function applyTiyaShieldCounter(tiya, attacker, logs) {
+  if (tiya.id !== 'tiya' || tiya.currentHp <= 0) return
+  if (!attacker || attacker.currentHp <= 0) return
+  if (Math.random() > 0.30) return
+  const counterDmg = Math.max(1, Math.floor((tiya.stats.defense + (tiya.defBuff || 0)) * 0.40))
+  applyDamage(attacker, counterDmg)
+  logs.push({ text: `🛡️ 盾反！提雅以盾反击 ${attacker.name}，造成 ${counterDmg} 点伤害！`, cls: 'log-phys' })
+}
+
+// ── 乌姆：圣光护盾 —— 为全员施加等于自身最大HP 30% 的护盾
+function applyUumShield(actor, targets, logs) {
+  for (const t of targets) {
+    if (t.currentHp <= 0) continue
+    const shieldVal = 500   // 固定吸收500点伤害
+    t.shield = (t.shield || 0) + shieldVal
+    logs.push({ text: `🛡️ ${t.name} 获得 ${shieldVal} 点圣光护盾！`, cls: 'log-sys' })
+  }
+}
+
+// ── 珍妮被动：圣光裂痕 ──
+// 每次物理命中给目标叠加1层裂痕（addRift:true 的技能也叠加）
+// 叠满30层后爆炸，对全体敌人造成神圣伤害，裂痕归零
+const JENNY_RIFT_MAX = 15
+const JENNY_RIFT_EXPLODE_POWER = 720  // 爆炸基础威力（提升300%）
+
+function applyJennyRift(actor, target, logs) {
+  if (actor.id !== 'jenny') return
+  if (!target || target.currentHp <= 0 || !target.isEnemy) return
+  target.holyRift = (target.holyRift || 0) + 1
+  const cur = target.holyRift
+  if (cur < JENNY_RIFT_MAX) {
+    logs.push({ text: `✦ 圣光裂痕：${target.name} [${cur}/${JENNY_RIFT_MAX}层]`, cls: 'log-sys' })
+  } else {
+    // 爆炸！
+    target.holyRift = 0
+    const jenny = actor
+    const dmg = Math.max(1, Math.floor(JENNY_RIFT_EXPLODE_POWER * jenny.magDamageBonus))
+    const allEnemies = getAliveEnemies()
+    logs.push({ text: `💥 圣光裂痕爆发！神圣之光席卷全场！`, cls: 'log-crit' })
+    for (const e of allEnemies) {
+      recordDmg(jenny, e, dmg)
+      logs.push({ text: `✦ ${e.name} 受到 ${dmg} 点神圣爆炸伤害！`, cls: 'log-magic' })
+    }
+  }
+}
+
+// ── 卡米尔被动：辉煌光环 ── 每回合开始，若卡米尔存活，全员回复10MP
+function applyCamillePassive(logs) {
+  const camille = players.find(p => p.id === 'camille' && p.currentHp > 0)
+  if (!camille) return
+  const alive = players.filter(p => p.currentHp > 0)
+  for (const p of alive) {
+    p.currentMp = Math.min(p.maxMp, p.currentMp + 10)
+  }
+  logs.push({ text: `💎 辉煌光环：全员回复 10 MP！`, cls: 'log-heal' })
+}
+
+// ── 爱丽西娅被动：雷神之怒 ── 使用技能后50%概率追加50%伤害
+function tryAliciaPassive(actor, skillDef, targets, logs) {
+  if (actor.id !== 'alicia') return
+  if (!skillDef || skillDef.target === 'all_allies' || skillDef.target === 'single_ally' || skillDef.target === 'self') return
+  if (Math.random() >= 0.5) return
+  logs.push({ text: `⚡ 雷神之怒触发！爱丽西娅的雷霆再度降临！`, cls: 'log-crit' })
+  for (const target of targets) {
+    if (target.currentHp <= 0) continue
+    const result = calcMagicDamage(actor, target, { ...skillDef, base_power: Math.floor(skillDef.base_power * 0.5) })
+    recordDmg(actor, target, result.dmg)
+    logs.push({ text: `⚡ 雷神之怒：${target.name} 受到 ${result.dmg} 点追加雷电伤害！`, cls: 'log-magic' })
+  }
+}
+
+// ── 罗法被动：狂战士 ── 每次造成伤害后对另一随机敌人造成50%溅射；只有一个目标则追加第二击
+function applyLuofaPassive(actor, primaryTarget, dmg, logs) {
+  if (actor.id !== 'luofa' || dmg <= 0) return
+  const bonusDmg = Math.max(1, Math.floor(dmg * 0.5))
+  const aliveEnemies = getAliveEnemies()
+  const others = aliveEnemies.filter(e => e !== primaryTarget)
+  if (others.length > 0) {
+    const splash = others[Math.floor(Math.random() * others.length)]
+    recordDmg(actor, splash, bonusDmg)
+    logs.push({ text: `🪓 狂战士！${splash.name} 受到溅射 ${bonusDmg} 点伤害！`, cls: 'log-phys' })
+  } else if (primaryTarget && primaryTarget.currentHp > 0) {
+    recordDmg(actor, primaryTarget, bonusDmg)
+    logs.push({ text: `🪓 狂战士！${primaryTarget.name} 再受追加 ${bonusDmg} 点伤害！`, cls: 'log-phys' })
+  }
+}
+
+// ── 纳隆被动：海盗之魂 ── 击倒敌人后，下回合MP消耗归零并攻击力+15%持续1回合
+// ── 马修被动：气势 ── 普通攻击命中积累1层（最多5），技能伤害+8%/层，使用技能后归零
+// ── 格利风被动：魔化 ──
+// 每次施放法术后叠1层（最多3）；达3层进入恶魔形态2回合：法术伤害×2、无视冷却
+// 恶魔形态中不再叠层
+function applyGrifonDemonization(actor, logs) {
+  if (actor.id !== 'grifon') return
+  if (actor._demonForm > 0) return  // 恶魔形态中不叠层
+  actor._demonStacks = (actor._demonStacks || 0) + 1
+  if (actor._demonStacks < 3) {
+    logs.push({ text: `😈 魔化！格利风魔化叠加至 ${actor._demonStacks}/3 层！`, cls: 'log-drain' })
+  } else {
+    actor._demonStacks = 0
+    actor._demonForm   = 2
+    // 恶魔形态：清除所有技能冷却
+    actor.cooldowns = {}
+    logs.push({ text: `👿 恶魔降临！格利风进入恶魔形态！法术伤害×2，冷却清除，持续 2 回合！`, cls: 'log-crit' })
+  }
+}
+
+function applyMathewMomentum(actor, isSkill, logs) {
+  if (actor.id !== 'mathew') return
+  actor._momentum = actor._momentum || 0
+  if (isSkill) {
+    if (actor._momentum > 0) {
+      logs.push({ text: `💥 气势释放！马修消耗 ${actor._momentum} 层气势！`, cls: 'log-crit' })
+      actor._momentum = 0
+    }
+  } else {
+    if (actor._momentum < 5) {
+      actor._momentum++
+      logs.push({ text: `💪 气势积累！马修当前气势 ${actor._momentum}/5 层（技能伤害+${actor._momentum * 8}%）`, cls: 'log-sys' })
+    }
+  }
+}
+
+function applyNalongPassive(actor, target, logs) {
+  if (actor.id !== 'nalong') return
+  if (!target || target.currentHp > 0) return
+  actor._pirateRage = true
+  logs.push({ text: `☠️ 海盗之魂！纳隆击倒了目标，下回合MP消耗归零，攻击力大幅提升！`, cls: 'log-crit' })
+}
+
+// ── 小瑶被动：召唤大师 ── 每次使用技能召唤伤害+10%，上限50%，达到后下次召唤触发归零
+// ── 梅里艾尔被动：幸运女神 ── 每回合开始随机触发①MP+20 ②随机敌攻击-20% ③自身HP+8%
+function applyMerielPassive(logs) {
+  const meriel = players.find(p => p.id === 'meriel' && p.currentHp > 0)
+  if (!meriel) return
+  const roll = Math.floor(Math.random() * 3)
+  if (roll === 0) {
+    const alive = players.filter(p => p.currentHp > 0)
+    alive.forEach(p => { p.currentMp = Math.min(p.maxMp, p.currentMp + 20) })
+    logs.push({ text: `🪙 幸运女神：金币雨！全队回复 20 MP！`, cls: 'log-heal' })
+  } else if (roll === 1) {
+    const enemies = getAliveEnemies()
+    if (enemies.length > 0) {
+      const t = enemies[Math.floor(Math.random() * enemies.length)]
+      t.statusEffects = t.statusEffects || []
+      t.statusEffects.push({ type: 'atkDebuff', turnsLeft: 1, value: Math.floor(t.stats.attack * 0.2) })
+      t.stats.attack = Math.max(0, t.stats.attack - Math.floor(t.stats.attack * 0.2))
+      logs.push({ text: `☠️ 幸运女神：海盗诅咒！${t.name} 攻击力降低 20%！`, cls: 'log-sys' })
+    }
+  } else {
+    const heal = Math.max(1, Math.floor(meriel.maxHp * 0.08))
+    applyHeal(meriel, heal)
+    logs.push({ text: `💰 幸运女神：意外之财！梅里艾尔回复 ${heal} 点 HP！`, cls: 'log-heal' })
+  }
+}
+
+function applyXiaoyaoPassive(actor, skillDef, logs) {
+  if (actor.id !== 'xiaoyao') return
+  actor._summonBonus = actor._summonBonus || 0
+  if (actor._summonBonus >= 50) {
+    // 已满，若本次是召唤技能则归零
+    if (skillDef && skillDef.summonSkill) {
+      actor._summonBonus = 0
+      logs.push({ text: `✨ 召唤大师：小瑶的召唤强化归零，重新积累！`, cls: 'log-sys' })
+    }
+    return
+  }
+  actor._summonBonus = Math.min(50, actor._summonBonus + 10)
+  logs.push({ text: `✨ 召唤大师：小瑶召唤伤害提升至 ${actor._summonBonus}%！`, cls: 'log-sys' })
+}
+
+// ── 爱丽西娅：连锁闪电 ── 主目标→随机第二目标(70%)→随机第三目标(40%)
+function executeChainLightning(actor, skillDef, primaryTarget, logs) {  const aliveEnemies = getAliveEnemies()
+  // 第一跳：主目标
+  const r1 = calcMagicDamage(actor, primaryTarget, skillDef)
+  recordDmg(actor, primaryTarget, r1.dmg)
+  logs.push({ text: `⚡ ${actor.name} 的连锁闪电击中 ${primaryTarget.name}，造成 ${r1.dmg} 点伤害！`, cls: 'log-magic' })
+  // 第二跳
+  const pool2 = aliveEnemies.filter(e => e !== primaryTarget)
+  if (pool2.length === 0) return
+  const t2 = pool2[Math.floor(Math.random() * pool2.length)]
+  const p2 = Math.floor(skillDef.base_power * (skillDef.chainBounce1 || 0.7))
+  const r2 = calcMagicDamage(actor, t2, { ...skillDef, base_power: p2 })
+  recordDmg(actor, t2, r2.dmg)
+  logs.push({ text: `⚡ 闪电跳跃至 ${t2.name}，造成 ${r2.dmg} 点伤害！`, cls: 'log-magic' })
+  // 第三跳
+  const pool3 = aliveEnemies.filter(e => e !== primaryTarget && e !== t2)
+  if (pool3.length === 0) return
+  const t3 = pool3[Math.floor(Math.random() * pool3.length)]
+  const p3 = Math.floor(skillDef.base_power * (skillDef.chainBounce2 || 0.4))
+  const r3 = calcMagicDamage(actor, t3, { ...skillDef, base_power: p3 })
+  recordDmg(actor, t3, r3.dmg)
+  logs.push({ text: `⚡ 闪电再度跳跃至 ${t3.name}，造成 ${r3.dmg} 点伤害！`, cls: 'log-magic' })
+}
+
+function tickStatusEffects(unit) {
+  const logs = []
+
+  // 灼烧持续伤害 + 圣光治愈持续回复
+  unit.statusEffects = unit.statusEffects.filter(eff => {
+    if (eff.type === 'burn') {      applyDamage(unit, eff.power)
+      logs.push({ text: `${unit.name} 受到灼烧伤害 ${eff.power} 点！`, cls: 'log-burn' })
+      eff.turnsLeft--
+      if (eff.turnsLeft <= 0) {
+        logs.push({ text: `${unit.name} 的灼烧状态消除了。`, cls: 'log-sys' })
+        return false
+      }
+    }
+    if (eff.type === 'bleed') {
+      applyDamage(unit, eff.power)
+      logs.push({ text: `🩸 ${unit.name} 因流血受到 ${eff.power} 点伤害！`, cls: 'log-atk' })
+      eff.turnsLeft--
+      if (eff.turnsLeft <= 0) {
+        logs.push({ text: `${unit.name} 的流血状态止住了。`, cls: 'log-sys' })
+        return false
+      }
+    }
+    if (eff.type === 'hot') {
+      // 持续治疗回复
+      applyHeal(unit, eff.power)
+      logs.push({ text: `💚 圣光治愈：${unit.name} 回复了 ${eff.power} 点 HP！`, cls: 'log-heal' })
+      // 解除一个负面状态（灼烧优先）
+      if (eff.dispel) {
+        const debuffIdx = unit.statusEffects.findIndex(e => e.type === 'burn')
+        if (debuffIdx >= 0) {
+          const removed = unit.statusEffects.splice(debuffIdx, 1)[0]
+          logs.push({ text: `✨ 圣光驱散了 ${unit.name} 的灼烧状态！`, cls: 'log-sys' })
+        } else if (unit.skipNextTurn) {
+          unit.skipNextTurn = false
+          logs.push({ text: `✨ 圣光解除了 ${unit.name} 的时间封印！`, cls: 'log-sys' })
+        }
+      }
+      eff.turnsLeft--
+      if (eff.turnsLeft <= 0) {
+        logs.push({ text: `${unit.name} 的圣光治愈效果结束了。`, cls: 'log-sys' })
+        return false
+      }
+    }
+    if (eff.type === 'thunderShield') {
+      eff.turnsLeft--
+      if (eff.turnsLeft <= 0) {
+        logs.push({ text: `${unit.name} 的雷光护盾消散了。`, cls: 'log-sys' })
+        return false
+      }
+    }
+    if (eff.type === 'slow') {
+      eff.turnsLeft--
+      if (eff.turnsLeft <= 0) {
+        logs.push({ text: `${unit.name} 的减速状态消除了。`, cls: 'log-sys' })
+        return false
+      }
+    }
+    if (eff.type === 'magDefDown') {
+      eff.turnsLeft--
+      if (eff.turnsLeft <= 0) {
+        unit.stats.magic_defense = Math.min(unit.stats.magic_defense + eff.value, unit.base_magic_defense || unit.stats.magic_defense + eff.value)
+        logs.push({ text: `${unit.name} 的魔防恢复了。`, cls: 'log-sys' })
+        return false
+      }
+    }
+    if (eff.type === 'selfDefDebuff') {
+      eff.turnsLeft--
+      if (eff.turnsLeft <= 0) {
+        unit.stats.defense = Math.min(unit.stats.defense + eff.value, (unit.base_defense || unit.stats.defense + eff.value))
+        logs.push({ text: `${unit.name} 的防御恢复了。`, cls: 'log-sys' })
+        return false
+      }
+    }
+    if (eff.type === 'poison') {
+      applyDamage(unit, eff.power)
+      logs.push({ text: `☠️ ${unit.name} 受到中毒伤害 ${eff.power} 点！`, cls: 'log-burn' })
+      eff.turnsLeft--
+      if (eff.turnsLeft <= 0) {
+        logs.push({ text: `${unit.name} 的中毒状态解除了。`, cls: 'log-sys' })
+        return false
+      }
+    }
+    if (eff.type === 'atkDebuff') {
+      eff.turnsLeft--
+      if (eff.turnsLeft <= 0) {
+        unit.stats.attack = Math.min(unit.stats.attack + eff.value, (unit.base_attack || unit.stats.attack + eff.value))
+        logs.push({ text: `${unit.name} 的攻击力恢复了。`, cls: 'log-sys' })
+        return false
+      }
+    }
+    if (eff.type === 'defDebuff') {
+      eff.turnsLeft--
+      if (eff.turnsLeft <= 0) {
+        unit.stats.defense = Math.min(unit.stats.defense + eff.value, (unit.base_defense || unit.stats.defense + eff.value))
+        logs.push({ text: `${unit.name} 的防御力恢复了。`, cls: 'log-sys' })
+        return false
+      }
+    }
+    return true
+  })
+
+  // buffTimers 倒计时（黑暗升华等有持续时间的 buff）
+  unit.buffTimers = (unit.buffTimers || []).filter(bt => {
+    bt.turnsLeft--
+    if (bt.turnsLeft <= 0) {
+      unit[bt.type] = Math.max(0, (unit[bt.type] || 0) - bt.value)
+      logs.push({ text: `${unit.name} 的 ${bt.type === 'magBuff' ? '魔法强化' : '强化'} 效果消退了。`, cls: 'log-sys' })
+      return false
+    }
+    return true
+  })
+
+  // 冷却倒计时
+  if (unit.cooldowns) {
+    for (const skill of Object.keys(unit.cooldowns)) {
+      unit.cooldowns[skill]--
+      if (unit.cooldowns[skill] <= 0) delete unit.cooldowns[skill]
+    }
+  }
+
+  return logs
+}
+
+function nextTurn() {
+  if (turnQueue.length === 0) {
+    const allCombatants = battleMode === 'minion'
+      ? [...players, ...enemies]
+      : [...players, boss]
+    turnQueue = buildTurnQueue(allCombatants)
+    appendLog('── 新的回合 ──', 'log-sys')
+    const auraLogs = []
+    applyCamillePassive(auraLogs)
+    applyMerielPassive(auraLogs)
+    auraLogs.forEach(l => appendLog(l.text, l.cls))
+    if (auraLogs.length > 0) renderBattlefield()
+  }
+
+  currentActor = turnQueue.shift()
+
+  // 每回合开始结算当前单位的状态效果
+  const statusLogs = tickStatusEffects(currentActor)
+  statusLogs.forEach(l => appendLog(l.text, l.cls))
+  if (statusLogs.length > 0) renderBattlefield()
+
+  // 格利风恶魔形态倒计时（轮到格利风行动时才倒计）
+  if (currentActor.id === 'grifon' && (currentActor._demonForm || 0) > 0) {
+    currentActor._demonForm--
+    if (currentActor._demonForm === 0) {
+      appendLog(`格利风的恶魔形态结束了。`, 'log-sys')
+    }
+  }
+
+  // 葡萄牙7号假死倒计时
+  if (currentActor.id === 'portugal7' && currentActor._diving && (currentActor._diveTimer || 0) > 0) {
+    currentActor._diveTimer--
+    if (currentActor._diveTimer <= 0) {
+      currentActor._diving = false
+      currentActor.currentHp = Math.max(currentActor.currentHp, 1)
+      // 假死结束：7号和LHW永久攻击+20%
+      const pt7AtkBoost = Math.floor(currentActor.stats.attack * 0.2)
+      currentActor.stats.attack += pt7AtkBoost
+      appendLog(`🤿 葡萄牙7号假死结束！爬起来了！攻击力永久提升 ${pt7AtkBoost} 点！`, 'log-crit')
+      const lhw = enemies.find(e => e.id === 'lhw' && e.currentHp > 0)
+      if (lhw) {
+        const lhwAtkBoost = Math.floor(lhw.stats.attack * 0.2)
+        lhw.stats.attack += lhwAtkBoost
+        appendLog(`😤 LHW 看到7号站起来，精神大振！攻击力永久提升 ${lhwAtkBoost} 点！`, 'log-crit')
+      }
+      renderBattlefield()
+    }
+  }
+
+  // 回响回合倒计时（使用技能时才消耗，这里仅做到期检查并渲染图标）
+  // 实际扣减在 handleSkillUse 里触发后执行
+  if ((currentActor._echoPending || 0) > 0) {
+    renderBattlefield()
+  }
+
+  // 纳隆海盗之魂：回合开始时触发攻击加成和MP免费
+  if (currentActor.id === 'nalong' && currentActor._pirateRage) {
+    currentActor._pirateRage = false
+    currentActor._pirateRageTurn = true  // 本回合MP免费
+    const atkBoost = Math.floor(currentActor.stats.attack * 0.15)
+    currentActor.atkBuff = (currentActor.atkBuff || 0) + atkBoost
+    currentActor.buffTimers = currentActor.buffTimers || []
+    currentActor.buffTimers.push({ type: 'atkBuff', value: atkBoost, turnsLeft: 1 })
+    appendLog(`☠️ 海盗之魂爆发！纳隆本回合MP消耗归零，攻击力提升 ${atkBoost} 点！`, 'log-crit')
+    renderBattlefield()
+  }
+
+  // 检查灼烧是否致死
+  if (currentActor.currentHp <= 0) {
+    appendLog(`${currentActor.name} 因灼烧倒下了！`, 'log-burn')
+    const result = checkBattleEnd()
+    if (result) { endBattle(result); return }
+    nextTurn()
+    return
+  }
+
+  // 跳过跳回合的单位
+  if (currentActor.currentHp <= 0 || currentActor.skipNextTurn) {
+    if (currentActor.skipNextTurn) {
+      appendLog(`${currentActor.name} 被时间停止，跳过行动！`, 'log-evade')
+      currentActor.skipNextTurn = false
+    }
+    nextTurn()
+    return
+  }
+
+  renderPlayerSide()
+
+  if (currentActor.isEnemy) {
+    executeBossTurn()
+  } else {
+    showPlayerMenu(currentActor)
+  }
+}
+
+// ── 自动战斗 ──
+let _autoMode = false
+
+// ── 战场目标选择 ──
+let _targetSelectMode = false
+let _targetSelectIdx  = 0
+let _targetSelectCb   = null
+
+// 战斗统计
+let _stats = {}
+function initStats(charList) {
+  _stats = { bossReceived: 0 }  // boss 对我方造成的总伤害
+  for (const c of charList) {
+    _stats[c.id] = { name: c.name, dmgDealt: 0, healDone: 0, dmgTaken: 0 }
+  }
+}
+
+function autoChooseAction(actor) {
+  const rawSkills = actor._rawSkills || []
+  const alive     = players.filter(p => p.currentHp > 0)
+  const minHpPct  = Math.min(...alive.map(p => p.currentHp / p.maxHp))
+  const avgHpPct  = alive.reduce((s, p) => s + p.currentHp / p.maxHp, 0) / alive.length
+  const lowestHp  = alive.slice().sort((a, b) => a.currentHp / a.maxHp - b.currentHp / b.maxHp)[0]
+
+  const candidates = actor.battleSkills.map(name => {
+    const mpCost = rawSkills.find(s => s.name === name)?.mp_cost ?? 0
+    const def    = SKILL_DATA[name]
+    return { name, mpCost, def }
+  }).filter(s => s.def && actor.currentMp >= s.mpCost)
+
+  // 优先级 0：有队友倒下且有复活技能（含群体复活）
+  const deadAlly = players.find(p => p.currentHp <= 0)
+  if (deadAlly) {
+    const revive = candidates.find(s => s.def?.revive || s.def?.reviveAll)
+    if (revive) {
+      actor.currentMp -= revive.mpCost
+      handleSkillUse(actor, revive.name, [deadAlly])
+      return
+    }
+  }
+
+  // 优先级 1：有人 HP < 40% 且有单体治疗/HoT技能
+  if (minHpPct < 0.40) {
+    const heal = candidates.find(s => s.def.type === 'heal' || s.def.hotHeal)
+    if (heal) {
+      actor.currentMp -= heal.mpCost
+      handleSkillUse(actor, heal.name, heal.def.hotHeal ? [lowestHp] : undefined)
+      return
+    }
+  }
+
+  // 优先级 1.5：平均 HP < 70% 且有 HoT 未施加时，给最低血量的人施加
+  if (avgHpPct < 0.70) {
+    const hot = candidates.find(s => s.def.hotHeal && !(lowestHp.statusEffects || []).some(e => e.type === 'hot'))
+    if (hot) {
+      actor.currentMp -= hot.mpCost
+      handleSkillUse(actor, hot.name, [lowestHp])
+      return
+    }
+  }
+
+  // 优先级 2：平均 HP < 60% 且有全体辅助技能（含回血）
+  if (avgHpPct < 0.60) {
+    const aoe_support = candidates.find(s =>
+      s.def.type === 'support' && s.def.target === 'all_allies' && s.def.healFlat
+    )
+    if (aoe_support) {
+      actor.currentMp -= aoe_support.mpCost
+      handleSkillUse(actor, aoe_support.name)
+      return
+    }
+  }
+
+  // 优先级 3：Boss 未被封印时，雪奈以 50% 概率用时间停止
+  if (boss && !boss.skipNextTurn && Math.random() < 0.50) {
+    const stop = candidates.find(s => s.def.skipTurn)
+    if (stop) {
+      actor.currentMp -= stop.mpCost
+      handleSkillUse(actor, stop.name)
+      return
+    }
+  }
+
+  // 优先级 4：选最高 base_power 的攻击/魔法技能
+  const attacks = candidates
+    .filter(s => s.def.type === 'physical' || s.def.type === 'magic')
+    .sort((a, b) => (b.def.base_power || 0) - (a.def.base_power || 0))
+
+  if (attacks.length > 0) {
+    const best = attacks[0]
+    actor.currentMp -= best.mpCost
+    handleSkillUse(actor, best.name)
+  } else {
+    handlePlayerAttack(actor)
+  }
+}
+
+// 根据当前行动角色的立绘位置，计算浮动行动框的坐标
+function positionFloatingCmd(actor) {
+  const spriteWrap = getActorSpriteEl(actor)
+  const cmdEl = document.getElementById('floating-cmd')
+  if (!spriteWrap || !cmdEl) return
+
+  const rect = spriteWrap.getBoundingClientRect()
+  const cmdW = 240, cmdH = 130
+  const margin = 10
+
+  // 默认放在角色左侧
+  let left = rect.left - cmdW - margin
+  let top  = rect.top + rect.height / 2 - cmdH / 2
+
+  // 左侧放不下则放右侧
+  if (left < 8) left = rect.right + margin
+
+  // 上下边界保护
+  top = Math.max(50, Math.min(top, window.innerHeight - cmdH - 8))
+
+  cmdEl.style.left = left + 'px'
+  cmdEl.style.top  = top + 'px'
+}
+
+function showPlayerMenu(actor) {
+  document.getElementById('actor-name').textContent = actor.name
+  const floatCmd = document.getElementById('floating-cmd')
+  if (_autoMode) {
+    floatCmd.hidden = true
+    showPanel('cmd-wait')
+    document.getElementById('wait-msg').textContent = `${actor.name} 自动行动中...`
+    setTimeout(() => autoChooseAction(actor), 300)
+  } else {
+    floatCmd.hidden = false
+    positionFloatingCmd(actor)
+    showPanel('cmd-main')
+  }
+}
+
+function executeBossTurn() {
+  // 隐藏浮动行动框
+  document.getElementById('floating-cmd').hidden = true
+  // currentActor 是当前行动的敌人（boss战=boss，精英战=某只小怪）
+  const enemy = currentActor
+  showPanel('cmd-wait')
+  document.getElementById('wait-msg').textContent = `${enemy.name} 正在行动...`
+
+  // 精英小怪 AI：随机选技能
+  let skill
+  if (enemy === boss && (battleMode === 'boss' || battleMode === 'minion')) {
+    skill = bossChooseSkill() || enemy.skills[0]
+  } else if (enemy.id === 'portugal7') {
+    // 7号：25%概率跳水（未假死时），否则随机普通技能
+    const canDive = !enemy._diving && enemy.skills[2]
+    const roll = Math.random()
+    if (canDive && roll < 0.25) skill = enemy.skills[2]
+    else skill = enemy.skills[Math.random() < 0.6 ? 0 : 1] || enemy.skills[0]
+  } else if (enemy.id === 'argentina10') {
+    // 10号：血量低于30%时必用宴请八方
+    const hpRatio = enemy.currentHp / enemy.maxHp
+    if (hpRatio < 0.3) skill = enemy.skills[2]
+    else skill = enemy.skills[Math.random() < 0.6 ? 0 : 1] || enemy.skills[0]
+  } else {
+    skill = enemy.skills[Math.random() < 0.6 ? 0 : 1] || enemy.skills[0]
+  }
+
+  setTimeout(async () => {
+    const targets = getSkillTargets(enemy, skill)
+    if (targets.length === 0) { nextTurn(); return }
+
+    // 敌方攻击动画
+    if (_animMode) {
+      const isPhys = skill.type === 'physical'
+      const element = skill.element || (isPhys ? 'physical' : null)
+      const fakeSkillDef = {
+        type: skill.type || 'physical',
+        element: element,
+        name: skill.name || ''
+      }
+      await playSkillAnimation(enemy, fakeSkillDef, targets)
+    }
+
+    const logs = executeAction(enemy, skill.name, targets)
+    logs.forEach(l => appendLog(l.text, l.cls))
+
+    // 敌方命中特效：受击闪烁 + 浮动数字 + 屏幕震动
+    if (_animMode) {
+      const hitTargets = targets.filter(t => !t.isEnemy)
+      showHitEffects(hitTargets, logs)
+    }
+
+    renderBattlefield()
+
+    const result = checkBattleEnd()
+    if (result) { endBattle(result); return }
+    nextTurn()
+  }, 900)
+}
+
+function endBattle(result) {
+  // 连续战斗：波次清除，进入下一波
+  if (result === 'WAVE_CLEAR') {
+    gauntletWave++
+    const nextWave = GAUNTLET_WAVES[gauntletWave]
+    appendLog(`✦ 波次清除！稍作准备，${nextWave.label}即将开始……`, 'log-win')
+    renderBattlefield()
+    setTimeout(() => {
+      document.getElementById('battle-log').innerHTML = ''
+      initBattle(_allChars, true)  // 保留玩家当前状态
+    }, 2000)
+    return
+  }
+
+  battlePhase = result
+  currentActor = null
+  document.getElementById('floating-cmd').hidden = true
+  renderPlayerSide()
+
+  const isWin = result === 'WIN'
+  const winMsg = isWin
+    ? (battleMode === 'gauntlet' ? '🏆 连续战斗全部通关！凯夫卡已被击败！' : battleMode === 'boss' ? '队伍击败了凯夫卡！战斗胜利！' : battleMode === 'minion' ? '😤 LHW 被击败！葡萄牙7号和阿根廷10号落荒而逃！' : '队伍击败了所有精英！战斗胜利！')
+    : '全员倒下...战斗失败。'
+  appendLog(winMsg, isWin ? 'log-win' : 'log-lose')
+
+  // 行动栏只显示再来一局按钮（无统计）
+  const titleEl = document.getElementById('result-title')
+  titleEl.textContent = isWin ? '✦ 胜利！' : '✦ 全灭...'
+  titleEl.className = 'cmd-result-title ' + (isWin ? 'win-title' : 'lose-title')
+  document.getElementById('battle-stats-area').innerHTML = ''
+  showPanel('cmd-result')
+
+  // 延迟500ms弹出结算框
+  setTimeout(() => showResultModal(result), 500)
+}
+
+function showResultModal(result) {
+  const isWin = result === 'WIN'
+  const charStats = players.map(p => _stats[p.id]).filter(Boolean)
+  const totalDmg   = charStats.reduce((s, c) => s + c.dmgDealt, 0)
+  const totalHeal  = charStats.reduce((s, c) => s + c.healDone, 0)
+  const totalTaken = _stats.bossReceived || 0
+
+  document.getElementById('result-modal-title').textContent = isWin ? '✦ 战斗胜利 ✦' : '✦ 战斗失败 ✦'
+  document.getElementById('result-modal-title').style.color = isWin ? 'var(--gold)' : 'var(--atk)'
+  document.getElementById('result-modal-subtitle').textContent = isWin ? 'BATTLE VICTORY' : 'BATTLE DEFEAT'
+
+  function statRow(name, val, total, color) {
+    const pct = total > 0 ? Math.round(val / total * 100) : 0
+    return `<div class="result-stat-row">
+      <span class="result-stat-name">${name}</span>
+      <div class="result-bar-wrap"><div class="result-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <span class="result-stat-val">${val.toLocaleString()}</span>
+      <span class="result-stat-pct">${pct}%</span>
+    </div>`
+  }
+
+  let html = ''
+  if (totalDmg > 0) {
+    html += `<div class="result-stat-section">
+      <div class="result-stat-title">⚔ 伤害输出</div>`
+    charStats.forEach(c => { if (c.dmgDealt > 0) html += statRow(c.name, c.dmgDealt, totalDmg, 'var(--atk)') })
+    html += `<div style="font-size:0.6rem;color:var(--subtext);margin-top:4px;text-align:right">总计 ${totalDmg.toLocaleString()}</div>`
+    html += '</div>'
+  }
+  if (totalHeal > 0) {
+    html += `<div class="result-stat-section">
+      <div class="result-stat-title">💚 治疗量</div>`
+    charStats.forEach(c => { if (c.healDone > 0) html += statRow(c.name, c.healDone, totalHeal, 'var(--hp)') })
+    html += `<div style="font-size:0.6rem;color:var(--subtext);margin-top:4px;text-align:right">总计 ${totalHeal.toLocaleString()}</div>`
+    html += '</div>'
+  }
+  if (totalTaken > 0) {
+    html += `<div class="result-stat-section">
+      <div class="result-stat-title">💢 承受伤害</div>`
+    charStats.forEach(c => { if (c.dmgTaken > 0) html += statRow(c.name, c.dmgTaken, totalTaken, 'var(--mp)') })
+    html += `<div style="font-size:0.6rem;color:var(--subtext);margin-top:4px;text-align:right">敌方总输出 ${totalTaken.toLocaleString()}</div>`
+    html += '</div>'
+  }
+
+  document.getElementById('result-modal-stats').innerHTML = html
+  document.getElementById('battle-result-modal').hidden = false
+}
+
+// 等级设定（持久化，重开时保留）
+let partyLevels = {}
+let bossLevel   = 1
+// 上阵队伍（最多4人，存角色id，null=空位）
+let activeSlots = [null, null, null, null]
+
+function initBattle(charDataList, keepPlayers = false) {
+  if (!keepPlayers) {
+    const activeChars = activeSlots
+      .map(id => charDataList.find(c => c.id === id))
+      .filter(Boolean)
+    const toBattle = activeChars.length > 0 ? activeChars : charDataList.slice(0, 4)
+    players = toBattle.map(c => {
+      const lv   = partyLevels[c.id] || 1
+      const comb = makeCombatant(c, lv)
+      comb._rawSkills = c.skills
+      return comb
+    })
+  }
+
+  if (battleMode === 'boss') {
+    enemies = [makeBossCombatant(bossLevel)]
+    boss = enemies[0]
+    document.getElementById('boss-display').hidden  = false
+    document.getElementById('elite-display').hidden = true
+    document.getElementById('boss-name').textContent = boss.name
+  } else if (battleMode === 'minion') {
+    // LHW + 两个小弟
+    const lhwStats = {}
+    for (const key of Object.keys(LHW_BOSS_TEMPLATE.base_stats)) {
+      lhwStats[key] = LHW_BOSS_TEMPLATE.base_stats[key]
+    }
+    const lhwDerived = calcDerivedForCombatant(lhwStats)
+    const lhwCombatant = {
+      id: LHW_BOSS_TEMPLATE.id, name: LHW_BOSS_TEMPLATE.name, icon: LHW_BOSS_TEMPLATE.icon,
+      isEnemy: true, level: 1,
+      currentHp: lhwStats.hp, maxHp: lhwStats.hp,
+      currentMp: lhwStats.mp, maxMp: lhwStats.mp,
+      stats: lhwStats, ...lhwDerived,
+      resistances: LHW_BOSS_TEMPLATE.resistances,
+      skills: LHW_BOSS_TEMPLATE.skills,
+      atkBuff: 0, statusEffects: [], skipNextTurn: false, buffTimers: [], cooldowns: {}
+    }
+    const minions = MINION_TEMPLATES.map(tpl => {
+      const s = { ...tpl.base_stats }
+      const d = calcDerivedForCombatant(s)
+      return {
+        id: tpl.id, name: tpl.name, icon: tpl.icon,
+        isEnemy: true, level: 1,
+        currentHp: s.hp, maxHp: s.hp,
+        currentMp: s.mp, maxMp: s.mp,
+        stats: s, ...d,
+        resistances: tpl.resistances,
+        skills: tpl.skills,
+        atkBuff: 0, statusEffects: [], skipNextTurn: false, buffTimers: [], cooldowns: {}
+      }
+    })
+    enemies = [lhwCombatant, ...minions]
+    boss = lhwCombatant
+    document.getElementById('boss-display').hidden  = false
+    document.getElementById('elite-display').hidden = false
+    document.getElementById('boss-name').textContent = boss.name
+    document.getElementById('enemy-area').classList.add('minion-layout')
+    // 切换 boss 立绘为 LHW
+    const lhwImg = document.getElementById('boss-img')
+    lhwImg.src = 'assets/portraits/lhw.png'
+    lhwImg.style.width = '160px'
+    lhwImg.style.height = '160px'
+    lhwImg._bgRemoved = false
+  } else if (battleMode === 'gauntlet') {
+    const wave = GAUNTLET_WAVES[gauntletWave]
+    if (wave.type === 'boss') {
+      enemies = [makeBossCombatant(bossLevel)]
+      boss = enemies[0]
+      document.getElementById('boss-display').hidden  = false
+      document.getElementById('elite-display').hidden = true
+      document.getElementById('boss-name').textContent = boss.name
+    } else {
+      enemies = Array.from({length: wave.count}, () => {
+        const tpl = ELITE_TEMPLATES[Math.floor(Math.random() * ELITE_TEMPLATES.length)]
+        const e = makeEliteCombatant(tpl, eliteLevel)
+        e.maxHp = 4000
+        e.currentHp = 4000
+        return e
+      })
+      boss = enemies[0]
+      document.getElementById('boss-display').hidden  = true
+      document.getElementById('elite-display').hidden = false
+    }
+  } else {
+    enemies = Array.from({length: 4}, () => {
+      const tpl = ELITE_TEMPLATES[Math.floor(Math.random() * ELITE_TEMPLATES.length)]
+      return makeEliteCombatant(tpl, eliteLevel)
+    })
+    boss = enemies[0]   // 向后兼容 bossChooseSkill 等引用
+    document.getElementById('boss-display').hidden  = true
+    document.getElementById('elite-display').hidden = false
+  }
+
+  initStats(players)
+  turnQueue = buildTurnQueue([...players, ...enemies])
+  battlePhase = 'PLAYER_TURN'
+
+  renderBattlefield()
+  if (battleMode === 'boss') {
+    appendLog('战斗开始！暗影巨神出现了！', 'log-sys')
+  } else if (battleMode === 'minion') {
+    appendLog(`😤 LHW 驾到！葡萄牙7号和阿根廷10号随行护驾！`, 'log-crit')
+  } else if (battleMode === 'gauntlet') {
+    const wave = GAUNTLET_WAVES[gauntletWave]
+    if (wave.type === 'boss') {
+      appendLog(`🏆 ${wave.label}！凯夫卡降临——最终决战！`, 'log-crit')
+    } else {
+      const names = enemies.map(e => e.name).join('、')
+      appendLog(`⚔ 【${wave.label}】${names} 出现了！（波次 ${gauntletWave+1} / ${GAUNTLET_WAVES.length}）`, 'log-sys')
+    }
+  } else {
+    const names = enemies.map(e => e.name).join('、')
+    appendLog(`精英战开始！${names} 出现了！`, 'log-sys')
+  }
+  appendLog(`行动顺序：${turnQueue.map(u => u.name).join(' → ')}`, 'log-sys')
+
+  nextTurn()
+}
+
+// 事件绑定
+// 技能列表横向滚动支持鼠标滚轮
+document.getElementById('skill-buttons').addEventListener('wheel', (e) => {
+  e.preventDefault()
+  document.getElementById('skill-buttons').scrollLeft += e.deltaY * 0.8
+}, { passive: false })
+
+// showToast：屏幕右上角飘出提示，1.5秒消失
+function showToast(msg) {
+  const el = document.getElementById('toast-msg')
+  el.textContent = msg
+  el.hidden = false
+  el.style.opacity = '1'
+  clearTimeout(el._timer)
+  el._timer = setTimeout(() => {
+    el.style.opacity = '0'
+    setTimeout(() => { el.hidden = true }, 300)
+  }, 1500)
+}
+
+document.getElementById('btn-attack').addEventListener('click', () => {
+  if (!currentActor || currentActor.isEnemy) return
+  handlePlayerAttack(currentActor)
+})
+
+// 战场目标选择键盘控制
+document.addEventListener('keydown', (e) => {
+  if (!_targetSelectMode) return
+  const aliveEnemies = getAliveEnemies()
+  if (aliveEnemies.length === 0) return
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    e.preventDefault()
+    _targetSelectIdx = (_targetSelectIdx + 1) % aliveEnemies.length
+    renderTargetArrows()
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault()
+    _targetSelectIdx = (_targetSelectIdx - 1 + aliveEnemies.length) % aliveEnemies.length
+    renderTargetArrows()
+  } else if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault()
+    confirmTargetSelection()
+  } else if (e.key === 'Escape') {
+    e.preventDefault()
+    cancelTargetSelection()
+    showPanel('cmd-skills')
+  }
+})
+
+// ⚙ 设置按钮切换抽屉
+document.getElementById('btn-settings').addEventListener('click', () => {
+  const drawer = document.getElementById('settings-drawer')
+  const btn = document.getElementById('btn-settings')
+  drawer.hidden = !drawer.hidden
+  if (!drawer.hidden) {
+    btn.style.borderColor = 'var(--gold)'
+    btn.style.color = 'var(--gold)'
+  } else {
+    btn.style.borderColor = ''
+    btn.style.color = ''
+  }
+})
+
+document.getElementById('btn-skills').addEventListener('click', () => {
+  if (!currentActor || currentActor.isEnemy) return
+  buildSkillButtons(currentActor)
+  showPanel('cmd-skills')
+})
+
+// 防御/道具/逃跑——框架，功能待实现
+document.getElementById('btn-defend').addEventListener('click', () => {
+  if (!currentActor || currentActor.isEnemy) return
+  showToast('防御功能待实现')
+})
+document.getElementById('btn-items').addEventListener('click', () => {
+  if (!currentActor || currentActor.isEnemy) return
+  showToast('道具功能待实现')
+})
+document.getElementById('btn-standby').addEventListener('click', () => {
+  if (!currentActor || currentActor.isEnemy) return
+  // 待机：跳过当前回合，直接进入下一回合
+  appendLog(`${currentActor.name} 选择待机。`, 'log-sys')
+  afterPlayerAction()
+})
+document.getElementById('btn-flee').addEventListener('click', () => {
+  if (!currentActor || currentActor.isEnemy) return
+  showToast('逃跑功能待实现')
+})
+
+function toggleAutoMode() {
+  _autoMode = !_autoMode
+  const btn = document.getElementById('btn-auto')
+  const stopBtn = document.getElementById('btn-stop-auto')
+  if (_autoMode) {
+    btn.textContent = '自动战斗 ▶'
+    btn.style.borderColor = 'var(--subtext)'
+    btn.style.color = 'var(--subtext)'
+    stopBtn.hidden = false
+    // 开启自动时隐藏浮动框
+    document.getElementById('floating-cmd').hidden = true
+    // 若当前正等待玩家操作，立即触发
+    if (currentActor && !currentActor.isEnemy) {
+      showPanel('cmd-wait')
+      document.getElementById('wait-msg').textContent = `${currentActor.name} 自动行动中...`
+      setTimeout(() => autoChooseAction(currentActor), 300)
+    }
+  } else {
+    btn.textContent = '自动战斗 ▶'
+    btn.style.borderColor = 'var(--subtext)'
+    btn.style.color = 'var(--subtext)'
+    stopBtn.hidden = true
+    // 若当前在玩家回合，恢复浮动框和指令菜单
+    if (currentActor && !currentActor.isEnemy) {
+      document.getElementById('floating-cmd').hidden = false
+      positionFloatingCmd(currentActor)
+      showPanel('cmd-main')
+    }
+  }
+}
+document.getElementById('btn-auto').addEventListener('click', toggleAutoMode)
+document.getElementById('btn-stop-auto').addEventListener('click', toggleAutoMode)
+
+// 全局 chars 缓存，避免重复加载
+let _allChars   = null
+let _itemsDb    = {}
+let _equipSave  = null
+let _skillsById = {}   // id → skill object，供 Boss 技能合并使用
+
+const EQUIP_SAVE_KEY = 'myheroes_equip_save'
+
+async function loadItemsDb() {
+  const res = await fetch('data/items.json')
+  const data = await res.json()
+  return Object.fromEntries(data.items.map(i => [i.id, i]))
+}
+
+async function loadEquipSave() {
+  const res  = await fetch('data/player_save.json')
+  const defaultSave = await res.json()
+  const raw  = localStorage.getItem(EQUIP_SAVE_KEY)
+  if (raw) {
+    const saved = JSON.parse(raw)
+    // 逐角色检查：缺少槽位或装备全为null且默认值有装备时，用默认值覆盖
+    for (const charId of Object.keys(defaultSave.equipped)) {
+      if (!saved.equipped[charId]) {
+        saved.equipped[charId] = defaultSave.equipped[charId]
+      } else {
+        // 检查是否所有槽位都是 null 而默认存档有装备
+        const savedSlots = saved.equipped[charId]
+        const defaultSlots = defaultSave.equipped[charId]
+        const savedHasAny = Object.values(savedSlots).some(v => v !== null)
+        const defaultHasAny = Object.values(defaultSlots).some(v => v !== null)
+        if (!savedHasAny && defaultHasAny) {
+          saved.equipped[charId] = defaultSlots
+        }
+      }
+    }
+    localStorage.setItem(EQUIP_SAVE_KEY, JSON.stringify(saved))
+    return saved
+  }
+  localStorage.setItem(EQUIP_SAVE_KEY, JSON.stringify(defaultSave))
+  return defaultSave
+}
+
+document.getElementById('btn-restart').addEventListener('click', () => {
+  document.getElementById('battle-result-modal').hidden = true
+  document.getElementById('battle-log').innerHTML = ''
+  document.getElementById('mini-log').innerHTML = ''
+  document.getElementById('scene-select').hidden = false
+})
+
+document.getElementById('btn-restart-modal').addEventListener('click', () => {
+  document.getElementById('battle-result-modal').hidden = true
+  document.getElementById('battle-log').innerHTML = ''
+  document.getElementById('mini-log').innerHTML = ''
+  document.getElementById('scene-select').hidden = false
+})
+
+// 启动
+Promise.all([loadCharacters(), loadItemsDb(), loadEquipSave(), loadSkills()])
+  .then(([chars, itemsDb, equipSave, skillsData]) => {
+  _allChars   = chars
+  _itemsDb    = itemsDb
+  _equipSave  = equipSave
+  _skillsById = skillsData.byId
+  SKILL_DATA  = skillsData.byName  // 以名字为 key 方便战斗引擎查询
+  // 默认前4人上阵
+  activeSlots = chars.slice(0, 4).map(c => c.id)
+  chars.forEach(c => { partyLevels[c.id] = partyLevels[c.id] || 1 })
+
+  // ── 等级滑块 ──
+  const slidersContainer = document.getElementById('level-sliders')
+  chars.forEach(c => {
+    const row = document.createElement('div')
+    row.className = 'level-row'
+    row.innerHTML = `
+      <span class="level-char-name">${c.name.split('·')[0].split(' ')[0]}</span>
+      <input class="level-slider" type="range" min="1" max="99"
+             value="${partyLevels[c.id]}" data-id="${c.id}">
+      <span class="level-val" id="lv-val-${c.id}">Lv.${partyLevels[c.id]}</span>`
+    slidersContainer.appendChild(row)
+  })
+  slidersContainer.addEventListener('input', e => {
+    if (e.target.classList.contains('level-slider')) {
+      const id = e.target.dataset.id
+      const lv = +e.target.value
+      partyLevels[id] = lv
+      document.getElementById(`lv-val-${id}`).textContent = `Lv.${lv}`
+    }
+  })
+
+  // ── Boss 等级滑块 ──
+  const bossSlider = document.getElementById('boss-level-slider')
+  bossSlider.addEventListener('input', () => {
+    bossLevel = +bossSlider.value
+    document.getElementById('lv-val-boss').textContent = `Lv.${bossLevel}`
+  })
+
+  // ── 精英等级滑块 ──
+  const eliteSlider = document.getElementById('elite-level-slider')
+  eliteSlider.addEventListener('input', () => {
+    eliteLevel = +eliteSlider.value
+    document.getElementById('lv-val-elite').textContent = `Lv.${eliteLevel}`
+  })
+
+  // ── 场景选择按钮 ──
+  function startBattle(mode) {
+    battleMode = mode
+    if (mode === 'gauntlet') gauntletWave = 0
+    document.getElementById('scene-select').hidden = true
+    document.getElementById('battle-log').innerHTML = ''
+    // 重置 boss-img 到默认立绘（非 minion 模式）
+    if (mode !== 'minion') {
+      const bossImg = document.getElementById('boss-img')
+      bossImg.src = 'assets/boss/shadow_colossus.png'
+      bossImg.style.width = '110px'
+      bossImg.style.height = '110px'
+      bossImg._bgRemoved = false
+      document.getElementById('enemy-area').classList.remove('minion-layout')
+    }
+    initBattle(_allChars)
+  }
+  document.getElementById('btn-scene-boss').addEventListener('click', () => startBattle('boss'))
+  document.getElementById('btn-scene-elite').addEventListener('click', () => startBattle('elite'))
+  document.getElementById('btn-scene-gauntlet').addEventListener('click', () => startBattle('gauntlet'))
+  document.getElementById('btn-scene-minion').addEventListener('click', () => startBattle('minion'))
+
+  // ── 全员同步 ──
+  document.getElementById('btn-set-all').addEventListener('click', () => {
+    const lv = Math.min(99, Math.max(1, +document.getElementById('input-all-level').value || 1))
+    chars.forEach(c => {
+      partyLevels[c.id] = lv
+      const s = slidersContainer.querySelector(`[data-id="${c.id}"]`)
+      if (s) s.value = lv
+      const v = document.getElementById(`lv-val-${c.id}`)
+      if (v) v.textContent = `Lv.${lv}`
+    })
+    bossLevel = lv
+    bossSlider.value = lv
+    document.getElementById('lv-val-boss').textContent = `Lv.${lv}`
+  })
+
+  // ── 应用并重开 ──
+  document.getElementById('btn-apply-level').addEventListener('click', () => {
+    document.getElementById('battle-log').innerHTML = ''
+    document.getElementById('scene-select').hidden = false
+  })
+
+  // ── 角色选择面板 ──
+  renderRoster()
+  initBattle(_allChars)
+})
+
+function renderRoster() {
+  if (!_allChars) return
+  const slotsEl = document.getElementById('roster-slots')
+  slotsEl.innerHTML = ''
+  for (let i = 0; i < 4; i++) {
+    const id = activeSlots[i]
+    const ch = id ? _allChars.find(c => c.id === id) : null
+    const box = document.createElement('div')
+    box.className = 'slot-box' + (ch ? ' filled' : '')
+    box.innerHTML = ch
+      ? `<span>${ch.name.split('·')[0].split(' ')[0]}</span><span class="slot-remove">✕</span>`
+      : `<span class="slot-label">空位 ${i+1}</span>`
+    if (ch) {
+      box.querySelector('.slot-remove').addEventListener('click', e => {
+        e.stopPropagation()
+        activeSlots[i] = null
+        renderRoster()
+      })
+    }
+    slotsEl.appendChild(box)
+  }
+  const charsEl = document.getElementById('roster-chars')
+  charsEl.innerHTML = ''
+  _allChars.forEach(c => {
+    const inParty = activeSlots.includes(c.id)
+    const btn = document.createElement('button')
+    btn.className = 'roster-char-btn' + (inParty ? ' in-party' : '')
+    btn.innerHTML = (AVATAR_ICONS[c.id] || '👤') + ' ' + c.name.split('·')[0].split(' ')[0]
+    btn.disabled = inParty
+    btn.addEventListener('click', () => {
+      const emptyIdx = activeSlots.indexOf(null)
+      if (emptyIdx === -1) return
+      activeSlots[emptyIdx] = c.id
+      renderRoster()
+    })
+    charsEl.appendChild(btn)
+  })
+}
+</script>
+</body>
+</html>

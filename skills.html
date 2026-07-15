@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Heroes — 技能库</title>
+  <style>
+    :root {
+      --bg:      #0d0d1a; --panel:  #141428; --border: #2a2a50;
+      --accent:  #7b5ea7; --accent2:#c084fc; --gold:   #f0c060;
+      --text:    #e8e0f0; --subtext:#9988bb;
+      --hp:      #4ade80; --mp:     #60a5fa; --atk:    #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Segoe UI','Microsoft YaHei',sans-serif;
+      height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+    }
+    header {
+      background: linear-gradient(135deg,#1a0a2e,#0d1a2e);
+      border-bottom: 2px solid var(--accent);
+      padding: 10px 24px; display: flex; align-items: center;
+      justify-content: space-between; flex-shrink: 0;
+      gap: 8px;
+    }
+    header h1 { font-size: 1.2rem; color: var(--gold); letter-spacing: 0.1em; }
+    .nav-links { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* 汉堡按钮 */
+    #menu-toggle {
+      display: none;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 4px 10px;
+      flex-shrink: 0;
+    }
+    /* 遮罩层 */
+    #sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 190;
+    }
+    #sidebar-overlay.active { display: block; }
+    .btn-nav {
+      padding: 5px 14px; background: transparent;
+      border: 1px solid var(--border); border-radius: 6px;
+      color: var(--subtext); cursor: pointer; font-size: 0.78rem;
+      text-decoration: none; transition: all 0.2s;
+    }
+    .btn-nav:hover { border-color: var(--accent); color: var(--accent2); }
+    .btn-nav-active { border-color: var(--accent) !important; color: var(--gold) !important; cursor: default; }
+
+    /* ── 主布局 ── */
+    #main {
+      flex: 1; display: grid;
+      grid-template-columns: 260px 1fr;
+      overflow: hidden;
+    }
+
+    /* ── 左侧筛选栏 ── */
+    #sidebar {
+      background: var(--panel); border-right: 1px solid var(--border);
+      overflow-y: auto; padding: 14px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .filter-section-title {
+      font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--subtext); margin-bottom: 6px;
+    }
+    .filter-btn {
+      display: block; width: 100%; padding: 6px 10px; margin-bottom: 3px;
+      background: transparent; border: 1px solid var(--border);
+      border-radius: 5px; color: var(--subtext); font-size: 0.78rem;
+      cursor: pointer; text-align: left; transition: all 0.15s;
+    }
+    .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+    .filter-btn.active { border-color: var(--accent2); color: var(--accent2); background: rgba(123,94,167,0.15); }
+    .stats-box {
+      background: rgba(123,94,167,0.08); border: 1px solid var(--border);
+      border-radius: 6px; padding: 10px 12px;
+    }
+    .stats-row { display: flex; justify-content: space-between; font-size: 0.72rem; margin-bottom: 4px; }
+    .stats-row .label { color: var(--subtext); }
+    .stats-row .val   { color: var(--accent2); font-weight: 600; }
+
+    /* ── 搜索框 ── */
+    #search-box {
+      width: 100%; padding: 6px 10px;
+      background: #0a0a20; border: 1px solid var(--border);
+      border-radius: 5px; color: var(--text); font-size: 0.82rem;
+      font-family: inherit; outline: none;
+    }
+    #search-box:focus { border-color: var(--accent); }
+
+    /* ── 右侧技能列表 ── */
+    #skill-list {
+      overflow-y: auto; padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 10px;
+      align-content: start;
+    }
+
+    /* ── 技能卡片 ── */
+    .skill-card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px 14px;
+      transition: border-color 0.15s;
+      cursor: default;
+    }
+    .skill-card:hover { border-color: var(--accent); }
+    .skill-card-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+    }
+    .skill-name { font-size: 0.92rem; font-weight: 700; color: var(--text); }
+    .skill-id   { font-size: 0.58rem; color: var(--subtext); margin-top: 1px; }
+
+    /* 类型徽章 */
+    .badge {
+      font-size: 0.6rem; padding: 2px 7px; border-radius: 10px;
+      font-weight: 600; white-space: nowrap; border: 1px solid;
+    }
+    .badge-physical { color: var(--atk);    border-color: var(--atk);    background: rgba(248,113,113,0.1); }
+    .badge-magic    { color: var(--accent2); border-color: var(--accent2); background: rgba(192,132,252,0.1); }
+    .badge-support  { color: var(--gold);    border-color: var(--gold);    background: rgba(240,192,96,0.1); }
+    .badge-heal     { color: var(--hp);      border-color: var(--hp);      background: rgba(74,222,128,0.1); }
+
+    /* 元素徽章 */
+    .elem-fire   { color: #fb923c; border-color: #fb923c; background: rgba(251,146,60,0.1); }
+    .elem-dark   { color: #a78bfa; border-color: #a78bfa; background: rgba(167,139,250,0.1); }
+    .elem-holy   { color: #fde68a; border-color: #fde68a; background: rgba(253,230,138,0.1); }
+    .elem-water  { color: #60a5fa; border-color: #60a5fa; background: rgba(96,165,250,0.1); }
+    .elem-time   { color: #34d399; border-color: #34d399; background: rgba(52,211,153,0.1); }
+    .elem-none   { color: var(--subtext); border-color: var(--subtext); background: transparent; }
+
+    .skill-desc { font-size: 0.74rem; color: var(--subtext); line-height: 1.5; margin-bottom: 8px; }
+
+    /* 技能参数 */
+    .skill-params {
+      display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px;
+    }
+    .param-tag {
+      font-size: 0.62rem; padding: 1px 6px;
+      background: rgba(20,20,40,0.8); border: 1px solid var(--border);
+      border-radius: 4px; color: var(--subtext);
+    }
+    .param-tag .pv { color: var(--text); font-weight: 600; }
+
+    /* 特效标签 */
+    .effect-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+    .effect-tag {
+      font-size: 0.6rem; padding: 1px 6px; border-radius: 4px; border: 1px solid;
+    }
+    .eff-burn    { color: #fb923c; border-color: #fb923c; background: rgba(251,146,60,0.1); }
+    .eff-bleed   { color: #f87171; border-color: #f87171; background: rgba(248,113,113,0.1); }
+    .eff-skip    { color: #60a5fa; border-color: #60a5fa; background: rgba(96,165,250,0.1); }
+    .eff-heal    { color: #4ade80; border-color: #4ade80; background: rgba(74,222,128,0.1); }
+    .eff-buff    { color: var(--gold); border-color: var(--gold); background: rgba(240,192,96,0.1); }
+    .eff-cd      { color: #a78bfa; border-color: #a78bfa; background: rgba(167,139,250,0.1); }
+    .eff-special { color: #c084fc; border-color: #c084fc; background: rgba(192,132,252,0.1); }
+
+    .skill-count { font-size: 0.7rem; color: var(--subtext); padding: 4px 0; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+    /* ── 响应式断点 ── */
+    @media (max-width: 900px) {
+      #main { grid-template-columns: 200px 1fr; }
+      header { padding: 8px 16px; }
+    }
+
+    @media (max-width: 600px) {
+      #menu-toggle { display: block; }
+      header { padding: 8px 12px; }
+
+      #main { grid-template-columns: 1fr; }
+
+      #sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        height: 100%;
+        width: 260px;
+        z-index: 200;
+        transition: left 0.25s ease;
+        padding-top: 52px;
+      }
+      #sidebar.open { left: 0; }
+
+      #skill-list {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button id="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <div>
+      <h1>My Heroes</h1>
+      <div style="font-size:0.75rem;color:var(--subtext)">技能库 · Skills Database</div>
+    </div>
+  </div>
+  <nav class="nav-links">
+    <a href="index.html"     class="btn-nav">角色库</a>
+    <a href="equipment.html" class="btn-nav">装备管理</a>
+    <span class="btn-nav btn-nav-active">技能库</span>
+    <a href="battle.html"    class="btn-nav">战斗 Demo</a>
+    <a href="status.html"    class="btn-nav">角色状态</a>
+  </nav>
+</header>
+
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<div id="main">
+  <div id="sidebar">
+    <!-- 搜索 -->
+    <div>
+      <div class="filter-section-title">搜索</div>
+      <input id="search-box" type="text" placeholder="技能名 / ID / 描述...">
+    </div>
+
+    <!-- 统计 -->
+    <div class="stats-box" id="stats-box"></div>
+
+    <!-- 类型筛选 -->
+    <div>
+      <div class="filter-section-title">技能类型</div>
+      <button class="filter-btn active" data-filter="type" data-val="all">全部</button>
+      <button class="filter-btn" data-filter="type" data-val="physical">物理</button>
+      <button class="filter-btn" data-filter="type" data-val="magic">魔法</button>
+      <button class="filter-btn" data-filter="type" data-val="support">辅助</button>
+      <button class="filter-btn" data-filter="type" data-val="heal">治疗</button>
+    </div>
+
+    <!-- 元素筛选 -->
+    <div>
+      <div class="filter-section-title">元素属性</div>
+      <button class="filter-btn active" data-filter="element" data-val="all">全部</button>
+      <button class="filter-btn" data-filter="element" data-val="fire">🔥 火系</button>
+      <button class="filter-btn" data-filter="element" data-val="dark">🌑 暗系</button>
+      <button class="filter-btn" data-filter="element" data-val="holy">✨ 圣系</button>
+      <button class="filter-btn" data-filter="element" data-val="water">💧 水系</button>
+      <button class="filter-btn" data-filter="element" data-val="time">⌛ 时间</button>
+      <button class="filter-btn" data-filter="element" data-val="none">无属性</button>
+    </div>
+
+    <!-- 目标筛选 -->
+    <div>
+      <div class="filter-section-title">攻击目标</div>
+      <button class="filter-btn active" data-filter="target" data-val="all">全部</button>
+      <button class="filter-btn" data-filter="target" data-val="single">单体</button>
+      <button class="filter-btn" data-filter="target" data-val="all_enemies">全体敌人</button>
+      <button class="filter-btn" data-filter="target" data-val="all_allies">全体队友</button>
+      <button class="filter-btn" data-filter="target" data-val="single_ally">单体队友</button>
+      <button class="filter-btn" data-filter="target" data-val="self">自身</button>
+    </div>
+  </div>
+
+  <div id="skill-list"></div>
+</div>
+
+<script>
+function toggleSidebar() {
+  const s = document.getElementById('sidebar')
+  const o = document.getElementById('sidebar-overlay')
+  s.classList.toggle('open')
+  o.classList.toggle('active')
+}
+const TYPE_LABELS = { physical:'物理', magic:'魔法', support:'辅助', heal:'治疗' }
+const ELEM_LABELS  = { fire:'火系', dark:'暗系', holy:'圣系', water:'水系', time:'时间' }
+const TARGET_LABELS= { single:'单体', all_enemies:'全体敌人', all_allies:'全体队友',
+                       single_ally:'单体队友', all_dead_ally:'复活目标', self:'自身' }
+
+let allSkills = []
+let filters = { type: 'all', element: 'all', target: 'all', search: '' }
+
+async function loadSkills() {
+  const res  = await fetch('data/skills.json')
+  const data = await res.json()
+  allSkills  = data.skills
+  renderStats()
+  renderSkills()
+}
+
+function renderStats() {
+  const byType = {}, byElem = {}
+  allSkills.forEach(s => {
+    byType[s.type] = (byType[s.type]||0)+1
+    const ek = s.element || 'none'
+    byElem[ek] = (byElem[ek]||0)+1
+  })
+  const box = document.getElementById('stats-box')
+  box.innerHTML = `
+    <div class="filter-section-title" style="margin-bottom:8px">数据概览</div>
+    <div class="stats-row"><span class="label">技能总数</span><span class="val">${allSkills.length}</span></div>
+    <div class="stats-row"><span class="label">物理</span><span class="val">${byType.physical||0}</span></div>
+    <div class="stats-row"><span class="label">魔法</span><span class="val">${byType.magic||0}</span></div>
+    <div class="stats-row"><span class="label">辅助</span><span class="val">${byType.support||0}</span></div>
+    <div class="stats-row"><span class="label">治疗</span><span class="val">${byType.heal||0}</span></div>
+  `
+}
+
+function getEffectTags(s) {
+  const tags = []
+  if (s.hits > 1)         tags.push(`<span class="effect-tag eff-special">×${s.hits}连击</span>`)
+  if (s.defPierce)        tags.push(`<span class="effect-tag eff-special">破防${Math.round(s.defPierce*100)}%</span>`)
+  if (s.speedBonus)       tags.push(`<span class="effect-tag eff-buff">速度加成</span>`)
+  if (s.bleed)            tags.push(`<span class="effect-tag eff-bleed">流血${s.bleedPower||25}/${s.bleedTurns||5}T</span>`)
+  if (s.forceBurn)        tags.push(`<span class="effect-tag eff-burn">必然灼烧</span>`)
+  if (s.skipTurn)         tags.push(`<span class="effect-tag eff-skip">跳回合</span>`)
+  if (s.hotHeal)          tags.push(`<span class="effect-tag eff-heal">持续回血+${s.hotHeal}/${s.hotTurns}T</span>`)
+  if (s.healFlat)         tags.push(`<span class="effect-tag eff-heal">回复HP+${s.healFlat}</span>`)
+  if (s.healScaling)      tags.push(`<span class="effect-tag eff-heal">智力成长</span>`)
+  if (s.atkBuff)          tags.push(`<span class="effect-tag eff-buff">攻击+${s.atkBuff}</span>`)
+  if (s.atkBuffPct)       tags.push(`<span class="effect-tag eff-buff">攻击+${s.atkBuffPct}%</span>`)
+  if (s.magBuff)          tags.push(`<span class="effect-tag eff-buff">魔法+${s.magBuff}%</span>`)
+  if (s.defBuff)          tags.push(`<span class="effect-tag eff-buff">防御+${s.defBuff}</span>`)
+  if (s.selfDefBuff)      tags.push(`<span class="effect-tag eff-buff">防御大幅提升</span>`)
+  if (s.dispel)           tags.push(`<span class="effect-tag eff-special">驱散增益</span>`)
+  if (s.dispelDebuff)     tags.push(`<span class="effect-tag eff-heal">解除负面</span>`)
+  if (s.lifeSteal)        tags.push(`<span class="effect-tag eff-heal">吸血${Math.round(s.lifeSteal*100)}%</span>`)
+  if (s.revive)           tags.push(`<span class="effect-tag eff-heal">复活${Math.round((s.reviveHpRate||0.5)*100)}%HP</span>`)
+  if (s.reviveAll)        tags.push(`<span class="effect-tag eff-heal">群体复活</span>`)
+  if (s.consumeBleed)     tags.push(`<span class="effect-tag eff-special">吞噬流血×${s.bleedMultiplier||4}</span>`)
+  if (s.addRift)          tags.push(`<span class="effect-tag eff-special">圣光裂痕</span>`)
+  if (s.shieldRate)       tags.push(`<span class="effect-tag eff-buff">护盾</span>`)
+  if (s.cooldown)         tags.push(`<span class="effect-tag eff-cd">冷却${s.cooldown}回合</span>`)
+  if (s.buffTurns && (s.atkBuff||s.magBuff||s.defBuff||s.atkBuffPct)) {
+    tags.push(`<span class="effect-tag eff-buff">持续${s.buffTurns}回合</span>`)
+  }
+  if (s.hpThreshold)     tags.push(`<span class="effect-tag eff-special">HP≤${Math.round(s.hpThreshold*100)}%触发</span>`)
+  return tags
+}
+
+function renderSkills() {
+  const { type, element, target, search } = filters
+  const sq = search.toLowerCase()
+
+  const filtered = allSkills.filter(s => {
+    if (type !== 'all' && s.type !== type) return false
+    const eKey = s.element || 'none'
+    if (element !== 'all' && eKey !== element) return false
+    if (target !== 'all' && s.target !== target) return false
+    if (sq && !s.name.toLowerCase().includes(sq) &&
+        !s.id.toLowerCase().includes(sq) &&
+        !(s.description||'').toLowerCase().includes(sq)) return false
+    return true
+  })
+
+  const container = document.getElementById('skill-list')
+  if (filtered.length === 0) {
+    container.innerHTML = `<div style="color:var(--subtext);padding:40px;font-size:0.85rem;grid-column:1/-1">没有匹配的技能</div>`
+    return
+  }
+
+  container.innerHTML = `<div class="skill-count" style="grid-column:1/-1">显示 ${filtered.length} / ${allSkills.length} 个技能</div>`
+
+  filtered.forEach(s => {
+    const typeClass = `badge-${s.type}`
+    const elemKey   = s.element || 'none'
+    const elemLabel = ELEM_LABELS[elemKey] || '无属性'
+    const elemClass = elemKey === 'none' ? 'elem-none' : `elem-${elemKey}`
+    const tLabel    = TARGET_LABELS[s.target] || s.target || '—'
+    const effects   = getEffectTags(s)
+
+    const card = document.createElement('div')
+    card.className = 'skill-card'
+    card.innerHTML = `
+      <div class="skill-card-header">
+        <div>
+          <div class="skill-name">${s.name}</div>
+          <div class="skill-id">${s.id}</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">
+          <span class="badge ${typeClass}">${TYPE_LABELS[s.type]||s.type}</span>
+          <span class="badge ${elemClass}">${elemLabel}</span>
+        </div>
+      </div>
+      <div class="skill-desc">${s.description || '—'}</div>
+      <div class="skill-params">
+        ${s.base_power ? `<span class="param-tag">威力 <span class="pv">${s.base_power}</span></span>` : ''}
+        <span class="param-tag">MP <span class="pv">${s.mp_cost}</span></span>
+        <span class="param-tag">目标 <span class="pv">${tLabel}</span></span>
+      </div>
+      ${effects.length ? `<div class="effect-tags">${effects.join('')}</div>` : ''}
+    `
+    container.appendChild(card)
+  })
+}
+
+// 筛选按钮事件
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const filterKey = btn.dataset.filter
+    // 同组其他按钮取消高亮
+    document.querySelectorAll(`.filter-btn[data-filter="${filterKey}"]`).forEach(b => b.classList.remove('active'))
+    btn.classList.add('active')
+    filters[filterKey] = btn.dataset.val
+    renderSkills()
+  })
+})
+
+// 搜索框
+document.getElementById('search-box').addEventListener('input', e => {
+  filters.search = e.target.value
+  renderSkills()
+})
+
+loadSkills()
+</script>
+</body>
+</html>

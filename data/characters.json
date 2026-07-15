@@ -1,0 +1,1824 @@
+{
+  "version": "1.2",
+  "characters": [
+    {
+      "id": "sheru_faniru",
+      "name": "雪露法妮尔",
+      "name_en": "Shelu Fanir",
+      "series": "梦幻模拟战",
+      "portrait": "assets/portraits/sheru.png",
+      "avatar": "assets/avatars/sheru.png",
+      "role": "魔法师 / 辅助",
+      "description": "精灵族的火焰魔法师，天生对魔力的感知异于常人。她的火系魔法兼具毁灭性的爆发力与精妙的辅助技艺，是队伍中最重要的魔法火力核心之一。",
+      "base_stats": {
+        "hp": 290,
+        "mp": 245,
+        "attack": 28,
+        "defense": 55,
+        "magic_defense": 78,
+        "speed": 75,
+        "agility": 58,
+        "intelligence": 101
+      },
+      "growth_rates": {
+        "hp": 22,
+        "mp": 4,
+        "attack": 1,
+        "defense": 1,
+        "magic_defense": 2,
+        "speed": 0,
+        "agility": 0,
+        "intelligence": 2
+      },
+      "unique_command": {
+        "name": "炎之印记",
+        "description": "在目标敌人身上烙下火焰印记，使其承受的所有火系伤害提升50%，并将印记伤害的30%溅射至相邻敌人，持续3回合",
+        "type": "unique"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "fire_spark",
+          "name": "火花",
+          "type": "magic",
+          "mp_cost": 8,
+          "description": "对单体发动基础火系魔法攻击"
+        },
+        {
+          "level": 5,
+          "skill_id": "magic_empower",
+          "name": "魔力赋予",
+          "type": "support",
+          "mp_cost": 14,
+          "description": "赋予指定队友魔法强化，使其下一次魔法技能伤害提升40%"
+        },
+        {
+          "level": 10,
+          "skill_id": "fire_impact",
+          "name": "烈焰冲击",
+          "type": "magic",
+          "mp_cost": 22,
+          "description": "对单体发动强力火焰攻击，必然附加燃烧状态"
+        },
+        {
+          "level": 18,
+          "skill_id": "fire_dance",
+          "name": "精灵炎舞",
+          "type": "magic",
+          "mp_cost": 34,
+          "description": "召唤精灵之火席卷敌方全体，造成中等范围火系魔法伤害"
+        },
+        {
+          "level": 28,
+          "skill_id": "fire_inferno",
+          "name": "末日",
+          "type": "unique",
+          "mp_cost": 52,
+          "description": "引下漫天流星，对敌方全体造成极大火系魔法伤害，燃烧状态的敌人受到额外150%伤害"
+        }
+      ],
+      "resistances": {
+        "fire": "absorb",
+        "ice": "weak",
+        "wind": "resist",
+        "dark": "normal"
+      },
+      "equipment_slots": [
+        "法杖",
+        "法袍",
+        "饰品",
+        "饰品"
+      ]
+    },
+    {
+      "id": "anjielina",
+      "name": "安洁莉娜",
+      "name_en": "Angelina",
+      "series": "梦幻模拟战",
+      "portrait": "assets/portraits/angelina.png",
+      "avatar": "assets/avatars/angelina.png",
+      "role": "飞马骑士 / 辅助",
+      "description": "驾驭飞马的精英骑士，以惊人的速度和爆发力横扫战场。防御虽薄，却能以灵动的身法躲避攻击，并在冲锋之余为同伴提供庇护与鼓舞。",
+      "base_stats": {
+        "hp": 350,
+        "mp": 155,
+        "attack": 90,
+        "defense": 40,
+        "magic_defense": 68,
+        "speed": 82,
+        "agility": 94,
+        "intelligence": 32
+      },
+      "growth_rates": {
+        "hp": 28,
+        "mp": 2,
+        "attack": 2,
+        "defense": 1,
+        "magic_defense": 1,
+        "speed": 0,
+        "agility": 0,
+        "intelligence": 0
+      },
+      "unique_command": {
+        "name": "制空突击",
+        "description": "借助飞马高度发起俯冲奇袭，无视目标物理防御的40%，若目标处于异常状态则追加一次额外攻击",
+        "type": "unique"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "lance_thrust",
+          "name": "骑枪突刺",
+          "type": "physical",
+          "mp_cost": 0,
+          "description": "以骑枪对单体发动快速突刺，速度越高伤害加成越大"
+        },
+        {
+          "level": 5,
+          "skill_id": "holy_heal",
+          "name": "圣光治愈",
+          "type": "support",
+          "mp_cost": 16,
+          "description": "以圣光笼罩指定队友，每回合恢复40点HP并解除一个负面状态，持续5回合"
+        },
+        {
+          "level": 10,
+          "skill_id": "lance_chain",
+          "name": "连环枪刺",
+          "type": "physical",
+          "mp_cost": 22,
+          "description": "对单体发动三连击，每击有独立暴击判定"
+        },
+        {
+          "level": 18,
+          "skill_id": "pegasus_inspire",
+          "name": "天马激励",
+          "type": "support",
+          "mp_cost": 28,
+          "description": "为全体队友提升攻击与速度，并恢复少量HP，持续3回合"
+        },
+        {
+          "level": 28,
+          "skill_id": "sky_charge",
+          "name": "苍穹骑冲",
+          "type": "unique",
+          "mp_cost": 48,
+          "description": "飞升至最高点后全力俯冲，对单体造成极高物理伤害"
+        }
+      ],
+      "resistances": {
+        "wind": "resist",
+        "lightning": "weak",
+        "holy": "resist",
+        "dark": "normal"
+      },
+      "equipment_slots": [
+        "骑枪",
+        "轻甲",
+        "饰品"
+      ]
+    },
+    {
+      "id": "kobayashi_ryutan",
+      "name": "小林龙胆",
+      "name_en": "Kobayashi Ryutan",
+      "series": "食戟之灵",
+      "portrait": "assets/portraits/ryutan.png",
+      "role": "近战输出 / 增益",
+      "description": "远月学园的料理人，以战斗料理激发同伴潜力。",
+      "base_stats": {
+        "hp": 380,
+        "mp": 140,
+        "attack": 95,
+        "defense": 60,
+        "magic_defense": 50,
+        "speed": 78,
+        "agility": 82,
+        "intelligence": 55
+      },
+      "growth_rates": {
+        "hp": 30,
+        "mp": 2,
+        "attack": 3,
+        "defense": 1,
+        "magic_defense": 1,
+        "speed": 0,
+        "agility": 0,
+        "intelligence": 1
+      },
+      "unique_command": {
+        "name": "料理激发",
+        "description": "战斗中即兴烹饪，效果随使用食材不同而变化，可大幅强化队友",
+        "type": "unique"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "knife_thrust",
+          "name": "刀工突刺",
+          "type": "physical",
+          "mp_cost": 0,
+          "description": "以厨刀精准攻击敌人要害，无视部分防御"
+        },
+        {
+          "level": 5,
+          "skill_id": "spice_blast",
+          "name": "香料爆击",
+          "type": "magic",
+          "mp_cost": 12,
+          "description": "投掷特制香料引发爆炸，对单体造成魔法伤害"
+        },
+        {
+          "level": 8,
+          "skill_id": "knife_combo",
+          "name": "极·刀工连斩",
+          "type": "physical",
+          "mp_cost": 26,
+          "description": "以厨刀连续斩击5次，每击各自判定暴击与料理被动"
+        },
+        {
+          "level": 10,
+          "skill_id": "battle_meal",
+          "name": "战斗套餐",
+          "type": "support",
+          "mp_cost": 22,
+          "description": "为全体队友提供增益料理，恢复HP并提升攻击"
+        },
+        {
+          "level": 18,
+          "skill_id": "food_wars",
+          "name": "极·食戟",
+          "type": "physical",
+          "mp_cost": 30,
+          "description": "以全部厨艺发动终极连击，多段物理攻击"
+        },
+        {
+          "level": 28,
+          "skill_id": "divine_palate",
+          "name": "神之味觉",
+          "type": "unique",
+          "mp_cost": 45,
+          "description": "进入料理觉醒状态，所有技能效果翻倍，持续2回合"
+        }
+      ],
+      "resistances": {
+        "fire": "resist",
+        "ice": "weak",
+        "poison": "immune"
+      },
+      "equipment_slots": [
+        "厨刀",
+        "围裙(轻甲)",
+        "饰品"
+      ]
+    },
+    {
+      "id": "meiou_setsuna",
+      "name": "冥王雪奈",
+      "name_en": "Meiou Setsuna",
+      "series": "美少女战士",
+      "portrait": "assets/portraits/setsuna.png",
+      "role": "魔法输出 / 时间操控",
+      "description": "守护时间之门的战士，掌控时间与空间的力量。",
+      "base_stats": {
+        "hp": 280,
+        "mp": 260,
+        "attack": 50,
+        "defense": 42,
+        "magic_defense": 90,
+        "speed": 70,
+        "agility": 65,
+        "intelligence": 105
+      },
+      "growth_rates": {
+        "hp": 20,
+        "mp": 5,
+        "attack": 0,
+        "defense": 1,
+        "magic_defense": 2,
+        "speed": 0,
+        "agility": 0,
+        "intelligence": 3
+      },
+      "unique_command": {
+        "name": "时之门",
+        "description": "操控战斗时间轴，可延迟敌方行动、加速队友行动或重置状态",
+        "type": "unique"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "time_stop",
+          "name": "时间停止",
+          "type": "magic",
+          "mp_cost": 15,
+          "description": "使单体敌人跳过下一回合行动"
+        },
+        {
+          "level": 5,
+          "skill_id": "dark_crystal",
+          "name": "冥王水晶",
+          "type": "magic",
+          "mp_cost": 20,
+          "description": "召唤冥王力量对敌单体发动暗属性魔法攻击"
+        },
+        {
+          "level": 10,
+          "skill_id": "dark_ascension",
+          "name": "黑暗升华",
+          "type": "support",
+          "mp_cost": 25,
+          "description": "黑暗之力灌注自身，魔法伤害提升50%，持续3回合，冷却5回合"
+        },
+        {
+          "level": 18,
+          "skill_id": "death_reversal",
+          "name": "死亡反转",
+          "type": "magic",
+          "mp_cost": 38,
+          "description": "对敌全体发动时间逆流，造成暗/时间属性大伤害"
+        },
+        {
+          "level": 28,
+          "skill_id": "time_lock",
+          "name": "时间禁域",
+          "type": "unique",
+          "mp_cost": 55,
+          "description": "封锁时间之门，全场敌人无法行动，持续1回合（Boss减半）"
+        }
+      ],
+      "resistances": {
+        "dark": "absorb",
+        "time": "immune",
+        "holy": "weak",
+        "ice": "resist"
+      },
+      "equipment_slots": [
+        "法杖",
+        "轻甲",
+        "饰品",
+        "饰品"
+      ]
+    },
+    {
+      "id": "xia_yuyao",
+      "name": "夏雨瑶",
+      "name_en": "Xia Yuyao",
+      "series": "阿尔卡纳蒂亚",
+      "portrait": "assets/portraits/xiayuyao.png",
+      "role": "物理输出",
+      "description": "身披烈焰之翼的战士，以无与伦比的速度与爪击横扫战场。每一次攻击都带着灼热的余烬，让敌人在痛苦中燃烧。",
+      "base_stats": {
+        "hp": 370,
+        "mp": 100,
+        "attack": 95,
+        "defense": 82,
+        "magic_defense": 58,
+        "speed": 90,
+        "agility": 92,
+        "intelligence": 30
+      },
+      "growth_rates": {
+        "hp": 28,
+        "mp": 2,
+        "attack": 2,
+        "defense": 2,
+        "magic_defense": 1,
+        "speed": 0,
+        "agility": 0,
+        "intelligence": 0
+      },
+      "unique_command": {
+        "name": "烈焰爪击",
+        "description": "以烈焰爪连续攻击敌人，每击附带灼烧效果，速度越高攻击次数越多",
+        "type": "unique"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "claw_strike",
+          "name": "爪击",
+          "type": "physical",
+          "mp_cost": 0,
+          "description": "快速发动单体爪击，附带灼烧被动"
+        },
+        {
+          "level": 6,
+          "skill_id": "flame_slash",
+          "name": "烈焰冲斩",
+          "type": "physical",
+          "mp_cost": 18,
+          "description": "以火焰护体发动强力冲斩，伤害提升，必然触发灼烧"
+        },
+        {
+          "level": 14,
+          "skill_id": "wind_claw",
+          "name": "疾风连爪",
+          "type": "physical",
+          "mp_cost": 28,
+          "description": "高速发动四连爪击，每击各自判定灼烧被动"
+        },
+        {
+          "level": 22,
+          "skill_id": "wing_guard",
+          "name": "翼盾格挡",
+          "type": "support",
+          "mp_cost": 20,
+          "description": "展开烈焰之翼，本回合物理防御大幅提升，反弹20%物理伤害"
+        },
+        {
+          "level": 32,
+          "skill_id": "inferno_slash",
+          "name": "天焱裂地斩",
+          "type": "unique",
+          "mp_cost": 50,
+          "description": "蓄满烈焰之力一击爆发，对单体造成极大物理伤害，必定触发强化灼烧"
+        }
+      ],
+      "resistances": {
+        "fire": "resist",
+        "ice": "weak",
+        "lightning": "normal",
+        "dark": "normal"
+      },
+      "equipment_slots": [
+        "爪武器",
+        "重甲",
+        "饰品"
+      ]
+    },
+    {
+      "id": "sang",
+      "name": "桑",
+      "name_en": "Sang",
+      "series": "火焰文章泪指传说",
+      "portrait": "assets/portraits/sang.png",
+      "role": "黑暗骑士",
+      "description": "来自火焰文章泪指传说的黑暗骑士，以黑铁重甲与骑剑横扫战场。越是身处险境，黑暗之力越是汹涌，伤痛反而化为无尽的力量之源。",
+      "base_stats": {
+        "hp": 480,
+        "mp": 130,
+        "attack": 98,
+        "defense": 90,
+        "magic_defense": 45,
+        "speed": 62,
+        "agility": 72,
+        "intelligence": 28
+      },
+      "growth_rates": {
+        "hp": 38,
+        "mp": 2,
+        "attack": 2,
+        "defense": 2,
+        "magic_defense": 1,
+        "speed": 0,
+        "agility": 0,
+        "intelligence": 0
+      },
+      "unique_command": {
+        "name": "黑暗之力",
+        "description": "消耗自身HP换取强大的攻击力，释放蓄积的黑暗能量对敌方单体发动毁灭性攻击",
+        "type": "unique"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "sang_dark_slash",
+          "name": "暗黑斩",
+          "type": "physical",
+          "mp_cost": 0,
+          "description": "以黑暗之力灌注的重斩，对单体造成强力物理伤害"
+        },
+        {
+          "level": 8,
+          "skill_id": "sang_blood_drain",
+          "name": "生命汲取",
+          "type": "physical",
+          "mp_cost": 22,
+          "description": "以暗黑之力汲取敌人生命，造成物理伤害并回复40%伤害量的HP"
+        },
+        {
+          "level": 14,
+          "skill_id": "sang_dark_aura",
+          "name": "黑暗光环",
+          "type": "support",
+          "mp_cost": 20,
+          "description": "释放黑暗光环，攻击与防御大幅提升，持续3回合"
+        },
+        {
+          "level": 22,
+          "skill_id": "sang_dark_revival",
+          "name": "黑暗再生",
+          "type": "support",
+          "mp_cost": 35,
+          "description": "以黑暗之力唤回倒下的队友，复活并恢复60%最大HP"
+        },
+        {
+          "level": 32,
+          "skill_id": "sang_death_knell",
+          "name": "死亡丧钟",
+          "type": "unique",
+          "mp_cost": 50,
+          "description": "黑暗骑士的终极一击，HP越低威力越高，无视50%物理防御"
+        }
+      ],
+      "resistances": {
+        "dark": "resist",
+        "holy": "weak",
+        "fire": "normal",
+        "ice": "normal"
+      },
+      "equipment_slots": [
+        "骑剑",
+        "重甲",
+        "盾牌",
+        "饰品"
+      ]
+    },
+    {
+      "id": "camille",
+      "name": "卡米尔",
+      "name_en": "Camille",
+      "series": "原创",
+      "portrait": "assets/portraits/camille.png",
+      "role": "水系法师 / 治疗辅助",
+      "description": "以圣洁水晶法杖为媒介的水系治疗师，温柔而坚定。卡米尔的存在本身就是队伍的庇护——她散发的辉煌光环让每一位同伴的魔法之力源源不断地涌现。",
+      "base_stats": {
+        "hp": 310,
+        "mp": 280,
+        "attack": 30,
+        "defense": 48,
+        "magic_defense": 85,
+        "speed": 68,
+        "agility": 55,
+        "intelligence": 92
+      },
+      "growth_rates": {
+        "hp": 24,
+        "mp": 6,
+        "attack": 1,
+        "defense": 1,
+        "magic_defense": 2,
+        "speed": 0,
+        "agility": 0,
+        "intelligence": 2
+      },
+      "unique_command": {
+        "name": "辉煌光环",
+        "description": "【被动】卡米尔存活时，每回合开始全体队友回复10点MP",
+        "type": "passive"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "camille_water_heal",
+          "name": "水之祝福",
+          "type": "heal",
+          "mp_cost": 16,
+          "description": "以圣洁水流治愈指定队友，回复大量HP"
+        },
+        {
+          "level": 6,
+          "skill_id": "camille_crystal_lance",
+          "name": "水晶之枪",
+          "type": "magic",
+          "mp_cost": 28,
+          "description": "以高压水晶枪贯穿敌人，造成强力魔法伤害并驱散目标所有增益效果"
+        },
+        {
+          "level": 12,
+          "skill_id": "camille_wave_heal",
+          "name": "圣波净化",
+          "type": "heal",
+          "mp_cost": 30,
+          "description": "释放治愈波动，回复全体队友HP"
+        },
+        {
+          "level": 22,
+          "skill_id": "holy_heal",
+          "name": "圣光治愈",
+          "type": "support",
+          "mp_cost": 16,
+          "description": "以圣光笼罩指定队友，每回合恢复40点HP并解除一个负面状态，持续5回合"
+        },
+        {
+          "level": 35,
+          "skill_id": "camille_resurrect_all",
+          "name": "圣光复苏",
+          "type": "unique",
+          "mp_cost": 60,
+          "description": "以圣光之力唤醒所有倒下的队友，各恢复40%最大HP"
+        },
+        {
+          "level": 45,
+          "skill_id": "camille_echo_grace",
+          "name": "回响恩典",
+          "type": "support",
+          "mp_cost": 35,
+          "description": "为指定队友编织水晶回响，使其接下来2个行动回合使用的技能自动复制一次"
+        }
+      ],
+      "resistances": {
+        "water": "absorb",
+        "fire": "weak",
+        "holy": "resist",
+        "dark": "resist"
+      },
+      "equipment_slots": [
+        "法杖",
+        "法袍",
+        "饰品",
+        "饰品"
+      ]
+    },
+    {
+      "id": "uum",
+      "name": "乌姆",
+      "name_en": "Uum",
+      "series": "原创",
+      "portrait": "assets/portraits/uum.png",
+      "role": "暗影法师",
+      "description": "手持魔法书与蒸汽电锯的神秘法师，以暗影魔法和机械之力横扫战场。受到足够攻击后会进入幻化状态，释放出双倍的破坏力。",
+      "base_stats": {
+        "hp": 400,
+        "mp": 220,
+        "attack": 68,
+        "defense": 55,
+        "magic_defense": 72,
+        "speed": 65,
+        "agility": 62,
+        "intelligence": 103
+      },
+      "growth_rates": {
+        "hp": 32,
+        "mp": 5,
+        "attack": 1,
+        "defense": 1,
+        "magic_defense": 2,
+        "speed": 0,
+        "agility": 0,
+        "intelligence": 3
+      },
+      "unique_command": {
+        "name": "幻化",
+        "description": "【被动】每场战斗受到5次攻击后进入幻化状态，接下来2回合内所有技能自动施放2次",
+        "type": "passive"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "uum_chainsaw",
+          "name": "噬魂电锯",
+          "type": "physical",
+          "mp_cost": 0,
+          "description": "以电锯造成暗影伤害，附加流血效果（每回合30点，持续5回合，不可叠加）"
+        },
+        {
+          "level": 8,
+          "skill_id": "uum_shield",
+          "name": "圣光护盾",
+          "type": "support",
+          "mp_cost": 28,
+          "description": "为我方全员施加护盾，吸收各自最大HP 30%的伤害，冷却4回合"
+        },
+        {
+          "level": 16,
+          "skill_id": "uum_void_rift",
+          "name": "虚空裂隙",
+          "type": "magic",
+          "mp_cost": 32,
+          "description": "撕裂虚空对全体敌人造成暗影伤害，并附加流血效果（每回合20点，持续3回合）"
+        },
+        {
+          "level": 28,
+          "skill_id": "uum_bloodfeast",
+          "name": "血祭吞噬",
+          "type": "unique",
+          "mp_cost": 45,
+          "description": "瞬间造成大量暗影伤害，吞噬目标所有流血效果，额外造成总流血量400%的伤害"
+        },
+        {
+          "level": 38,
+          "skill_id": "uum_dark_resurrect",
+          "name": "暗影复苏",
+          "type": "support",
+          "mp_cost": 40,
+          "description": "以暗影之力将倒下的队友从死亡边缘拉回，复活并恢复50%最大HP"
+        }
+      ],
+      "resistances": {
+        "dark": "absorb",
+        "holy": "weak",
+        "fire": "normal",
+        "time": "resist"
+      },
+      "equipment_slots": [
+        "电锯",
+        "法袍",
+        "饰品",
+        "饰品"
+      ]
+    },
+    {
+      "id": "jenny",
+      "name": "凌汐",
+      "name_en": "Lingxi",
+      "series": "原创",
+      "portrait": "assets/portraits/jenny.png",
+      "role": "圣剑士",
+      "description": "手持圣剑的最强剑士，举手投足间散发着逼人的剑气。她的每一次斩击都在敌人身上留下看不见的圣光裂痕，当裂痕积累到极限，便会爆发出毁灭一切的神圣之光。",
+      "base_stats": {
+        "hp": 360,
+        "mp": 130,
+        "attack": 108,
+        "defense": 42,
+        "magic_defense": 75,
+        "speed": 92,
+        "agility": 95,
+        "intelligence": 35
+      },
+      "growth_rates": {
+        "hp": 28,
+        "mp": 2,
+        "attack": 3,
+        "defense": 1,
+        "magic_defense": 1,
+        "speed": 0,
+        "agility": 0,
+        "intelligence": 0
+      },
+      "unique_command": {
+        "name": "圣光裂痕",
+        "description": "【被动】每次物理攻击给目标叠加1层圣光裂痕（上限30层），叠满后自动爆炸，对全体敌人造成大量神圣伤害",
+        "type": "passive"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "jenny_slash_combo",
+          "name": "圣剑连斩",
+          "type": "physical",
+          "mp_cost": 0,
+          "description": "4段圣光剑击，每击附加一层圣光裂痕"
+        },
+        {
+          "level": 10,
+          "skill_id": "jenny_rally",
+          "name": "剑意激励",
+          "type": "support",
+          "mp_cost": 22,
+          "description": "全员物理伤害提升40%，持续3回合"
+        },
+        {
+          "level": 30,
+          "skill_id": "jenny_lunar_scar",
+          "name": "月痕",
+          "type": "unique",
+          "mp_cost": 48,
+          "description": "5段月光剑气斩击，每击附加一层圣光裂痕"
+        },
+        {
+          "level": 22,
+          "skill_id": "jenny_holy_revival",
+          "name": "圣光复生",
+          "type": "support",
+          "mp_cost": 38,
+          "description": "以圣剑凝聚圣光之力注入倒下的队友，复活并恢复60%最大HP"
+        }
+      ],
+      "resistances": {
+        "holy": "absorb",
+        "dark": "weak",
+        "fire": "normal",
+        "ice": "normal"
+      },
+      "equipment_slots": [
+        "圣剑",
+        "轻甲",
+        "饰品",
+        "饰品"
+      ]
+    },
+    {
+      "id": "alicia",
+      "name": "爱丽西娅",
+      "name_en": "Alicia",
+      "series": "原创",
+      "portrait": "assets/portraits/alicia.png",
+      "avatar": "assets/avatars/alicia.png",
+      "role": "雷系法师",
+      "description": "雷神化身，拥有掌控闪电的神力。性格内向温柔，是队伍里大家的邻家大姐姐。平日里轻声细语，一旦战斗开始，雷霆之力便毫不保留地倾泻而出。",
+      "base_stats": {
+        "hp": 230,
+        "mp": 310,
+        "attack": 22,
+        "defense": 35,
+        "magic_defense": 98,
+        "speed": 88,
+        "agility": 70,
+        "intelligence": 104
+      },
+      "growth_rates": {
+        "hp": 16,
+        "mp": 8,
+        "attack": 0,
+        "defense": 1,
+        "magic_defense": 3,
+        "speed": 1,
+        "agility": 0,
+        "intelligence": 3
+      },
+      "unique_command": {
+        "name": "雷神之怒",
+        "description": "【被动】爱丽西娅每次使用技能后，有50%概率再次触发该技能，造成原伤害50%的额外伤害",
+        "type": "passive"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "alicia_thunder_strike",
+          "name": "雷击",
+          "type": "magic",
+          "mp_cost": 24,
+          "description": "对单体目标降下强力闪电，造成大量雷系魔法伤害"
+        },
+        {
+          "level": 8,
+          "skill_id": "alicia_chain_lightning",
+          "name": "连锁闪电",
+          "type": "magic",
+          "mp_cost": 36,
+          "description": "闪电袭击选中目标，随后跳向第二目标造成70%伤害，再跳向第三目标造成40%伤害"
+        },
+        {
+          "level": 16,
+          "skill_id": "alicia_thunder_guard",
+          "name": "雷光守护",
+          "type": "support",
+          "mp_cost": 32,
+          "description": "为我方全员施加雷光护盾，每回合吸收伤害，持续3回合"
+        },
+        {
+          "level": 30,
+          "skill_id": "alicia_lightning_fury",
+          "name": "闪电烈怒",
+          "type": "unique",
+          "mp_cost": 52,
+          "description": "雷神之怒席卷全场，对敌方所有目标造成大量雷系魔法伤害"
+        }
+      ],
+      "resistances": {
+        "thunder": "absorb",
+        "water": "weak",
+        "wind": "resist",
+        "fire": "normal"
+      },
+      "equipment_slots": [
+        "法杖",
+        "法袍",
+        "饰品",
+        "饰品"
+      ]
+    },
+    {
+      "id": "xiaoyao",
+      "name": "小瑶",
+      "name_en": "Xiaoyao",
+      "series": "原创",
+      "portrait": "assets/portraits/xiaoyao.png",
+      "role": "召唤师",
+      "description": "天生与召唤精灵亲近的少女，身旁常有小兔精灵相伴。看似温和无害，但在她的指挥下，连黑暗界的巨龙都会俯首听命。",
+      "base_stats": {
+        "hp": 390,
+        "mp": 230,
+        "attack": 60,
+        "defense": 52,
+        "magic_defense": 74,
+        "speed": 66,
+        "agility": 60,
+        "intelligence": 100
+      },
+      "growth_rates": {
+        "hp": 30,
+        "mp": 6,
+        "attack": 1,
+        "defense": 1,
+        "magic_defense": 2,
+        "speed": 0,
+        "agility": 0,
+        "intelligence": 3
+      },
+      "unique_command": {
+        "name": "召唤大师",
+        "description": "【被动】小瑶每次使用技能后，自身的召唤技能伤害提升10%（最高50%）。达到50%时，下次召唤技能触发后自动归零",
+        "type": "passive"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "xiaoyao_sprite_summon",
+          "name": "精灵召唤",
+          "type": "magic",
+          "mp_cost": 18,
+          "description": "召唤小兔精灵袭击单体目标，造成魔法伤害并使目标减速2回合"
+        },
+        {
+          "level": 8,
+          "skill_id": "xiaoyao_void_eye",
+          "name": "虚空之眼",
+          "type": "magic",
+          "mp_cost": 28,
+          "description": "召唤虚空眼球凝视全体敌人，造成暗系伤害并降低目标魔防"
+        },
+        {
+          "level": 16,
+          "skill_id": "xiaoyao_summon_barrier",
+          "name": "召唤护盾",
+          "type": "support",
+          "mp_cost": 30,
+          "description": "召唤能量屏障保护全体队友，每回合抵挡100点伤害，持续2回合"
+        },
+        {
+          "level": 25,
+          "skill_id": "xiaoyao_spirit_heal",
+          "name": "精灵祝福",
+          "type": "heal",
+          "mp_cost": 34,
+          "description": "召唤治愈精灵环绕全体队友，为所有人回复HP"
+        },
+        {
+          "level": 30,
+          "skill_id": "xiaoyao_black_dragon",
+          "name": "黑龙降临",
+          "type": "unique",
+          "mp_cost": 60,
+          "description": "召唤巨大黑龙对敌方全体造成毁灭性混沌伤害，无视魔法防御"
+        }
+      ],
+      "resistances": {
+        "dark": "resist",
+        "holy": "normal",
+        "fire": "normal",
+        "ice": "normal"
+      },
+      "equipment_slots": ["法杖", "法袍", "饰品", "饰品"]
+    },
+    {
+      "id": "luofa",
+      "name": "罗法",
+      "name_en": "Luofa",
+      "series": "原创",
+      "portrait": "assets/portraits/luofa.png",
+      "role": "狂战士 / 重斧战士",
+      "description": "手持一对巨斧的狂暴战士，以力量碾压一切。战斗时热血沸腾，每一击都带着毁天灭地的气势。魔法对他来说是无用之物——他只相信钢铁与肌肉。",
+      "base_stats": {
+        "hp": 480,
+        "mp": 100,
+        "attack": 105,
+        "defense": 88,
+        "magic_defense": 32,
+        "speed": 85,
+        "agility": 55,
+        "intelligence": 18
+      },
+      "growth_rates": {
+        "hp": 40,
+        "mp": 1,
+        "attack": 3,
+        "defense": 2,
+        "magic_defense": 1,
+        "speed": 1,
+        "agility": 0,
+        "intelligence": 0
+      },
+      "unique_command": {
+        "name": "狂战士",
+        "description": "【被动】每次攻击或技能造成伤害后，对另一个随机敌人造成50%的伤害；若只有一个目标，则对其追加第二击造成50%伤害",
+        "type": "passive"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "luofa_axe_split",
+          "name": "斧裂",
+          "type": "physical",
+          "mp_cost": 16,
+          "description": "以巨斧劈砍单体目标，造成大量物理伤害并破防30%"
+        },
+        {
+          "level": 8,
+          "skill_id": "luofa_whirlwind",
+          "name": "旋风斩",
+          "type": "physical",
+          "mp_cost": 24,
+          "description": "双斧高速旋转席卷全场，对所有敌人造成物理伤害"
+        },
+        {
+          "level": 18,
+          "skill_id": "luofa_savage_strike",
+          "name": "狂暴冲击",
+          "type": "physical",
+          "mp_cost": 30,
+          "description": "蓄积全力猛击单体目标，造成极大物理伤害，但自身防御降低1回合"
+        },
+        {
+          "level": 30,
+          "skill_id": "luofa_doomsday_axes",
+          "name": "末日双斧",
+          "type": "unique",
+          "mp_cost": 48,
+          "description": "连续3击单体目标，每击威力递增（×1.0 / ×1.3 / ×1.6）"
+        }
+      ],
+      "resistances": {
+        "fire": "resist",
+        "ice": "normal",
+        "dark": "normal",
+        "holy": "normal"
+      },
+      "equipment_slots": ["双斧", "重甲", "饰品", "饰品"]
+    },
+    {
+      "id": "dennis",
+      "name": "丹尼斯",
+      "name_en": "Dennis",
+      "series": "原创",
+      "portrait": "assets/portraits/dennis.png",
+      "role": "神枪手 / 射手",
+      "description": "身披金绿铠甲的年轻神枪手，枪法出神入化。每一枪都精准无误，在他眼中战场上没有射不中的目标。高度专注的战斗直觉让他的每次暴击都能引发连锁反应。",
+      "base_stats": {
+        "hp": 320,
+        "mp": 160,
+        "attack": 95,
+        "defense": 45,
+        "magic_defense": 40,
+        "speed": 88,
+        "agility": 92,
+        "intelligence": 35
+      },
+      "growth_rates": {
+        "hp": 24,
+        "mp": 2,
+        "attack": 2,
+        "defense": 1,
+        "magic_defense": 1,
+        "speed": 1,
+        "agility": 2,
+        "intelligence": 0
+      },
+      "unique_command": {
+        "name": "鹰眼",
+        "description": "【被动】暴击时额外造成30%伤害；每次暴击后下一次攻击暴击率额外+20%（最多叠加3层/+60%，触发后归零）",
+        "type": "passive"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "dennis_precise_shot",
+          "name": "精准射击",
+          "type": "physical",
+          "mp_cost": 18,
+          "description": "以超凡枪法瞄准要害，敏捷值加成单体物理伤害"
+        },
+        {
+          "level": 8,
+          "skill_id": "dennis_buckshot",
+          "name": "散弹轰击",
+          "type": "physical",
+          "mp_cost": 26,
+          "description": "装填散弹对全体敌人扫射，造成中等物理伤害"
+        },
+        {
+          "level": 18,
+          "skill_id": "dennis_armor_pierce",
+          "name": "穿甲弹",
+          "type": "physical",
+          "mp_cost": 30,
+          "description": "特制穿甲弹无视目标50%物理防御"
+        },
+        {
+          "level": 30,
+          "skill_id": "dennis_finisher",
+          "name": "终结之枪",
+          "type": "unique",
+          "mp_cost": 50,
+          "description": "本次暴击率+50%，对单体造成毁灭性伤害"
+        }
+      ],
+      "resistances": {
+        "fire": "normal",
+        "ice": "normal",
+        "dark": "normal",
+        "wind": "resist"
+      },
+      "equipment_slots": ["枪械", "轻甲", "饰品", "饰品"]
+    },
+    {
+      "id": "nalong",
+      "name": "纳隆",
+      "name_en": "Nalong",
+      "series": "原创",
+      "portrait": "assets/portraits/nalong.png",
+      "role": "海盗 / 枪剑士",
+      "description": "纵横七海的传奇海盗船长，踩着骷髅酒桶、举枪豪笑。无拘无束是他的信条，战场上既能打出犀利的枪法，也不惧近身肉搏。击倒敌人时眼中闪烁的兴奋光芒让同伴们既佩服又有些害怕。",
+      "base_stats": {
+        "hp": 420,
+        "mp": 170,
+        "attack": 98,
+        "defense": 58,
+        "magic_defense": 45,
+        "speed": 84,
+        "agility": 78,
+        "intelligence": 28
+      },
+      "growth_rates": {
+        "hp": 32,
+        "mp": 3,
+        "attack": 2,
+        "defense": 1,
+        "magic_defense": 1,
+        "speed": 1,
+        "agility": 1,
+        "intelligence": 0
+      },
+      "unique_command": {
+        "name": "海盗之魂",
+        "description": "【被动】每次击倒一个敌人后，纳隆下一个回合MP消耗归零，攻击力提升15%持续1回合",
+        "type": "passive"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "nalong_pistol_shot",
+          "name": "海盗短枪",
+          "type": "physical",
+          "mp_cost": 16,
+          "description": "速度加成单体伤害，25%概率附加中毒状态"
+        },
+        {
+          "level": 8,
+          "skill_id": "nalong_plunder",
+          "name": "掠夺一击",
+          "type": "physical",
+          "mp_cost": 22,
+          "description": "单体大量物理伤害，回复自身15%最大HP"
+        },
+        {
+          "level": 18,
+          "skill_id": "nalong_powder_keg",
+          "name": "火药桶",
+          "type": "physical",
+          "mp_cost": 32,
+          "description": "全体爆炸伤害，必然附加燃烧状态2回合"
+        },
+        {
+          "level": 30,
+          "skill_id": "nalong_captains_fury",
+          "name": "船长之怒",
+          "type": "unique",
+          "mp_cost": 48,
+          "description": "对单体5连击，自身血量越低威力越强（最高+100%）"
+        }
+      ],
+      "resistances": {
+        "fire": "resist",
+        "water": "weak",
+        "dark": "normal",
+        "ice": "normal"
+      },
+      "equipment_slots": ["手枪", "海盗服", "饰品", "饰品"]
+    },
+    {
+      "id": "meriel",
+      "name": "梅里艾尔",
+      "name_en": "Meriel",
+      "series": "原创",
+      "portrait": "assets/portraits/meriel.png",
+      "role": "女海盗 / 狡猾射手",
+      "description": "坐在宝藏箱上举枪微笑的女海盗，以机智狡猾著称。她不靠蛮力取胜，而是用诅咒、陷阱和出其不意的战术让敌人摸不着头脑。据说她手里的宝藏地图能带来意想不到的好运。",
+      "base_stats": {
+        "hp": 310,
+        "mp": 190,
+        "attack": 82,
+        "defense": 42,
+        "magic_defense": 52,
+        "speed": 92,
+        "agility": 88,
+        "intelligence": 45
+      },
+      "growth_rates": {
+        "hp": 22,
+        "mp": 4,
+        "attack": 2,
+        "defense": 1,
+        "magic_defense": 1,
+        "speed": 1,
+        "agility": 2,
+        "intelligence": 0
+      },
+      "unique_command": {
+        "name": "幸运女神",
+        "description": "【被动】每个回合开始随机触发一个效果：①金币雨（全队MP+20）②海盗诅咒（随机敌人攻击-20% 1回合）③意外之财（自身HP回复8%）",
+        "type": "passive"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "meriel_dual_shot",
+          "name": "双枪乱射",
+          "type": "physical",
+          "mp_cost": 18,
+          "description": "双枪4连射，随机命中敌人，每击中等物理伤害"
+        },
+        {
+          "level": 8,
+          "skill_id": "meriel_pirate_curse",
+          "name": "海盗诅咒",
+          "type": "support",
+          "mp_cost": 22,
+          "description": "单体攻击-25%并减速，持续2回合"
+        },
+        {
+          "level": 18,
+          "skill_id": "meriel_treasure_boost",
+          "name": "宝藏秘术",
+          "type": "support",
+          "mp_cost": 30,
+          "description": "全体队友下一次技能伤害+40%（一次性）"
+        },
+        {
+          "level": 30,
+          "skill_id": "meriel_skull_flag",
+          "name": "骷髅旗",
+          "type": "unique",
+          "mp_cost": 45,
+          "description": "全体敌人防御-30%（3回合），40%概率每人跳过下一回合"
+        }
+      ],
+      "resistances": {
+        "dark": "resist",
+        "fire": "resist",
+        "water": "weak",
+        "holy": "normal"
+      },
+      "equipment_slots": ["手枪", "海盗服", "饰品", "饰品"]
+    },
+    {
+      "id": "mathew",
+      "name": "马修",
+      "name_en": "Mathew",
+      "series": "原创",
+      "portrait": "assets/portraits/mathew.png",
+      "role": "格斗家",
+      "description": "系着蓝色头巾、戴金刺拳套的街头格斗家。不依赖任何武器，只用拳脚就能打倒强敌。表面上总是一副轻松的笑容，实际上每一拳都蓄满了令人窒息的气势。",
+      "base_stats": {
+        "hp": 460,
+        "mp": 120,
+        "attack": 108,
+        "defense": 62,
+        "magic_defense": 30,
+        "speed": 86,
+        "agility": 80,
+        "intelligence": 20
+      },
+      "growth_rates": {
+        "hp": 35,
+        "mp": 1,
+        "attack": 3,
+        "defense": 1,
+        "magic_defense": 0,
+        "speed": 1,
+        "agility": 1,
+        "intelligence": 0
+      },
+      "unique_command": {
+        "name": "气势",
+        "description": "【被动】每次普通攻击命中后积累1层气势（最多5层），每层使下一次技能伤害+8%；使用技能后气势归零",
+        "type": "passive"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "mathew_heavy_punch",
+          "name": "重拳",
+          "type": "physical",
+          "mp_cost": 10,
+          "description": "双拳连击目标两次，速度加成伤害"
+        },
+        {
+          "level": 8,
+          "skill_id": "mathew_spin_kick",
+          "name": "旋风踢",
+          "type": "physical",
+          "mp_cost": 22,
+          "description": "旋转踢击扫荡全场，对所有敌人造成物理伤害"
+        },
+        {
+          "level": 18,
+          "skill_id": "mathew_armor_break",
+          "name": "破甲拳",
+          "type": "physical",
+          "mp_cost": 28,
+          "description": "无视30%防御，气势层数越高威力越强"
+        },
+        {
+          "level": 30,
+          "skill_id": "mathew_infinite_combo",
+          "name": "无极连击",
+          "type": "unique",
+          "mp_cost": 45,
+          "description": "8连击单体，全部命中后使目标眩晕跳过下一回合"
+        }
+      ],
+      "resistances": {
+        "fire": "normal",
+        "ice": "normal",
+        "dark": "normal",
+        "wind": "resist"
+      },
+      "equipment_slots": ["拳套", "格斗服", "饰品", "饰品"]
+    },
+    {
+      "id": "grifon",
+      "name": "格利风",
+      "name_en": "Grifon",
+      "series": "原创",
+      "portrait": "assets/portraits/grifon.png",
+      "role": "恶魔召唤师",
+      "description": "戴着单片眼镜、手持禁忌召唤书的恶魔契约者。外表冷静克制，实则与无数恶魔签有契约。肩上常驻的小恶魔是他最早召唤的存在，两者之间的关系更像是伙伴而非主仆。",
+      "base_stats": {
+        "hp": 285,
+        "mp": 300,
+        "attack": 25,
+        "defense": 38,
+        "magic_defense": 80,
+        "speed": 68,
+        "agility": 55,
+        "intelligence": 106
+      },
+      "growth_rates": {
+        "hp": 18,
+        "mp": 8,
+        "attack": 0,
+        "defense": 1,
+        "magic_defense": 2,
+        "speed": 0,
+        "agility": 0,
+        "intelligence": 3
+      },
+      "unique_command": {
+        "name": "魔化",
+        "description": "【被动】每次施放法术后获得1层魔化（最多叠加3层）；达到3层后进入恶魔形态持续2回合：所有法术伤害提升100%且无视冷却；恶魔形态中无法继续叠加魔化层数",
+        "type": "passive"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "grifon_hellhound",
+          "name": "召唤地狱犬",
+          "type": "magic",
+          "mp_cost": 20,
+          "description": "召唤地狱犬撕咬单体，暗系伤害+流血+堕落标记"
+        },
+        {
+          "level": 8,
+          "skill_id": "grifon_demon_eye",
+          "name": "恶魔之眼",
+          "type": "support",
+          "mp_cost": 28,
+          "description": "全体敌人魔防-20%+减速，各留下堕落标记"
+        },
+        {
+          "level": 18,
+          "skill_id": "grifon_abyss_summon",
+          "name": "深渊召唤",
+          "type": "magic",
+          "mp_cost": 40,
+          "description": "全体敌人大量暗系伤害，各留下堕落标记"
+        },
+        {
+          "level": 30,
+          "skill_id": "grifon_manifest",
+          "name": "格利风显现",
+          "type": "unique",
+          "mp_cost": 65,
+          "description": "无视魔防对单体造成毁灭性伤害，清除目标BUFF，留下堕落标记"
+        }
+      ],
+      "resistances": {
+        "dark": "absorb",
+        "holy": "weak",
+        "fire": "normal",
+        "ice": "normal"
+      },
+      "equipment_slots": ["召唤书", "法袍", "饰品", "饰品"]
+    },
+    {
+      "id": "jessica",
+      "name": "杰西卡",
+      "name_en": "Jessica",
+      "series": "原创",
+      "portrait": "assets/portraits/jessica.png",
+      "role": "弓箭手 / 刺客",
+      "description": "天赋异禀的精英弓手，冷静果断，每一箭都精准命中要害。极高的暴击天赋让她在战场上如猎豹般致命，一旦锁定目标便必然是一击毙命。",
+      "base_stats": {
+        "hp": 310,
+        "mp": 155,
+        "attack": 98,
+        "defense": 42,
+        "magic_defense": 38,
+        "speed": 90,
+        "agility": 96,
+        "intelligence": 30
+      },
+      "growth_rates": {
+        "hp": 22,
+        "mp": 2,
+        "attack": 3,
+        "defense": 1,
+        "magic_defense": 1,
+        "speed": 1,
+        "agility": 2,
+        "intelligence": 0
+      },
+      "unique_command": {
+        "name": "致命猎手",
+        "description": "【被动】每次普通攻击或技能暴击后，下一次攻击的物理伤害额外提升40%（不叠加，下次行动自动消耗）；暴击时额外造成的伤害提升至×1.8（替代默认×1.5）",
+        "type": "passive"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "jessica_swift_shot",
+          "name": "疾风箭",
+          "type": "physical",
+          "mp_cost": 16,
+          "description": "以极速射出一箭，攻速加成伤害，暴击率额外+20%"
+        },
+        {
+          "level": 8,
+          "skill_id": "jessica_double_shot",
+          "name": "双矢连射",
+          "type": "physical",
+          "mp_cost": 22,
+          "description": "迅速连发两箭，每箭暴击率额外+25%"
+        },
+        {
+          "level": 18,
+          "skill_id": "jessica_rain_of_arrows",
+          "name": "箭雨",
+          "type": "physical",
+          "mp_cost": 30,
+          "description": "向空中连射数十支箭，倾泻而下覆盖全体敌人"
+        },
+        {
+          "level": 30,
+          "skill_id": "jessica_piercing_arrow",
+          "name": "穿云破甲箭",
+          "type": "physical",
+          "mp_cost": 48,
+          "description": "蓄力射出极速穿甲箭，无视目标60%防御，暴击率大幅提升"
+        }
+      ],
+      "resistances": {
+        "fire": "normal",
+        "dark": "normal",
+        "holy": "normal",
+        "time": "resist"
+      },
+      "equipment_slots": ["弓", "轻甲", "饰品", "饰品"]
+    },
+    {
+      "id": "tiya",
+      "name": "提雅",
+      "name_en": "Tiya",
+      "series": "原创",
+      "portrait": "assets/portraits/tiya.png",
+      "role": "剑盾士 / 守护者",
+      "description": "红发金甲的精英剑士，以蓝纹盾闻名于战场。她的战斗风格融合了坚不可摧的防御与迅猛的反击，每一次格挡都是下一次致命突刺的前奏。",
+      "base_stats": {
+        "hp": 480,
+        "mp": 140,
+        "attack": 82,
+        "defense": 98,
+        "magic_defense": 72,
+        "speed": 68,
+        "agility": 60,
+        "intelligence": 28
+      },
+      "growth_rates": {
+        "hp": 38,
+        "mp": 2,
+        "attack": 2,
+        "defense": 3,
+        "magic_defense": 2,
+        "speed": 0,
+        "agility": 0,
+        "intelligence": 0
+      },
+      "unique_command": {
+        "name": "盾反",
+        "description": "【被动】每次受到物理攻击后，有30%概率自动触发盾反，立即对攻击者造成自身防御值40%的反击伤害；防御值越高，反击越痛",
+        "type": "passive"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "tiya_shield_bash",
+          "name": "盾击",
+          "type": "physical",
+          "mp_cost": 14,
+          "description": "以盾猛撞敌人，造成物理伤害并使目标眩晕跳过下一回合"
+        },
+        {
+          "level": 8,
+          "skill_id": "tiya_sword_slash",
+          "name": "毁灭",
+          "type": "physical",
+          "mp_cost": 22,
+          "description": "以剑斩破敌方防御，无视35%物理防御；溅射伤害波及其他敌人（50%）"
+        },
+        {
+          "level": 18,
+          "skill_id": "tiya_iron_guard",
+          "name": "铁壁守护",
+          "type": "support",
+          "mp_cost": 18,
+          "description": "举盾进入防御姿态，大幅提升自身防御并为自身施加护盾"
+        },
+        {
+          "level": 28,
+          "skill_id": "tiya_shield_counter",
+          "name": "湮灭",
+          "type": "physical",
+          "mp_cost": 36,
+          "description": "以盾格挡后立即反击，连续两击，无视25%防御，伤害极高"
+        },
+        {
+          "level": 40,
+          "skill_id": "tiya_war_cry",
+          "name": "战吼",
+          "type": "support",
+          "mp_cost": 28,
+          "description": "发出震慑全场的战吼，为全体队友提升攻击+20、防御+30，持续3回合"
+        }
+      ],
+      "resistances": {
+        "fire": "normal",
+        "dark": "resist",
+        "holy": "resist",
+        "time": "normal"
+      },
+      "equipment_slots": ["单手剑", "盾牌", "重甲", "饰品"]
+    },
+    {
+      "id": "clarete",
+      "name": "克拉蕾特",
+      "name_en": "Clarete",
+      "series": "原创",
+      "portrait": "assets/portraits/clarete.png",
+      "role": "忍者剑士 / 暗杀者",
+      "description": "白发红眼的暗杀者，手持赤焰血刃，来去无踪。没有人知道她从何处来，只知道每一次出刀都意味着终结。极高的攻击力配合15%的奥义触发率，任何敌人都无法预料下一刀的重量。",
+      "base_stats": {
+        "hp": 300,
+        "mp": 150,
+        "attack": 108,
+        "defense": 38,
+        "magic_defense": 35,
+        "speed": 95,
+        "agility": 98,
+        "intelligence": 22
+      },
+      "growth_rates": {
+        "hp": 20,
+        "mp": 2,
+        "attack": 4,
+        "defense": 1,
+        "magic_defense": 1,
+        "speed": 1,
+        "agility": 2,
+        "intelligence": 0
+      },
+      "unique_command": {
+        "name": "奥义·赤焰",
+        "description": "【被动】任何攻击或技能命中时，有15%概率触发奥义，使本次伤害变为4倍；触发时血刃泛出赤焰光芒",
+        "type": "passive"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "clarete_shadow_slash",
+          "name": "影斩",
+          "type": "physical",
+          "mp_cost": 14,
+          "description": "以敏捷为加成的高速斩击，攻速越快伤害越高"
+        },
+        {
+          "level": 8,
+          "skill_id": "clarete_blood_dance",
+          "name": "血舞",
+          "type": "physical",
+          "mp_cost": 20,
+          "description": "连续三击目标，每击吸取20%伤害量为自身回复HP"
+        },
+        {
+          "level": 18,
+          "skill_id": "clarete_void_step",
+          "name": "虚步刺杀",
+          "type": "physical",
+          "mp_cost": 28,
+          "description": "踏入虚空瞬移至敌后，单体大伤害，无视50%防御"
+        },
+        {
+          "level": 28,
+          "skill_id": "clarete_crimson_burst",
+          "name": "赤焰爆裂斩",
+          "type": "physical",
+          "mp_cost": 38,
+          "description": "以血刃蓄积赤焰之力，瞬间横扫全体敌人，无视30%防御"
+        },
+        {
+          "level": 40,
+          "skill_id": "clarete_death_sentence",
+          "name": "死刑",
+          "type": "physical",
+          "mp_cost": 50,
+          "description": "集中全部杀意于一击，无视60%防御，暴击率大幅提升，触发奥义的概率翻倍"
+        }
+      ],
+      "resistances": {
+        "fire": "normal",
+        "dark": "resist",
+        "holy": "normal",
+        "time": "resist"
+      },
+      "equipment_slots": ["武士刀", "轻甲", "饰品", "饰品"]
+    },
+    {
+      "id": "stephanie",
+      "name": "斯蒂芬妮",
+      "name_en": "Stephanie",
+      "series": "原创",
+      "portrait": "assets/portraits/stephanie.png",
+      "role": "龙骑士 / 物理输出",
+      "description": "红发碧眼的精英龙骑士，身披银蓝战甲，手持双刃龙枪。她与远古火龙缔结契约，战场上既能以枪术压制敌人，更能化身巨龙以炽焰吐息横扫一切。",
+      "base_stats": {
+        "hp": 420,
+        "mp": 160,
+        "attack": 100,
+        "defense": 80,
+        "magic_defense": 55,
+        "speed": 82,
+        "agility": 78,
+        "intelligence": 30
+      },
+      "growth_rates": {
+        "hp": 35,
+        "mp": 2,
+        "attack": 3,
+        "defense": 2,
+        "magic_defense": 1,
+        "speed": 1,
+        "agility": 1,
+        "intelligence": 0
+      },
+      "unique_command": {
+        "name": "龙魂共鸣",
+        "description": "【被动】每次使用物理技能后，有25%概率激发龙魂，使下一次技能伤害额外提升50%（一次性消耗）",
+        "type": "passive"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "stephanie_dragon_lance",
+          "name": "龙枪突刺",
+          "type": "physical",
+          "mp_cost": 16,
+          "description": "以龙骑之枪高速突刺单体目标，速度越高伤害越大"
+        },
+        {
+          "level": 8,
+          "skill_id": "stephanie_aerial_strike",
+          "name": "腾空斩",
+          "type": "physical",
+          "mp_cost": 24,
+          "description": "纵身跃起从高空全力俯冲，无视30%防御的重击"
+        },
+        {
+          "level": 16,
+          "skill_id": "stephanie_lance_sweep",
+          "name": "龙枪横扫",
+          "type": "physical",
+          "mp_cost": 28,
+          "description": "挥动长枪横扫全场，对所有敌人造成物理伤害"
+        },
+        {
+          "level": 24,
+          "skill_id": "stephanie_dragon_scale",
+          "name": "龙鳞壁障",
+          "type": "support",
+          "mp_cost": 20,
+          "description": "召唤龙鳞护体，大幅提升自身防御并施加护盾"
+        },
+        {
+          "level": 35,
+          "skill_id": "stephanie_dragon_breath",
+          "name": "巨龙吐息",
+          "type": "physical",
+          "mp_cost": 55,
+          "description": "化身巨龙对全体敌人喷射炽热龙息，大量物理火焰伤害，无视40%防御"
+        }
+      ],
+      "resistances": {
+        "fire": "resist",
+        "dark": "normal",
+        "holy": "normal",
+        "time": "normal"
+      },
+      "equipment_slots": ["长枪", "重甲", "饰品", "饰品"]
+    },
+    {
+      "id": "cross",
+      "name": "克罗斯",
+      "name_en": "Cross",
+      "series": "原创",
+      "portrait": "assets/portraits/cross.png",
+      "role": "盗贼 / 快攻刺客",
+      "description": "金发碧眼的街头盗贼，头戴蓝头巾，手持轻巧弯刀。来去如风，永远带着玩世不恭的笑容。他不在乎规则，只在乎结果——而结果往往是敌人倒地之前根本没看清他的身影。",
+      "base_stats": {
+        "hp": 290,
+        "mp": 170,
+        "attack": 92,
+        "defense": 35,
+        "magic_defense": 32,
+        "speed": 105,
+        "agility": 102,
+        "intelligence": 28
+      },
+      "growth_rates": {
+        "hp": 18,
+        "mp": 2,
+        "attack": 2,
+        "defense": 1,
+        "magic_defense": 1,
+        "speed": 2,
+        "agility": 2,
+        "intelligence": 0
+      },
+      "unique_command": {
+        "name": "机会主义",
+        "description": "【被动】对HP低于50%的敌人造成的所有物理伤害额外提升30%；每次成功击杀敌人后，下回合获得额外行动（行动后不消耗回合）",
+        "type": "passive"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "cross_quick_slash",
+          "name": "飞刃",
+          "type": "physical",
+          "mp_cost": 0,
+          "description": "以极速挥出弯刀，速度越高伤害越大"
+        },
+        {
+          "level": 6,
+          "skill_id": "cross_steal",
+          "name": "夺取",
+          "type": "physical",
+          "mp_cost": 10,
+          "description": "攻击目标同时窃取其30点MP"
+        },
+        {
+          "level": 14,
+          "skill_id": "cross_shadow_step",
+          "name": "影踏连斩",
+          "type": "physical",
+          "mp_cost": 22,
+          "description": "化入阴影连续三击，速度加成，独立暴击判定"
+        },
+        {
+          "level": 24,
+          "skill_id": "cross_expose",
+          "name": "破绽",
+          "type": "support",
+          "mp_cost": 18,
+          "description": "识破目标弱点，降低攻击25%与防御30%，持续2回合"
+        },
+        {
+          "level": 36,
+          "skill_id": "cross_death_mark",
+          "name": "终结标记",
+          "type": "physical",
+          "mp_cost": 40,
+          "description": "目标HP低于50%时额外造成50%伤害，无视50%防御"
+        }
+      ],
+      "resistances": {
+        "fire": "normal",
+        "dark": "resist",
+        "holy": "normal",
+        "time": "resist"
+      },
+      "equipment_slots": ["弯刀", "轻甲", "饰品", "饰品"]
+    }
+  ]
+}

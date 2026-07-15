@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git --version)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Program Files \\(x86\\)/**)",
+      "Read(//c/Program Files \\(x86\\)/Steam/steamapps/**)",
+      "Bash(npx --yes serve . --listen 3000)",
+      "Bash(cp \"C:/Users/C5284281/Downloads/FF6/雪露法妮尔2D.png\" \"C:/Users/C5284281/myproject/My Heros/assets/portraits/sheru.png\")",
+      "Bash(cp \"C:/Users/C5284281/Downloads/FF6/小林龙胆2D.png\" \"C:/Users/C5284281/myproject/My Heros/assets/portraits/ryutan.png\")",
+      "Bash(cp \"C:/Users/C5284281/Downloads/FF6/夏雨瑶2D.png\" \"C:/Users/C5284281/myproject/My Heros/assets/portraits/xiayuyao.png\" && echo \"done\")",
+      "Bash(node -e ' *)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\C5284281\\Downloads\\FF6"
+    ]
+  }
+}

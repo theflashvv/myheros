@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Heroes — 角色数据库</title>
+  <style>
+    :root {
+      --bg:       #0d0d1a;
+      --panel:    #141428;
+      --border:   #2a2a50;
+      --accent:   #7b5ea7;
+      --accent2:  #c084fc;
+      --gold:     #f0c060;
+      --text:     #e8e0f0;
+      --subtext:  #9988bb;
+      --hp:       #4ade80;
+      --mp:       #60a5fa;
+      --atk:      #f87171;
+      --mag:      #c084fc;
+      --def:      #fbbf24;
+      --spd:      #34d399;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a0a2e, #0d1a2e);
+      border-bottom: 2px solid var(--accent);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+      justify-content: space-between;
+    }
+    header h1 {
+      font-size: 1.8rem;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      text-shadow: 0 0 20px rgba(240,192,96,0.4);
+    }
+    header .subtitle {
+      color: var(--subtext);
+      font-size: 0.85rem;
+    }
+    .btn-nav {
+      padding: 6px 14px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--subtext);
+      cursor: pointer;
+      font-size: 0.8rem;
+      text-decoration: none;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .btn-nav:hover { border-color: var(--accent); color: var(--accent2); }
+    .btn-nav-active { border-color: var(--accent) !important; color: var(--gold) !important; cursor: default; }
+
+    /* 汉堡按钮（默认隐藏，窄屏显示） */
+    #menu-toggle {
+      display: none;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 4px 10px;
+      flex-shrink: 0;
+    }
+
+    /* 遮罩层 */
+    #sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 190;
+    }
+    #sidebar-overlay.active { display: block; }
+
+    .main-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 16px 0;
+    }
+    .sidebar-title {
+      padding: 0 16px 12px;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      color: var(--subtext);
+      text-transform: uppercase;
+    }
+    .char-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: all 0.2s;
+    }
+    .char-card:hover { background: rgba(123,94,167,0.15); }
+    .char-card.active {
+      background: rgba(123,94,167,0.25);
+      border-left-color: var(--accent2);
+    }
+    .char-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #1a0a2e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+      border: 2px solid var(--border);
+      overflow: hidden;
+    }
+    .char-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      image-rendering: pixelated;
+    }
+    .char-card.active .char-avatar { border-color: var(--accent2); }
+    .char-info-brief .char-name { font-size: 0.95rem; font-weight: 600; }
+    .char-info-brief .char-series {
+      font-size: 0.72rem;
+      color: var(--subtext);
+      margin-top: 2px;
+    }
+
+    /* ── Detail Panel ── */
+    .detail {
+      overflow-y: auto;
+      padding: 28px 32px;
+    }
+    .detail-body {
+      display: grid;
+      grid-template-columns: 1fr 200px;
+      gap: 24px;
+      align-items: start;
+    }
+    .detail-content { min-width: 0; }
+    .portrait-sidebar {
+      position: sticky;
+      top: 0;
+      background: linear-gradient(180deg, #0a0a1e 0%, #080818 100%);
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .portrait-sidebar-label {
+      font-size: 0.52rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      opacity: 0.7;
+      padding: 6px 0 4px;
+    }
+    .portrait-sidebar img {
+      width: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+      display: block;
+    }
+    .portrait-sidebar .no-portrait {
+      width: 100%;
+      height: 280px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--subtext);
+      font-size: 0.75rem;
+      gap: 8px;
+    }
+    .portrait-sidebar .no-portrait .icon { font-size: 2rem; opacity: 0.3; }
+
+    .detail-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+    .detail-avatar-large {
+      width: 90px;
+      height: 90px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #0d0d2e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      border: 2px solid var(--accent);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .detail-avatar-large img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      image-rendering: pixelated;
+    }
+    .detail-title .name-cn {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    .detail-title .name-en {
+      font-size: 0.9rem;
+      color: var(--subtext);
+      margin-top: 4px;
+    }
+    .detail-title .series-badge {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 3px 10px;
+      background: rgba(123,94,167,0.3);
+      border: 1px solid var(--accent);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      color: var(--accent2);
+    }
+    .detail-title .role-badge {
+      display: inline-block;
+      margin-top: 4px;
+      margin-left: 6px;
+      padding: 3px 10px;
+      background: rgba(240,192,96,0.15);
+      border: 1px solid var(--gold);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      color: var(--gold);
+    }
+    .description {
+      margin-bottom: 28px;
+      color: var(--subtext);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      border-left: 3px solid var(--accent);
+      padding-left: 14px;
+    }
+
+    /* Section titles */
+    .section-title {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Stats grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .stat-block {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      text-align: center;
+    }
+    .stat-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+    .stat-bar {
+      height: 3px;
+      border-radius: 2px;
+      margin-top: 6px;
+      background: var(--border);
+      overflow: hidden;
+    }
+    .stat-bar-fill { height: 100%; border-radius: 2px; }
+
+    .s-hp   { color: var(--hp);  } .b-hp  { background: var(--hp);  }
+    .s-mp   { color: var(--mp);  } .b-mp  { background: var(--mp);  }
+    .s-atk  { color: var(--atk); } .b-atk { background: var(--atk); }
+    .s-mag  { color: var(--mag); } .b-mag { background: var(--mag); }
+    .s-def  { color: var(--def); } .b-def { background: var(--def); }
+    .s-spd  { color: var(--spd); } .b-spd { background: var(--spd); }
+    .s-agi  { color: #f472b6;    } .b-agi { background: #f472b6;    }
+    .s-int  { color: #a78bfa;    } .b-int { background: #a78bfa;    }
+
+    /* Derived stats */
+    .derived-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .derived-block {
+      background: rgba(20,20,40,0.6);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .derived-label { font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--subtext); }
+    .derived-value { font-size: 1.2rem; font-weight: 700; }
+    .derived-source { font-size: 0.68rem; color: var(--subtext); }
+
+    /* Unique command */
+    .unique-box {
+      background: linear-gradient(135deg, rgba(123,94,167,0.2), rgba(13,13,26,0.8));
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 28px;
+    }
+    .unique-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent2);
+      margin-bottom: 6px;
+    }
+    .unique-desc { font-size: 0.85rem; color: var(--subtext); line-height: 1.5; }
+
+    /* Skills table */
+    .skills-table { width: 100%; border-collapse: collapse; margin-bottom: 28px; }
+    .skills-table th {
+      text-align: left;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--subtext);
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .skills-table td {
+      padding: 9px 10px;
+      font-size: 0.85rem;
+      border-bottom: 1px solid rgba(42,42,80,0.5);
+    }
+    .skills-table tr:last-child td { border-bottom: none; }
+    .skill-level {
+      font-size: 0.75rem;
+      color: var(--gold);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .skill-name { font-weight: 600; }
+    .skill-type-badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 0.68rem;
+    }
+    .type-physical { background: rgba(248,113,113,0.2); color: var(--atk); border: 1px solid var(--atk); }
+    .type-magic    { background: rgba(192,132,252,0.2); color: var(--mag); border: 1px solid var(--mag); }
+    .type-support  { background: rgba(251,191,36,0.2);  color: var(--def); border: 1px solid var(--def); }
+    .type-unique   { background: rgba(123,94,167,0.3);  color: var(--accent2); border: 1px solid var(--accent); }
+    .mp-cost { color: var(--mp); font-size: 0.8rem; }
+
+    /* Resistances */
+    .resist-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+    .resist-tag {
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid;
+    }
+    .r-absorb  { background: rgba(74,222,128,0.15);  color: var(--hp);  border-color: var(--hp);  }
+    .r-immune  { background: rgba(96,165,250,0.15);  color: var(--mp);  border-color: var(--mp);  }
+    .r-resist  { background: rgba(251,191,36,0.15);  color: var(--def); border-color: var(--def); }
+    .r-weak    { background: rgba(248,113,113,0.15); color: var(--atk); border-color: var(--atk); }
+    .r-normal  { background: rgba(153,136,187,0.15); color: var(--subtext); border-color: var(--subtext); }
+
+    /* Equipment slots grid */
+    .equip-slots-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .equip-slot-block {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      min-height: 64px;
+    }
+    .equip-slot-block.empty { opacity: 0.5; }
+    .equip-slot-block.has-item { border-color: var(--accent); }
+    .equip-slot-block.rarity-rare  { border-color: var(--mp); }
+    .equip-slot-block.rarity-epic  { border-color: var(--gold); box-shadow: 0 0 8px rgba(240,192,96,0.2); }
+    .equip-slot-label { font-size: 0.6rem; color: var(--subtext); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+    .equip-slot-name  { font-size: 0.85rem; font-weight: 600; }
+    .equip-slot-stats { font-size: 0.68rem; color: var(--subtext); margin-top: 4px; line-height: 1.5; }
+    .equip-manage-btn {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 6px 16px;
+      background: rgba(123,94,167,0.15);
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      color: var(--accent2);
+      font-size: 0.8rem;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    .equip-manage-btn:hover { background: rgba(123,94,167,0.3); color: var(--gold); }
+
+    .placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--subtext);
+      font-size: 1rem;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .placeholder .big { font-size: 3rem; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+    /* ── 响应式断点 ── */
+    @media (max-width: 900px) {
+      .main-layout { grid-template-columns: 200px 1fr; }
+      header { padding: 14px 20px; }
+      header h1 { font-size: 1.4rem; }
+      .detail { padding: 20px 20px; }
+    }
+
+    @media (max-width: 600px) {
+      #menu-toggle { display: block; }
+      header { padding: 12px 16px; }
+      header h1 { font-size: 1.2rem; }
+      header .subtitle { display: none; }
+
+      .main-layout { grid-template-columns: 1fr; }
+
+      .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        height: 100%;
+        width: 260px;
+        z-index: 200;
+        transition: left 0.25s ease;
+        padding-top: 56px;
+      }
+      .sidebar.open { left: 0; }
+
+      .detail { padding: 16px; }
+      .detail-body { grid-template-columns: 1fr; }
+      .portrait-sidebar {
+        position: static;
+        max-width: 160px;
+        margin: 0 auto;
+      }
+      .portrait-sidebar .no-portrait { height: 160px; }
+
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .derived-grid { grid-template-columns: repeat(2, 1fr); }
+      .equip-slots-grid { grid-template-columns: repeat(2, 1fr); }
+
+      .skills-table th:nth-child(5),
+      .skills-table td:nth-child(5) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:12px">
+    <button id="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <div>
+      <h1>My Heroes</h1>
+      <div class="subtitle">角色数据库 · Character Database</div>
+    </div>
+  </div>
+  <nav style="display:flex;gap:8px;flex-wrap:wrap">
+    <span class="btn-nav btn-nav-active">角色库</span>
+    <a href="equipment.html" class="btn-nav">装备管理</a>
+    <a href="skills.html" class="btn-nav">技能库</a>
+    <a href="battle.html" class="btn-nav">战斗 Demo</a>
+    <a href="status.html" class="btn-nav">角色状态</a>
+    <a href="map.html" class="btn-nav">地图</a>
+  </nav>
+</header>
+
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<div class="main-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-title">角色列表</div>
+  </aside>
+  <main class="detail" id="detail">
+    <div class="placeholder">
+      <div class="big">⚔️</div>
+      <div>从左侧选择一名角色</div>
+    </div>
+  </main>
+</div>
+
+<script>
+function toggleSidebar() {
+  const s = document.getElementById('sidebar')
+  const o = document.getElementById('sidebar-overlay')
+  s.classList.toggle('open')
+  o.classList.toggle('active')
+}
+const TYPE_LABELS = { physical:'物理', magic:'魔法', support:'辅助', unique:'专属' }
+const RESIST_LABELS = { absorb:'吸收', immune:'无效', resist:'抵抗', weak:'弱点', normal:'普通' }
+const STAT_MAX = { hp:600, mp:300, attack:100, defense:100, magic_defense:100, speed:100, agility:100, intelligence:100 }
+const AVATAR_ICONS = {
+  sheru_faniru: '🧝', anjielina: '🛡️',
+  kobayashi_ryutan: '🍴', meiou_setsuna: '⌛'
+}
+
+const STAT_DISPLAY = [
+  { key:'hp',            label:'HP',   cls:'hp'  },
+  { key:'mp',            label:'MP',   cls:'mp'  },
+  { key:'attack',        label:'攻击', cls:'atk' },
+  { key:'defense',       label:'防御', cls:'def' },
+  { key:'magic_defense', label:'魔防', cls:'def' },
+  { key:'speed',         label:'速度', cls:'spd' },
+  { key:'agility',       label:'敏捷', cls:'agi' },
+  { key:'intelligence',  label:'智力', cls:'int' },
+]
+
+function avatarHtml(c) {
+  const src = c.avatar || c.portrait
+  if (src) {
+    const fallback = AVATAR_ICONS[c.id] || '👤'
+    return `<img src="${src}" alt="${c.name}" onerror="this.outerHTML='${fallback}'">`
+  }
+  return AVATAR_ICONS[c.id] || '👤'
+}
+
+function calcDerived(stat) {
+  const physCrit   = Math.min(75, +(stat.agility * 0.15).toFixed(1))
+  const physEvade  = Math.min(40, +(stat.agility * 0.10).toFixed(1))
+  const magCrit    = Math.min(60, +(stat.intelligence * 0.12).toFixed(1))
+  const magBonus   = +(1 + stat.intelligence / 100).toFixed(2)
+  return { physCrit, physEvade, magCrit, magBonus }
+}
+
+let currentId = null
+let _indexItemsDb  = {}
+let _indexEquipSave = { equipped: {}, inventory: [] }
+
+const EQUIP_SAVE_KEY = 'myheroes_equip_save'
+const SLOT_ORDER  = ['weapon', 'offhand', 'head', 'chest', 'legs', 'accessory']
+const SLOT_LABELS = { weapon:'武器', offhand:'副手', head:'头部', chest:'胸部', legs:'腿部', accessory:'饰品' }
+const STAT_SHORT  = { hp:'HP', mp:'MP', attack:'攻击', defense:'防御', magic_defense:'魔防', intelligence:'智力', agility:'敏捷', speed:'速度' }
+
+async function loadData() {
+  const [charRes, itemRes] = await Promise.all([
+    fetch('data/characters.json'),
+    fetch('data/items.json')
+  ])
+  const charData = await charRes.json()
+  const itemData = await itemRes.json()
+  _indexItemsDb  = Object.fromEntries(itemData.items.map(i => [i.id, i]))
+
+  const raw = localStorage.getItem(EQUIP_SAVE_KEY)
+  try {
+    const saveRes = await fetch('data/player_save.json')
+    const defaultSave = await saveRes.json()
+    if (raw) {
+      const saved = JSON.parse(raw)
+      for (const charId of Object.keys(defaultSave.equipped)) {
+        if (!saved.equipped[charId]) {
+          saved.equipped[charId] = defaultSave.equipped[charId]
+        } else {
+          const savedHasAny = Object.values(saved.equipped[charId]).some(v => v !== null)
+          const defaultHasAny = Object.values(defaultSave.equipped[charId]).some(v => v !== null)
+          if (!savedHasAny && defaultHasAny) saved.equipped[charId] = defaultSave.equipped[charId]
+        }
+      }
+      _indexEquipSave = saved
+      localStorage.setItem(EQUIP_SAVE_KEY, JSON.stringify(saved))
+    } else {
+      _indexEquipSave = defaultSave
+      localStorage.setItem(EQUIP_SAVE_KEY, JSON.stringify(defaultSave))
+    }
+  } catch(e) {
+    if (raw) _indexEquipSave = JSON.parse(raw)
+  }
+  return charData.characters
+}
+
+function buildItemStatsSummary(item) {
+  const parts = []
+  for (const [k, v] of Object.entries(item.stats || {})) {
+    if (v > 0) parts.push((STAT_SHORT[k] || k) + '+' + v)
+  }
+  for (const [k, v] of Object.entries(item.percent_stats || {})) {
+    if (v > 0) parts.push((STAT_SHORT[k] || k) + '+' + v + '%')
+  }
+  for (const eff of (item.special_effects || [])) {
+    parts.push(eff.description)
+  }
+  return parts.join(' · ')
+}
+
+function buildSidebar(chars) {
+  const sidebar = document.getElementById('sidebar')
+  chars.forEach(c => {
+    const el = document.createElement('div')
+    el.className = 'char-card'
+    el.dataset.id = c.id
+    el.innerHTML = `
+      <div class="char-avatar">${c.portrait ? `<img src="${c.portrait}" alt="${c.name}" onerror="this.outerHTML='${AVATAR_ICONS[c.id]||'👤'}'">` : (AVATAR_ICONS[c.id] || '👤')}</div>
+      <div class="char-info-brief">
+        <div class="char-name">${c.name}</div>
+        <div class="char-series">${c.series}</div>
+      </div>`
+    el.addEventListener('click', () => showDetail(c, chars))
+    sidebar.appendChild(el)
+  })
+}
+
+function showDetail(c, chars) {
+  currentId = c.id
+  document.querySelectorAll('.char-card').forEach(el => {
+    el.classList.toggle('active', el.dataset.id === c.id)
+  })
+
+  const stat = c.base_stats
+  const derived = calcDerived(stat)
+  const statsHtml = STAT_DISPLAY.map(s => {
+    const val = stat[s.key] ?? 0
+    const pct = Math.min(100, Math.round(val / STAT_MAX[s.key] * 100))
+    return `
+      <div class="stat-block">
+        <div class="stat-label">${s.label}</div>
+        <div class="stat-value s-${s.cls}">${val}</div>
+        <div class="stat-bar"><div class="stat-bar-fill b-${s.cls}" style="width:${pct}%"></div></div>
+      </div>`
+  }).join('')
+
+  const skillsHtml = c.skills.map(sk => `
+    <tr>
+      <td class="skill-level">Lv.${sk.level}</td>
+      <td class="skill-name">${sk.name}</td>
+      <td><span class="skill-type-badge type-${sk.type}">${TYPE_LABELS[sk.type]}</span></td>
+      <td class="mp-cost">${sk.mp_cost > 0 ? sk.mp_cost + ' MP' : '—'}</td>
+      <td style="color:var(--subtext);font-size:0.8rem">${sk.description}</td>
+    </tr>`).join('')
+
+  const resistHtml = Object.entries(c.resistances).map(([elem, val]) => `
+    <span class="resist-tag r-${val}">${elem} · ${RESIST_LABELS[val]}</span>`).join('')
+
+  const equipped = _indexEquipSave.equipped?.[c.id] || {}
+  const equipSlotsHtml = SLOT_ORDER.map(slot => {
+    const itemId = equipped[slot] || null
+    const item   = itemId ? _indexItemsDb[itemId] : null
+    const cls    = item ? ('has-item rarity-' + item.rarity) : 'empty'
+    return `
+      <div class="equip-slot-block ${cls}">
+        <div class="equip-slot-label">${SLOT_LABELS[slot]}</div>
+        <div class="equip-slot-name">${item ? item.name : '— 未装备 —'}</div>
+        ${item ? '<div class="equip-slot-stats">' + buildItemStatsSummary(item) + '</div>' : ''}
+      </div>`
+  }).join('')
+
+  const equipHtml = c.equipment_slots.map(e => `<span class="equip-tag">${e}</span>`).join('')
+
+  document.getElementById('detail').innerHTML = `
+    <div class="detail-body">
+      <div class="detail-content">
+        <div class="detail-header">
+          <div class="detail-avatar-large">${avatarHtml(c)}</div>
+          <div class="detail-title">
+            <div class="name-cn">${c.name}</div>
+            <div class="name-en">${c.name_en}</div>
+            <span class="series-badge">${c.series}</span>
+            <span class="role-badge">${c.role}</span>
+          </div>
+        </div>
+
+        <p class="description">${c.description}</p>
+
+        <div class="section-title">基础属性 · Base Stats</div>
+        <div class="stats-grid">${statsHtml}</div>
+
+        <div class="section-title">派生属性 · Derived Stats</div>
+        <div class="derived-grid">
+          <div class="derived-block">
+            <div class="derived-label">物理暴击率</div>
+            <div class="derived-value" style="color:#f472b6">${derived.physCrit}%</div>
+            <div class="derived-source">敏捷 ${stat.agility} × 0.15%（上限75%）</div>
+          </div>
+          <div class="derived-block">
+            <div class="derived-label">物理闪避率</div>
+            <div class="derived-value" style="color:#34d399">${derived.physEvade}%</div>
+            <div class="derived-source">敏捷 ${stat.agility} × 0.10%（上限40%）</div>
+          </div>
+          <div class="derived-block">
+            <div class="derived-label">法术暴击率</div>
+            <div class="derived-value" style="color:#a78bfa">${derived.magCrit}%</div>
+            <div class="derived-source">智力 ${stat.intelligence} × 0.12%（上限60%）</div>
+          </div>
+          <div class="derived-block">
+            <div class="derived-label">魔法伤害倍率</div>
+            <div class="derived-value" style="color:#a78bfa">×${derived.magBonus}</div>
+            <div class="derived-source">1 + 智力 ${stat.intelligence} / 100</div>
+          </div>
+        </div>
+
+        <div class="section-title">专属指令 · Unique Command</div>
+        <div class="unique-box">
+          <div class="unique-name">【${c.unique_command.name}】</div>
+          <div class="unique-desc">${c.unique_command.description}</div>
+        </div>
+
+        <div class="section-title">技能列表 · Skills</div>
+        <table class="skills-table">
+          <thead><tr>
+            <th>等级</th><th>技能</th><th>类型</th><th>消耗</th><th>效果</th>
+          </tr></thead>
+          <tbody>${skillsHtml}</tbody>
+        </table>
+
+        <div class="section-title">属性抗性 · Resistances</div>
+        <div class="resist-grid">${resistHtml}</div>
+
+        <div class="section-title">当前装备 · Equipment</div>
+        <div class="equip-slots-grid">${equipSlotsHtml}</div>
+        <a href="equipment.html?char=${c.id}" class="equip-manage-btn">管理装备 ▶</a>
+      </div>
+
+      <div class="portrait-sidebar">
+        <div class="portrait-sidebar-label">PORTRAIT</div>
+        ${c.portrait
+          ? `<img src="${c.portrait}" alt="${c.name}">`
+          : `<div class="no-portrait"><div class="icon">🖼️</div><div>暂无立绘</div></div>`
+        }
+      </div>
+    </div>
+  `
+}
+
+loadData().then(chars => {
+  buildSidebar(chars)
+  showDetail(chars[0], chars)
+})
+</script>
+</body>
+</html>

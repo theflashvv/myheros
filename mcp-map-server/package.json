@@ -1,0 +1,13 @@
+{
+  "name": "my-heroes-map-server",
+  "version": "1.0.0",
+  "description": "MCP Server for My Heroes map editing",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}
