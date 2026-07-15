@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Heroes</title>
+  <style>
+    :root {
+      --bg: #0d0d1a; --accent: #7b5ea7; --accent2: #c084fc;
+      --gold: #f0c060; --text: #e8e0f0; --subtext: #9988bb;
+      --border: #2a2a50;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+      height: 100vh; display: flex; align-items: center; justify-content: center;
+    }
+    .box {
+      background: #141428; border: 1px solid var(--border);
+      border-radius: 14px; padding: 48px 40px; width: 360px;
+      display: flex; flex-direction: column; align-items: center; gap: 24px;
+      box-shadow: 0 0 40px rgba(123,94,167,0.2);
+    }
+    h1 { font-size: 2rem; color: var(--gold); letter-spacing: 0.12em; text-shadow: 0 0 20px rgba(240,192,96,0.4); }
+    p { font-size: 0.82rem; color: var(--subtext); }
+    input {
+      width: 100%; padding: 12px 16px;
+      background: #0d0d1a; border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 1rem;
+      outline: none; text-align: center; letter-spacing: 0.1em;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: var(--accent); }
+    input.error { border-color: #f87171; }
+    button {
+      width: 100%; padding: 12px;
+      background: linear-gradient(135deg, var(--accent), #4a2d7a);
+      border: none; border-radius: 8px; color: #fff;
+      font-size: 1rem; font-weight: 600; cursor: pointer;
+      letter-spacing: 0.08em; transition: opacity 0.2s;
+    }
+    button:hover { opacity: 0.85; }
+    .err-msg { color: #f87171; font-size: 0.82rem; height: 16px; }
+  </style>
+</head>
+<body>
+<div class="box">
+  <h1>My Heroes</h1>
+  <p>请输入访问密码</p>
+  <input type="password" id="pw" placeholder="••••••••" autofocus
+    onkeydown="if(event.key==='Enter')check()" />
+  <div class="err-msg" id="err"></div>
+  <button onclick="check()">进入</button>
+</div>
+<script>
+  const HASH = '3b43709d5ad8deb9e170c5bed13c6824e2f6f8737dba6c41473aa59da0f66009'
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str))
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('')
+  }
+  async function check() {
+    const val = document.getElementById('pw').value
+    const hash = await sha256(val)
+    if (hash === HASH) {
+      sessionStorage.setItem('mh_auth', '1')
+      window.location.href = 'index.html'
+    } else {
+      const inp = document.getElementById('pw')
+      inp.classList.add('error')
+      document.getElementById('err').textContent = '密码错误，请重试'
+      setTimeout(() => inp.classList.remove('error'), 1000)
+    }
+  }
+</script>
+</body>
+</html>

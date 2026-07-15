@@ -543,6 +543,7 @@
 </div>
 
 <script>
+if (!sessionStorage.getItem('mh_auth')) location.replace('login.html')
 function toggleSidebar() {
   const s = document.getElementById('sidebar')
   const o = document.getElementById('sidebar-overlay')
