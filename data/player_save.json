@@ -176,6 +176,14 @@
       "weapon": "dagger_blue_wind",
       "offhand": null,
       "accessory": "ring_swift_step"
+    },
+    "veil": {
+      "weapon": "staff_crystal",
+      "offhand": null,
+      "head": null,
+      "chest": "armor_holy_robe",
+      "legs": null,
+      "accessory": "ring_holy_crest"
     }
   },
   "inventory": [
