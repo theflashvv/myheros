@@ -1328,6 +1328,136 @@
       "base_power": 160,
       "mp_cost": 85,
       "description": "对全体敌人造成圣属性魔法大伤害，并施加星缚（魔防-20%，持续3回合）"
+    },
+    {
+      "id": "hammer_strike",
+      "name": "战锤猛击",
+      "type": "physical",
+      "element": null,
+      "target": "single",
+      "base_power": 130,
+      "mp_cost": 0,
+      "description": "以战锤全力砸向单体敌人，造成高额物理伤害"
+    },
+    {
+      "id": "seismic_slam",
+      "name": "地裂震慑",
+      "type": "physical",
+      "element": null,
+      "target": "all_enemies",
+      "base_power": 90,
+      "mp_cost": 20,
+      "description": "将战锤砸向地面，震碎地面对全体敌人造成物理伤害，并有50%概率使目标「震慑」（行动延迟1回合）"
+    },
+    {
+      "id": "judgement_blow",
+      "name": "审判之锤",
+      "type": "physical",
+      "element": null,
+      "target": "single",
+      "base_power": 180,
+      "mp_cost": 40,
+      "description": "蓄力一回合后以全力将战锤砸落，对单体造成极高物理伤害，忽视目标30%防御"
+    },
+    {
+      "id": "iron_guard",
+      "name": "铁壁守势",
+      "type": "support",
+      "element": null,
+      "target": "self",
+      "base_power": 0,
+      "mp_cost": 15,
+      "description": "马格努斯进入防御姿态，当回合物理伤害减半，并在下一回合攻击力提升40%"
+    },
+    {
+      "id": "earth_spike",
+      "name": "土刺",
+      "type": "magic",
+      "element": "earth",
+      "target": "single",
+      "base_power": 70,
+      "mp_cost": 8,
+      "description": "从地面召唤尖锐土刺刺穿单体敌人，造成土系魔法伤害"
+    },
+    {
+      "id": "stone_armor",
+      "name": "岩石护甲",
+      "type": "support",
+      "element": "earth",
+      "target": "all_allies",
+      "base_power": 0,
+      "mp_cost": 20,
+      "description": "以大地之力为全体队友覆上岩石护甲，提升防御和魔防，持续3回合",
+      "defBuff": 1,
+      "buffTurns": 3
+    },
+    {
+      "id": "earthquake",
+      "name": "大地震裂",
+      "type": "magic",
+      "element": "earth",
+      "target": "all_enemies",
+      "base_power": 110,
+      "mp_cost": 35,
+      "description": "引发地震，对全体敌人造成土系魔法伤害，并使其速度降低20%，持续2回合",
+      "buffTurns": 2
+    },
+    {
+      "id": "meteor_fall",
+      "name": "陨石坠落",
+      "type": "magic",
+      "element": "earth",
+      "target": "single",
+      "base_power": 160,
+      "mp_cost": 70,
+      "description": "将大地的全部力量凝聚于一点，召唤巨型陨石砸落，对单体敌人造成极高土系魔法伤害，无视目标25%魔防"
+    },
+    {
+      "id": "dance_slash",
+      "name": "七色舞斩",
+      "type": "physical",
+      "element": null,
+      "target": "single",
+      "base_power": 110,
+      "mp_cost": 0,
+      "description": "以华丽的舞步连续斩击单体敌人两次，每次造成物理伤害，敏捷越高伤害越强",
+      "hits": 2,
+      "speedBonus": true
+    },
+    {
+      "id": "royal_revival",
+      "name": "王者祈愿",
+      "type": "support",
+      "element": null,
+      "target": "single_dead_ally",
+      "base_power": 0,
+      "mp_cost": 45,
+      "description": "以公主的祈愿之力复活一名倒下的队友，恢复其45%最大HP",
+      "revive": true,
+      "reviveHpRate": 0.45
+    },
+    {
+      "id": "twin_tempo",
+      "name": "双拍节奏",
+      "type": "support",
+      "element": null,
+      "target": "single_ally",
+      "base_power": 0,
+      "mp_cost": 35,
+      "description": "以舞姬之舞激励指定队友，使其本回合可行动两次",
+      "doubleAction": true
+    },
+    {
+      "id": "seven_color_storm",
+      "name": "七色斩风暴",
+      "type": "physical",
+      "element": null,
+      "target": "single",
+      "base_power": 170,
+      "mp_cost": 65,
+      "description": "将七道斩击化为绚烂光弧，连续对单体敌人造成7次物理伤害，每次伤害随敏捷提升",
+      "hits": 7,
+      "speedBonus": true
     }
   ]
 }

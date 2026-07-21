@@ -9,10 +9,38 @@
       "Bash(cp \"C:/Users/C5284281/Downloads/FF6/雪露法妮尔2D.png\" \"C:/Users/C5284281/myproject/My Heros/assets/portraits/sheru.png\")",
       "Bash(cp \"C:/Users/C5284281/Downloads/FF6/小林龙胆2D.png\" \"C:/Users/C5284281/myproject/My Heros/assets/portraits/ryutan.png\")",
       "Bash(cp \"C:/Users/C5284281/Downloads/FF6/夏雨瑶2D.png\" \"C:/Users/C5284281/myproject/My Heros/assets/portraits/xiayuyao.png\" && echo \"done\")",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash('C:/Program Files/Python314/python.exe' -c ' *)",
+      "mcp__ppt-server__ppt_add_slide",
+      "mcp__ppt-server__ppt_set_background_color",
+      "mcp__ppt-server__ppt_save",
+      "mcp__ppt-server__ppt_open",
+      "mcp__ppt-server__ppt_apply_typography",
+      "mcp__ppt-server__ppt_list_typography_presets",
+      "Read(//c/Users/C5284281/mcp-servers/ppt-server/**)",
+      "Bash(powershell -Command \"Get-Process python*,EXCEL,POWERPNT -ErrorAction SilentlyContinue | Stop-Process -Force; Write-Host 'processes killed'\")",
+      "mcp__ppt-server__ppt_set_gradient_background",
+      "Bash(powershell -Command \"Get-Process python*,EXCEL,POWERPNT -ErrorAction SilentlyContinue | Stop-Process -Force; Write-Host 'killed'\")",
+      "mcp__ppt-server__ppt_add_table",
+      "mcp__ppt-server__ppt_add_shape_advanced",
+      "mcp__ppt-server__ppt_get_slide",
+      "mcp__ppt-server__ppt_add_animation",
+      "mcp__ppt-server__ppt_analyze_data",
+      "mcp__ppt-server__ppt_create_from_spec",
+      "mcp__ppt-server__ppt_add_chart",
+      "mcp__ppt-server__ppt_move_slide",
+      "mcp__ppt-server__ppt_create_from_data",
+      "mcp__ppt-server__ppt_smart_design_slide",
+      "mcp__ppt-server__ppt_list_slides",
+      "mcp__ppt-server__ppt_set_transition",
+      "mcp__ppt-server__ppt_batch_design_slides",
+      "Bash(powershell -Command \"Get-Process POWERPNT,EXCEL -ErrorAction SilentlyContinue | Stop-Process -Force; Write-Host 'killed'\")",
+      "Bash(git *)"
     ],
     "additionalDirectories": [
-      "C:\\Users\\C5284281\\Downloads\\FF6"
+      "C:\\Users\\C5284281\\Downloads\\FF6",
+      "C:\\Users\\C5284281\\mcp-servers\\ppt-server",
+      "C:\\Users\\C5284281\\Desktop\\PPT"
     ]
   }
 }

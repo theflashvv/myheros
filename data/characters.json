@@ -88,7 +88,8 @@
         "法袍",
         "饰品",
         "饰品"
-      ]
+      ],
+      "personality": "性格内向，不擅长主动开口，但对每一个人都温柔体贴。说话轻声细语，总是在默默关注队友的状态。不会拒绝别人的请求，偶尔会因此把自己逼得太累。"
     },
     {
       "id": "anjielina",
@@ -176,7 +177,8 @@
         "骑枪",
         "轻甲",
         "饰品"
-      ]
+      ],
+      "personality": "爽朗直率，说话直接不绕弯子，有时候直接到显得莽撞。对战斗充满热情，对同伴极其忠诚，但完全不会照顾自己。"
     },
     {
       "id": "kobayashi_ryutan",
@@ -270,7 +272,8 @@
         "厨刀",
         "围裙(轻甲)",
         "饰品"
-      ]
+      ],
+      "personality": "温和随和，待人接物总是笑着，让人如沐春风。但在战斗和料理上有着极高的执着，一旦认真起来判若两人。"
     },
     {
       "id": "meiou_setsuna",
@@ -358,7 +361,8 @@
         "轻甲",
         "饰品",
         "饰品"
-      ]
+      ],
+      "personality": "飘忽神秘，说话常常意味深长，让人摸不清她在想什么。似乎能看见未来，却从不主动说破。对时间和死亡有着超然的态度。"
     },
     {
       "id": "xia_yuyao",
@@ -445,7 +449,8 @@
         "爪武器",
         "重甲",
         "饰品"
-      ]
+      ],
+      "personality": "急性子，行动力极强，想到什么就做什么。话不多但情绪直接，开心就笑、愤怒就咆哮。骨子里是个护短的人。"
     },
     {
       "id": "sang",
@@ -533,7 +538,8 @@
         "重甲",
         "盾牌",
         "饰品"
-      ]
+      ],
+      "personality": "沉默寡言，极少开口，但每次说话都切中要害。外表冷峻让人生畏，内心却有一条不可逾越的道德底线。独来独往，但在关键时刻从不缺席。"
     },
     {
       "id": "camille",
@@ -629,7 +635,8 @@
         "法袍",
         "饰品",
         "饰品"
-      ]
+      ],
+      "personality": "温柔体贴，永远把别人放在自己前面。笑起来像春风一样，但有时候温柔得让人心疼。对受伤的人有一种天生的直觉，总能第一个察觉到队友的异样。"
     },
     {
       "id": "uum",
@@ -717,7 +724,8 @@
         "法袍",
         "饰品",
         "饰品"
-      ]
+      ],
+      "personality": "怪人一枚，思维跳跃，说话天马行空。对机械和魔法的研究近乎痴迷，常常自言自语。表面上难以捉摸，但对认定的伙伴会用自己独特的方式守护。"
     },
     {
       "id": "jenny",
@@ -797,7 +805,8 @@
         "轻甲",
         "饰品",
         "饰品"
-      ]
+      ],
+      "personality": "自信强势，有着与生俱来的领导气场。对自己要求极高，不允许失败，也不允许队友白白受伤。偶尔会因为太过强硬而让人觉得难以靠近，但她的强大让所有人安心。"
     },
     {
       "id": "alicia",
@@ -878,7 +887,8 @@
         "法袍",
         "饰品",
         "饰品"
-      ]
+      ],
+      "personality": "性格内向温柔，是队伍里大家的邻家大姐姐。说话轻声细语，不喜欢冲突，却在雷霆之间爆发出令人震撼的力量。对身边的人有强烈的保护欲，越是在乎的人越容易紧张。"
     },
     {
       "id": "xiaoyao",
@@ -966,7 +976,8 @@
         "法袍",
         "饰品",
         "饰品"
-      ]
+      ],
+      "personality": "天真烂漫，对万事充满好奇。说话像小孩子一样直接，却时常说出让人愣住的深刻话语。与精灵的亲密关系让她对自然和生命有着超乎寻常的敏感。"
     },
     {
       "id": "luofa",
@@ -1046,7 +1057,8 @@
         "重甲",
         "饰品",
         "饰品"
-      ]
+      ],
+      "personality": "热血豪爽，大嗓门，喜欢用力拍别人肩膀表示友好。崇尚以力服人，但对比自己弱的人从不欺负。喝酒比喝水多，战斗欲望永远高涨。"
     },
     {
       "id": "dennis",
@@ -1126,7 +1138,8 @@
         "轻甲",
         "饰品",
         "饰品"
-      ]
+      ],
+      "personality": "冷静理性，凡事讲究精准和效率。话少但逻辑清晰，不喜欢无意义的闲聊。外表严肃，但对队友有着悄无声息的关照，总是在别人没注意到的地方先一步做好准备。"
     },
     {
       "id": "nalong",
@@ -1206,7 +1219,8 @@
         "海盗服",
         "饰品",
         "饰品"
-      ]
+      ],
+      "personality": "放荡不羁，把自由看得比命还重要。嘴上总是吊儿郎当，实则心思细腻。对朋友两肋插刀，对敌人毫不留情。最讨厌被人约束，但为了伙伴可以例外。"
     },
     {
       "id": "meriel",
@@ -1286,7 +1300,8 @@
         "海盗服",
         "饰品",
         "饰品"
-      ]
+      ],
+      "personality": "狡黠机智，笑起来让人捉摸不透。喜欢掌控局面，享受算计别人的快感，但从不害自己人。对钱财和宝物有着坦率的执念，丝毫不觉得贪财有什么问题。"
     },
     {
       "id": "mathew",
@@ -1366,7 +1381,8 @@
         "格斗服",
         "饰品",
         "饰品"
-      ]
+      ],
+      "personality": "表面大大咧咧、嬉皮笑脸，实则内心有着强烈的自尊与倔强。不喜欢被人小看，用拳头证明自己的价值。对街头出身的过去毫不掩饰，反而引以为傲。"
     },
     {
       "id": "grifon",
@@ -1446,7 +1462,8 @@
         "法袍",
         "饰品",
         "饰品"
-      ]
+      ],
+      "personality": "外表冷静克制，说话慢条斯理，给人一种运筹帷幄的压迫感。对恶魔契约有着学术般的执着，将危险当成研究对象。偶尔会对人性和道德做出令人不寒而栗的评论，但并不邪恶。"
     },
     {
       "id": "jessica",
@@ -1526,7 +1543,8 @@
         "轻甲",
         "饰品",
         "饰品"
-      ]
+      ],
+      "personality": "冷静果断，不废话，凡事用结果说话。独来独往惯了，对团队协作有些不适应，但会用自己的方式融入。私下里有一个没人知道的爱好：收集各地地图。"
     },
     {
       "id": "tiya",
@@ -1614,7 +1632,8 @@
         "盾牌",
         "重甲",
         "饰品"
-      ]
+      ],
+      "personality": "正直可靠，有着骑士一般的责任感。说话坦诚，从不拐弯抹角，对不公正的事会直接开口。偶尔有些死板，但正因如此队伍里所有人都愿意把背后交给她。"
     },
     {
       "id": "clarete",
@@ -1702,7 +1721,8 @@
         "轻甲",
         "饰品",
         "饰品"
-      ]
+      ],
+      "personality": "神出鬼没，来去无踪，不喜欢被人追问过去。表面漠然，实则有着极强的自我原则，绝不接受违背内心的委托。对目标一旦认定就会贯彻到底，不达目的不罢休。"
     },
     {
       "id": "stephanie",
@@ -1790,7 +1810,8 @@
         "重甲",
         "饰品",
         "饰品"
-      ]
+      ],
+      "personality": "骄傲自信，有着贵族出身带来的气场，但绝非傲慢。对龙有着近乎痴迷的热爱，聊起来滔滔不绝。在战场上英姿飒爽，私下里其实有点爱撒娇。"
     },
     {
       "id": "cross",
@@ -1878,7 +1899,8 @@
         "轻甲",
         "饰品",
         "饰品"
-      ]
+      ],
+      "personality": "玩世不恭，永远一副漫不经心的样子，仿佛什么都无所谓。但在利益和义气之间，他总是选义气。嘴上从不承认，行动却很诚实。"
     },
     {
       "id": "veil",
@@ -1980,7 +2002,268 @@
         "chest",
         "legs",
         "accessory"
-      ]
+      ],
+      "personality": "平时温柔沉默，存在感不强，但总在最需要的时候出现。不擅长表达情感，但会用行动默默守护每一个人。独处时常常仰望星空，没人知道她在想什么。"
+    },
+    {
+      "id": "magnus",
+      "name": "马格努斯",
+      "name_en": "Magnus",
+      "series": "My Heroes",
+      "portrait": "assets/portraits/magnus.png",
+      "avatar": null,
+      "role": "帝国将军 / 战锤武将",
+      "description": "帝国铁壁军团的前线将军，以战锤闻名于世。为人刚直，从不滥杀，曾在主角团深陷绝境时暗中相助。然而忠义难两全——当帝国的命运与主角团的道路相交时，他选择了用拳头讲道理。击倒他之后，他只是沉默地整了整盔甲，说了一句：\"你们赢了，去吧。\"",
+      "base_stats": {
+        "hp": 980,
+        "mp": 160,
+        "attack": 115,
+        "defense": 88,
+        "magic_defense": 55,
+        "speed": 42,
+        "agility": 35,
+        "intelligence": 30
+      },
+      "growth_rates": {
+        "hp": 20,
+        "mp": 3,
+        "attack": 2,
+        "defense": 1,
+        "magic_defense": 1,
+        "speed": 1,
+        "agility": 1,
+        "intelligence": 2
+      },
+      "unique_command": {
+        "name": "将魂觉醒",
+        "description": "【被动】HP跌破50%时触发将魂觉醒：攻击力提升30%，防御提升20%，每回合末恢复80点HP。触发后马格努斯的战锤泛起金色光芒，进入不可阻挡状态",
+        "type": "unique"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "hammer_strike",
+          "name": "战锤猛击",
+          "type": "physical",
+          "mp_cost": 0,
+          "description": "以战锤全力砸向单体敌人，造成高额物理伤害"
+        },
+        {
+          "level": 1,
+          "skill_id": "seismic_slam",
+          "name": "地裂震慑",
+          "type": "physical",
+          "mp_cost": 20,
+          "description": "将战锤砸向地面，震碎地面对全体敌人造成物理伤害，并有50%概率使目标「震慑」（行动延迟1回合）"
+        },
+        {
+          "level": 1,
+          "skill_id": "iron_guard",
+          "name": "铁壁守势",
+          "type": "support",
+          "mp_cost": 15,
+          "description": "进入防御姿态，当回合物理伤害减半，下一回合攻击力提升40%"
+        },
+        {
+          "level": 1,
+          "skill_id": "judgement_blow",
+          "name": "审判之锤",
+          "type": "physical",
+          "mp_cost": 40,
+          "description": "蓄力一回合后以全力将战锤砸落，对单体造成极高物理伤害，忽视目标30%防御"
+        }
+      ],
+      "resistances": {
+        "fire": "normal",
+        "ice": "normal",
+        "wind": "normal",
+        "dark": "normal",
+        "holy": "normal",
+        "physical": "normal"
+      },
+      "equipment_slots": [
+        "weapon",
+        "offhand",
+        "head",
+        "chest",
+        "legs",
+        "accessory"
+      ],
+      "personality": "刚正不阿，一身铁骨，从不说违心的话。对上级忠诚，对敌人尊重，对弱者保护。不善言辞，但每一句话都掷地有声。内心深处对这场战争有着自己的疑问，却把它压在了盔甲之下。"
+    },
+    {
+      "id": "zhenru",
+      "name": "真如",
+      "name_en": "Zhenru",
+      "series": "My Heroes",
+      "type": "playable",
+      "portrait": "assets/portraits/zhenru.png",
+      "avatar": null,
+      "role": "土系法师",
+      "description": "与大地共生的法师，能感知地脉的流动，以岩石与震动为武器。性格沉稳如山，话不多但每句话都有分量。她相信大地是万物的根基，保护脚下的土地是她战斗的理由。",
+      "base_stats": {
+        "hp": 320,
+        "mp": 260,
+        "attack": 30,
+        "defense": 72,
+        "magic_defense": 65,
+        "speed": 55,
+        "agility": 48,
+        "intelligence": 98
+      },
+      "growth_rates": {
+        "hp": 20,
+        "mp": 3,
+        "attack": 2,
+        "defense": 1,
+        "magic_defense": 1,
+        "speed": 1,
+        "agility": 1,
+        "intelligence": 2
+      },
+      "unique_command": {
+        "name": "大地脉动",
+        "description": "【被动】真如每次使用土系技能后，为全体队友叠加1层「地脉护盾」（最多3层），每层提升防御5点；叠满3层时护盾爆发，使全体队友免疫下一次伤害",
+        "type": "unique"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "earth_spike",
+          "name": "土刺",
+          "type": "magic",
+          "mp_cost": 8,
+          "description": "从地面召唤尖锐土刺刺穿单体敌人，造成土系魔法伤害"
+        },
+        {
+          "level": 8,
+          "skill_id": "stone_armor",
+          "name": "岩石护甲",
+          "type": "support",
+          "mp_cost": 20,
+          "description": "以大地之力为全体队友覆上岩石护甲，提升防御和魔防，持续3回合"
+        },
+        {
+          "level": 18,
+          "skill_id": "earthquake",
+          "name": "大地震裂",
+          "type": "magic",
+          "mp_cost": 35,
+          "description": "引发地震，对全体敌人造成土系魔法伤害，并使其速度降低20%，持续2回合"
+        },
+        {
+          "level": 30,
+          "skill_id": "meteor_fall",
+          "name": "陨石坠落",
+          "type": "magic",
+          "mp_cost": 70,
+          "description": "将大地的全部力量凝聚于一点，召唤巨型陨石砸落，对单体敌人造成极高土系魔法伤害，无视目标25%魔防"
+        }
+      ],
+      "resistances": {
+        "fire": "normal",
+        "ice": "normal",
+        "wind": "normal",
+        "dark": "normal",
+        "holy": "normal",
+        "physical": "normal"
+      },
+      "equipment_slots": [
+        "weapon",
+        "offhand",
+        "head",
+        "chest",
+        "legs",
+        "accessory"
+      ],
+      "personality": "沉稳如山，话不多但每句话都有分量。不急不躁，凡事三思而后行。对大地和自然有着近乎信仰的敬畏，认为破坏自然是最不可原谅的事。偶尔会在战斗结束后蹲下来，默默抚摸被践踏的土地。"
+    },
+    {
+      "id": "qise",
+      "name": "七色斩姬",
+      "name_en": "Qise",
+      "series": "My Heroes",
+      "type": "playable",
+      "portrait": "assets/portraits/qise.png",
+      "avatar": null,
+      "role": "舞姬格斗家 / 公主",
+      "description": "某王国的公主，却抛开王冠选择了战场上的舞步与刀光。以七色斩法闻名，每一击都如彩虹划过天际。外向热情，走到哪里都是焦点，但私下里心思细腻，能看穿每个人隐藏的情绪。她说：「王冠是枷锁，舞步才是自由。」",
+      "base_stats": {
+        "hp": 295,
+        "mp": 220,
+        "attack": 105,
+        "defense": 52,
+        "magic_defense": 48,
+        "speed": 98,
+        "agility": 95,
+        "intelligence": 45
+      },
+      "growth_rates": {
+        "hp": 20,
+        "mp": 3,
+        "attack": 2,
+        "defense": 1,
+        "magic_defense": 1,
+        "speed": 1,
+        "agility": 1,
+        "intelligence": 2
+      },
+      "unique_command": {
+        "name": "七色极限",
+        "description": "【被动】七色斩姬每次造成物理伤害后，获得1层「舞姬之势」（最多7层）；每层使物理伤害提升8%。叠满7层时进入「七色极限」状态，下一次技能伤害变为2倍，随后层数归零重新积累",
+        "type": "unique"
+      },
+      "skills": [
+        {
+          "level": 1,
+          "skill_id": "dance_slash",
+          "name": "七色舞斩",
+          "type": "physical",
+          "mp_cost": 0,
+          "description": "以华丽的舞步连续斩击单体敌人两次，敏捷越高伤害越强"
+        },
+        {
+          "level": 10,
+          "skill_id": "twin_tempo",
+          "name": "双拍节奏",
+          "type": "support",
+          "mp_cost": 35,
+          "description": "以舞姬之舞激励指定队友，使其本回合可行动两次"
+        },
+        {
+          "level": 20,
+          "skill_id": "royal_revival",
+          "name": "王者祈愿",
+          "type": "support",
+          "mp_cost": 45,
+          "description": "以公主的祈愿之力复活一名倒下的队友，恢复其45%最大HP"
+        },
+        {
+          "level": 32,
+          "skill_id": "seven_color_storm",
+          "name": "七色斩风暴",
+          "type": "physical",
+          "mp_cost": 65,
+          "description": "连续对单体敌人造成7次物理伤害，每次伤害随敏捷提升"
+        }
+      ],
+      "resistances": {
+        "fire": "normal",
+        "ice": "normal",
+        "wind": "normal",
+        "dark": "normal",
+        "holy": "normal",
+        "physical": "normal"
+      },
+      "equipment_slots": [
+        "weapon",
+        "offhand",
+        "head",
+        "chest",
+        "legs",
+        "accessory"
+      ],
+      "personality": "外向热情，走进任何房间都能立刻成为焦点，笑声感染力极强。但在喧嚣之下藏着一颗细腻的心，能精准感受到别人情绪的细微变化，却选择用欢笑化解。对自由有着强烈的渴望，对束缚有着本能的抗拒。"
     }
   ]
 }

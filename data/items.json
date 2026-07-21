@@ -621,8 +621,12 @@
       "id": "staff_thundergod",
       "name": "雷神之杖",
       "slot": "weapon",
-      "type_restriction": ["法杖"],
-      "equippable_by": ["alicia"],
+      "type_restriction": [
+        "法杖"
+      ],
+      "equippable_by": [
+        "alicia"
+      ],
       "rarity": "rare",
       "description": "以雷神碎片铸成的法杖，触碰时可感受到持续不断的静电。",
       "stats": {
@@ -649,8 +653,12 @@
       "id": "armor_storm_robe",
       "name": "风暴法袍",
       "slot": "chest",
-      "type_restriction": ["法袍"],
-      "equippable_by": ["alicia"],
+      "type_restriction": [
+        "法袍"
+      ],
+      "equippable_by": [
+        "alicia"
+      ],
       "rarity": "rare",
       "description": "以雷云丝线编织的法袍，穿着时周身隐隐有电流游走。",
       "stats": {
@@ -674,7 +682,9 @@
       "name": "静电戒指",
       "slot": "accessory",
       "type_restriction": [],
-      "equippable_by": ["alicia"],
+      "equippable_by": [
+        "alicia"
+      ],
       "rarity": "rare",
       "description": "蓄积了大量静电的戒指，触摸时会有轻微电击感。与雷神之怒被动产生共鸣，提升触发概率。",
       "stats": {
@@ -696,14 +706,26 @@
       "id": "staff_spirit_caller",
       "name": "精灵召唤杖",
       "slot": "weapon",
-      "type_restriction": ["法杖"],
-      "equippable_by": ["xiaoyao"],
+      "type_restriction": [
+        "法杖"
+      ],
+      "equippable_by": [
+        "xiaoyao"
+      ],
       "rarity": "rare",
       "description": "以精灵结晶为核心的法杖，使用时可感受到无数精灵的呼应。",
-      "stats": { "intelligence": 20, "mp": 38, "speed": 5 },
+      "stats": {
+        "intelligence": 20,
+        "mp": 38,
+        "speed": 5
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "magic_crit_rate", "value": 10, "description": "魔法暴击率+10%" }
+        {
+          "type": "magic_crit_rate",
+          "value": 10,
+          "description": "魔法暴击率+10%"
+        }
       ],
       "skill_grant": null
     },
@@ -711,14 +733,27 @@
       "id": "armor_summoner_robe",
       "name": "召唤师法袍",
       "slot": "chest",
-      "type_restriction": ["法袍"],
-      "equippable_by": ["xiaoyao"],
+      "type_restriction": [
+        "法袍"
+      ],
+      "equippable_by": [
+        "xiaoyao"
+      ],
       "rarity": "rare",
       "description": "绣有各类精灵纹样的法袍，穿着时周身萦绕精灵气息。",
-      "stats": { "magic_defense": 25, "mp": 32, "hp": 30 },
+      "stats": {
+        "magic_defense": 25,
+        "mp": 32,
+        "hp": 30
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "resist_damage", "element": "dark", "value": 10, "description": "受暗系伤害-10%" }
+        {
+          "type": "resist_damage",
+          "element": "dark",
+          "value": 10,
+          "description": "受暗系伤害-10%"
+        }
       ],
       "skill_grant": null
     },
@@ -727,13 +762,23 @@
       "name": "精灵契约戒指",
       "slot": "accessory",
       "type_restriction": [],
-      "equippable_by": ["xiaoyao"],
+      "equippable_by": [
+        "xiaoyao"
+      ],
       "rarity": "rare",
       "description": "刻有精灵契约纹的戒指，与召唤大师被动产生共鸣，加快积累速度。",
-      "stats": { "intelligence": 12, "mp": 20, "agility": 5 },
+      "stats": {
+        "intelligence": 12,
+        "mp": 20,
+        "agility": 5
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "magic_crit_rate", "value": 6, "description": "魔法暴击率+6%" }
+        {
+          "type": "magic_crit_rate",
+          "value": 6,
+          "description": "魔法暴击率+6%"
+        }
       ],
       "skill_grant": null
     },
@@ -741,14 +786,26 @@
       "id": "axe_berserker",
       "name": "狂战双斧",
       "slot": "weapon",
-      "type_restriction": ["双斧"],
-      "equippable_by": ["luofa"],
+      "type_restriction": [
+        "双斧"
+      ],
+      "equippable_by": [
+        "luofa"
+      ],
       "rarity": "rare",
       "description": "以陨铁锻造的一对巨斧，重量惊人，只有罗法这样的猛将才能挥舞自如。",
-      "stats": { "attack": 28, "hp": 50, "defense": 8 },
+      "stats": {
+        "attack": 28,
+        "hp": 50,
+        "defense": 8
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "phys_crit_rate", "value": 12, "description": "物理暴击率+12%" }
+        {
+          "type": "phys_crit_rate",
+          "value": 12,
+          "description": "物理暴击率+12%"
+        }
       ],
       "skill_grant": null
     },
@@ -756,14 +813,26 @@
       "id": "armor_berserker_plate",
       "name": "狂战重甲",
       "slot": "chest",
-      "type_restriction": ["重甲"],
-      "equippable_by": ["luofa"],
+      "type_restriction": [
+        "重甲"
+      ],
+      "equippable_by": [
+        "luofa"
+      ],
       "rarity": "rare",
       "description": "布满战斗痕迹的重型铠甲，每一道划痕都是罗法以一敌众的印记。",
-      "stats": { "defense": 32, "hp": 80, "magic_defense": 10 },
+      "stats": {
+        "defense": 32,
+        "hp": 80,
+        "magic_defense": 10
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "reflect_damage", "value": 8, "description": "物理伤害反弹8%" }
+        {
+          "type": "reflect_damage",
+          "value": 8,
+          "description": "物理伤害反弹8%"
+        }
       ],
       "skill_grant": null
     },
@@ -772,13 +841,23 @@
       "name": "狂战戒指",
       "slot": "accessory",
       "type_restriction": [],
-      "equippable_by": ["luofa"],
+      "equippable_by": [
+        "luofa"
+      ],
       "rarity": "rare",
       "description": "刻有狂战士纹样的铁戒，佩戴后血脉沸腾，攻击欲望大幅提升。",
-      "stats": { "attack": 15, "hp": 40, "speed": 5 },
+      "stats": {
+        "attack": 15,
+        "hp": 40,
+        "speed": 5
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "phys_crit_rate", "value": 8, "description": "物理暴击率+8%" }
+        {
+          "type": "phys_crit_rate",
+          "value": 8,
+          "description": "物理暴击率+8%"
+        }
       ],
       "skill_grant": null
     },
@@ -786,14 +865,26 @@
       "id": "gun_golden_hawk",
       "name": "黄金鹰眼枪",
       "slot": "weapon",
-      "type_restriction": ["枪械"],
-      "equippable_by": ["dennis"],
+      "type_restriction": [
+        "枪械"
+      ],
+      "equippable_by": [
+        "dennis"
+      ],
       "rarity": "rare",
       "description": "以精金打造的长枪，枪管刻有鹰眼纹，瞄准时视野清晰如鹰。",
-      "stats": { "attack": 25, "agility": 12, "speed": 6 },
+      "stats": {
+        "attack": 25,
+        "agility": 12,
+        "speed": 6
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "phys_crit_rate", "value": 15, "description": "物理暴击率+15%" }
+        {
+          "type": "phys_crit_rate",
+          "value": 15,
+          "description": "物理暴击率+15%"
+        }
       ],
       "skill_grant": null
     },
@@ -801,14 +892,26 @@
       "id": "armor_hunter_coat",
       "name": "猎手轻铠",
       "slot": "chest",
-      "type_restriction": ["轻甲"],
-      "equippable_by": ["dennis"],
+      "type_restriction": [
+        "轻甲"
+      ],
+      "equippable_by": [
+        "dennis"
+      ],
       "rarity": "rare",
       "description": "为快速移动设计的轻型铠甲，金绿配色与丹尼斯的风格完美契合。",
-      "stats": { "defense": 20, "agility": 8, "hp": 35 },
+      "stats": {
+        "defense": 20,
+        "agility": 8,
+        "hp": 35
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "phys_crit_rate", "value": 8, "description": "物理暴击率+8%" }
+        {
+          "type": "phys_crit_rate",
+          "value": 8,
+          "description": "物理暴击率+8%"
+        }
       ],
       "skill_grant": null
     },
@@ -817,13 +920,23 @@
       "name": "鹰眼戒指",
       "slot": "accessory",
       "type_restriction": [],
-      "equippable_by": ["dennis"],
+      "equippable_by": [
+        "dennis"
+      ],
       "rarity": "rare",
       "description": "嵌有鹰眼宝石的戒指，佩戴时目光如炬，暴击直觉大幅提升。",
-      "stats": { "agility": 10, "attack": 10, "speed": 5 },
+      "stats": {
+        "agility": 10,
+        "attack": 10,
+        "speed": 5
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "phys_crit_rate", "value": 10, "description": "物理暴击率+10%" }
+        {
+          "type": "phys_crit_rate",
+          "value": 10,
+          "description": "物理暴击率+10%"
+        }
       ],
       "skill_grant": null
     },
@@ -831,14 +944,26 @@
       "id": "gun_skull_pistol",
       "name": "骷髅海盗枪",
       "slot": "weapon",
-      "type_restriction": ["手枪"],
-      "equippable_by": ["nalong"],
+      "type_restriction": [
+        "手枪"
+      ],
+      "equippable_by": [
+        "nalong"
+      ],
       "rarity": "rare",
       "description": "刻有骷髅图案的古老海盗手枪，每一发都带着海上亡灵的怒火。",
-      "stats": { "attack": 24, "speed": 10, "agility": 8 },
+      "stats": {
+        "attack": 24,
+        "speed": 10,
+        "agility": 8
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "phys_crit_rate", "value": 10, "description": "物理暴击率+10%" }
+        {
+          "type": "phys_crit_rate",
+          "value": 10,
+          "description": "物理暴击率+10%"
+        }
       ],
       "skill_grant": null
     },
@@ -846,14 +971,27 @@
       "id": "armor_pirate_coat",
       "name": "海盗船长外套",
       "slot": "chest",
-      "type_restriction": ["海盗服"],
-      "equippable_by": ["nalong"],
+      "type_restriction": [
+        "海盗服"
+      ],
+      "equippable_by": [
+        "nalong"
+      ],
       "rarity": "rare",
       "description": "深蓝金边的船长外套，在海风中猎猎作响，见过无数风浪。",
-      "stats": { "defense": 22, "hp": 60, "agility": 6 },
+      "stats": {
+        "defense": 22,
+        "hp": 60,
+        "agility": 6
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "resist_damage", "element": "fire", "value": 10, "description": "受火系伤害-10%" }
+        {
+          "type": "resist_damage",
+          "element": "fire",
+          "value": 10,
+          "description": "受火系伤害-10%"
+        }
       ],
       "skill_grant": null
     },
@@ -862,13 +1000,23 @@
       "name": "藏宝图戒指",
       "slot": "accessory",
       "type_restriction": [],
-      "equippable_by": ["nalong"],
+      "equippable_by": [
+        "nalong"
+      ],
       "rarity": "rare",
       "description": "刻有神秘藏宝图纹路的戒指，据说能为佩戴者带来战场上的好运气。",
-      "stats": { "attack": 12, "speed": 8, "hp": 30 },
+      "stats": {
+        "attack": 12,
+        "speed": 8,
+        "hp": 30
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "phys_crit_rate", "value": 8, "description": "物理暴击率+8%" }
+        {
+          "type": "phys_crit_rate",
+          "value": 8,
+          "description": "物理暴击率+8%"
+        }
       ],
       "skill_grant": null
     },
@@ -876,14 +1024,26 @@
       "id": "gun_twin_pistols",
       "name": "黄金双枪",
       "slot": "weapon",
-      "type_restriction": ["手枪"],
-      "equippable_by": ["meriel"],
+      "type_restriction": [
+        "手枪"
+      ],
+      "equippable_by": [
+        "meriel"
+      ],
       "rarity": "rare",
       "description": "镶嵌翡翠的一对黄金手枪，梅里艾尔的标志性武器，射速惊人。",
-      "stats": { "attack": 20, "agility": 14, "speed": 8 },
+      "stats": {
+        "attack": 20,
+        "agility": 14,
+        "speed": 8
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "phys_crit_rate", "value": 12, "description": "物理暴击率+12%" }
+        {
+          "type": "phys_crit_rate",
+          "value": 12,
+          "description": "物理暴击率+12%"
+        }
       ],
       "skill_grant": null
     },
@@ -891,14 +1051,27 @@
       "id": "armor_pirate_queen_coat",
       "name": "海盗女王外套",
       "slot": "chest",
-      "type_restriction": ["海盗服"],
-      "equippable_by": ["meriel"],
+      "type_restriction": [
+        "海盗服"
+      ],
+      "equippable_by": [
+        "meriel"
+      ],
       "rarity": "rare",
       "description": "深绿金边的华丽海盗外套，穿上它的人自然散发出统领一切的气场。",
-      "stats": { "defense": 18, "magic_defense": 16, "hp": 40 },
+      "stats": {
+        "defense": 18,
+        "magic_defense": 16,
+        "hp": 40
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "resist_damage", "element": "dark", "value": 12, "description": "受暗系伤害-12%" }
+        {
+          "type": "resist_damage",
+          "element": "dark",
+          "value": 12,
+          "description": "受暗系伤害-12%"
+        }
       ],
       "skill_grant": null
     },
@@ -907,13 +1080,23 @@
       "name": "幸运金币戒指",
       "slot": "accessory",
       "type_restriction": [],
-      "equippable_by": ["meriel"],
+      "equippable_by": [
+        "meriel"
+      ],
       "rarity": "rare",
       "description": "嵌有古老金币的戒指，据说是七海最幸运的护身符，与幸运女神被动共鸣。",
-      "stats": { "agility": 12, "speed": 6, "mp": 20 },
+      "stats": {
+        "agility": 12,
+        "speed": 6,
+        "mp": 20
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "phys_crit_rate", "value": 8, "description": "物理暴击率+8%" }
+        {
+          "type": "phys_crit_rate",
+          "value": 8,
+          "description": "物理暴击率+8%"
+        }
       ],
       "skill_grant": null
     },
@@ -921,14 +1104,26 @@
       "id": "gloves_gold_spike",
       "name": "金刺拳套",
       "slot": "weapon",
-      "type_restriction": ["拳套"],
-      "equippable_by": ["mathew"],
+      "type_restriction": [
+        "拳套"
+      ],
+      "equippable_by": [
+        "mathew"
+      ],
       "rarity": "rare",
       "description": "镶嵌金刺的重型拳套，每一击都能让目标感受到撕裂般的疼痛。",
-      "stats": { "attack": 26, "agility": 10, "speed": 6 },
+      "stats": {
+        "attack": 26,
+        "agility": 10,
+        "speed": 6
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "phys_crit_rate", "value": 12, "description": "物理暴击率+12%" }
+        {
+          "type": "phys_crit_rate",
+          "value": 12,
+          "description": "物理暴击率+12%"
+        }
       ],
       "skill_grant": null
     },
@@ -936,14 +1131,26 @@
       "id": "armor_fighter_gi",
       "name": "格斗道服",
       "slot": "chest",
-      "type_restriction": ["格斗服"],
-      "equippable_by": ["mathew"],
+      "type_restriction": [
+        "格斗服"
+      ],
+      "equippable_by": [
+        "mathew"
+      ],
       "rarity": "rare",
       "description": "蓝金刺绣的格斗道服，轻盈而结实，不妨碍任何格斗动作。",
-      "stats": { "defense": 20, "hp": 60, "agility": 8 },
+      "stats": {
+        "defense": 20,
+        "hp": 60,
+        "agility": 8
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "reflect_damage", "value": 6, "description": "物理伤害反弹6%" }
+        {
+          "type": "reflect_damage",
+          "value": 6,
+          "description": "物理伤害反弹6%"
+        }
       ],
       "skill_grant": null
     },
@@ -952,13 +1159,23 @@
       "name": "斗气戒指",
       "slot": "accessory",
       "type_restriction": [],
-      "equippable_by": ["mathew"],
+      "equippable_by": [
+        "mathew"
+      ],
       "rarity": "rare",
       "description": "内嵌斗气晶石的戒指，与气势被动产生共鸣，气势积累更快。",
-      "stats": { "attack": 14, "speed": 8, "hp": 30 },
+      "stats": {
+        "attack": 14,
+        "speed": 8,
+        "hp": 30
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "phys_crit_rate", "value": 8, "description": "物理暴击率+8%" }
+        {
+          "type": "phys_crit_rate",
+          "value": 8,
+          "description": "物理暴击率+8%"
+        }
       ],
       "skill_grant": null
     },
@@ -966,14 +1183,26 @@
       "id": "book_grimoire",
       "name": "恶魔召唤书",
       "slot": "weapon",
-      "type_restriction": ["召唤书"],
-      "equippable_by": ["grifon"],
+      "type_restriction": [
+        "召唤书"
+      ],
+      "equippable_by": [
+        "grifon"
+      ],
       "rarity": "rare",
       "description": "以恶魔皮革装订的禁忌召唤书，翻开时能听见深渊中恶魔的低鸣。",
-      "stats": { "intelligence": 22, "mp": 45, "magic_defense": 10 },
+      "stats": {
+        "intelligence": 22,
+        "mp": 45,
+        "magic_defense": 10
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "magic_crit_rate", "value": 10, "description": "魔法暴击率+10%" }
+        {
+          "type": "magic_crit_rate",
+          "value": 10,
+          "description": "魔法暴击率+10%"
+        }
       ],
       "skill_grant": null
     },
@@ -981,14 +1210,27 @@
       "id": "armor_demon_robe",
       "name": "恶魔法袍",
       "slot": "chest",
-      "type_restriction": ["法袍"],
-      "equippable_by": ["grifon"],
+      "type_restriction": [
+        "法袍"
+      ],
+      "equippable_by": [
+        "grifon"
+      ],
       "rarity": "rare",
       "description": "以恶魔翅膀织就的黑紫法袍，穿着者周身萦绕幽暗气息。",
-      "stats": { "magic_defense": 28, "mp": 35, "intelligence": 10 },
+      "stats": {
+        "magic_defense": 28,
+        "mp": 35,
+        "intelligence": 10
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "resist_damage", "element": "dark", "value": 15, "description": "受暗系伤害-15%" }
+        {
+          "type": "resist_damage",
+          "element": "dark",
+          "value": 15,
+          "description": "受暗系伤害-15%"
+        }
       ],
       "skill_grant": null
     },
@@ -997,13 +1239,23 @@
       "name": "格利风之眼",
       "slot": "accessory",
       "type_restriction": [],
-      "equippable_by": ["grifon"],
+      "equippable_by": [
+        "grifon"
+      ],
       "rarity": "epic",
       "description": "格利风与深渊签订终极契约时获得的单片眼镜，镜片中映照着恶魔界的景象。佩戴者能看穿一切防护，堕落标记的效果翻倍。",
-      "stats": { "intelligence": 18, "mp": 30, "magic_defense": 12 },
+      "stats": {
+        "intelligence": 18,
+        "mp": 30,
+        "magic_defense": 12
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "magic_crit_rate", "value": 15, "description": "魔法暴击率+15%" }
+        {
+          "type": "magic_crit_rate",
+          "value": 15,
+          "description": "魔法暴击率+15%"
+        }
       ],
       "skill_grant": null
     },
@@ -1011,14 +1263,26 @@
       "id": "bow_wind_hunter",
       "name": "疾风猎弓",
       "slot": "weapon",
-      "type_restriction": ["弓"],
-      "equippable_by": ["jessica"],
+      "type_restriction": [
+        "弓"
+      ],
+      "equippable_by": [
+        "jessica"
+      ],
       "rarity": "rare",
       "description": "以精灵木制成的轻盈长弓，弓弦由神兽肌腱编织而成，射出的箭矢快如疾风，令敌人难以察觉。",
-      "stats": { "attack": 32, "agility": 14, "speed": 8 },
+      "stats": {
+        "attack": 32,
+        "agility": 14,
+        "speed": 8
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "phys_crit_rate", "value": 12, "description": "物理暴击率+12%" }
+        {
+          "type": "phys_crit_rate",
+          "value": 12,
+          "description": "物理暴击率+12%"
+        }
       ],
       "skill_grant": null
     },
@@ -1026,11 +1290,18 @@
       "id": "sword_blue_crest",
       "name": "蓝纹骑士剑",
       "slot": "weapon",
-      "type_restriction": ["单手剑"],
-      "equippable_by": ["tiya"],
+      "type_restriction": [
+        "单手剑"
+      ],
+      "equippable_by": [
+        "tiya"
+      ],
       "rarity": "rare",
       "description": "与提雅的蓝纹盾同出一套的骑士剑，剑身刻有蓝色纹路，攻击时散发出淡蓝光芒。",
-      "stats": { "attack": 28, "defense": 10 },
+      "stats": {
+        "attack": 28,
+        "defense": 10
+      },
       "percent_stats": {},
       "special_effects": [],
       "skill_grant": null
@@ -1039,14 +1310,26 @@
       "id": "shield_blue_crest",
       "name": "蓝纹骑士盾",
       "slot": "offhand",
-      "type_restriction": ["盾牌"],
-      "equippable_by": ["tiya"],
+      "type_restriction": [
+        "盾牌"
+      ],
+      "equippable_by": [
+        "tiya"
+      ],
       "rarity": "rare",
       "description": "提雅标志性的蓝纹大盾，以精金铸造，纹路蕴含古老的防护魔法，持盾者受到的物理伤害显著降低。",
-      "stats": { "defense": 42, "magic_defense": 20, "hp": 40 },
+      "stats": {
+        "defense": 42,
+        "magic_defense": 20,
+        "hp": 40
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "reflect_damage", "value": 10, "description": "物理受击反弹10%伤害" }
+        {
+          "type": "reflect_damage",
+          "value": 10,
+          "description": "物理受击反弹10%伤害"
+        }
       ],
       "skill_grant": null
     },
@@ -1054,11 +1337,19 @@
       "id": "armor_gold_plate",
       "name": "黄金骑士铠",
       "slot": "chest",
-      "type_restriction": ["重甲"],
-      "equippable_by": ["tiya"],
+      "type_restriction": [
+        "重甲"
+      ],
+      "equippable_by": [
+        "tiya"
+      ],
       "rarity": "rare",
       "description": "提雅身着的金色全身铠甲，厚重却不失灵活，是专为剑盾战士量身打造的精品铠甲。",
-      "stats": { "defense": 35, "magic_defense": 15, "hp": 60 },
+      "stats": {
+        "defense": 35,
+        "magic_defense": 15,
+        "hp": 60
+      },
       "percent_stats": {},
       "special_effects": [],
       "skill_grant": null
@@ -1067,14 +1358,26 @@
       "id": "katana_blood_edge",
       "name": "赤焰血刃",
       "slot": "weapon",
-      "type_restriction": ["武士刀"],
-      "equippable_by": ["clarete"],
+      "type_restriction": [
+        "武士刀"
+      ],
+      "equippable_by": [
+        "clarete"
+      ],
       "rarity": "epic",
       "description": "克拉蕾特随身携带的朱红色武士刀，刃面常带血色光泽，据说曾斩杀过无数强敌，每一次挥刃都伴随着赤焰涌现。",
-      "stats": { "attack": 38, "agility": 16, "speed": 10 },
+      "stats": {
+        "attack": 38,
+        "agility": 16,
+        "speed": 10
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "phys_crit_rate", "value": 10, "description": "物理暴击率+10%" }
+        {
+          "type": "phys_crit_rate",
+          "value": 10,
+          "description": "物理暴击率+10%"
+        }
       ],
       "skill_grant": null
     },
@@ -1082,11 +1385,20 @@
       "id": "armor_shadow_coat",
       "name": "暗影战衣",
       "slot": "chest",
-      "type_restriction": ["轻甲"],
-      "equippable_by": ["clarete"],
+      "type_restriction": [
+        "轻甲"
+      ],
+      "equippable_by": [
+        "clarete"
+      ],
       "rarity": "rare",
       "description": "以特殊暗纤维制成的轻型战衣，几乎不影响行动速度，却能吸收相当程度的物理冲击。",
-      "stats": { "defense": 20, "magic_defense": 12, "agility": 8, "speed": 5 },
+      "stats": {
+        "defense": 20,
+        "magic_defense": 12,
+        "agility": 8,
+        "speed": 5
+      },
       "percent_stats": {},
       "special_effects": [],
       "skill_grant": null
@@ -1096,13 +1408,22 @@
       "name": "赤焰封印戒",
       "slot": "accessory",
       "type_restriction": [],
-      "equippable_by": ["clarete"],
+      "equippable_by": [
+        "clarete"
+      ],
       "rarity": "epic",
       "description": "封印着古老赤焰之力的指环，佩戴者的攻击偶尔会引发赤焰爆发，与克拉蕾特的奥义产生共鸣。",
-      "stats": { "attack": 18, "agility": 10 },
+      "stats": {
+        "attack": 18,
+        "agility": 10
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "phys_crit_rate", "value": 8, "description": "物理暴击率+8%" }
+        {
+          "type": "phys_crit_rate",
+          "value": 8,
+          "description": "物理暴击率+8%"
+        }
       ],
       "skill_grant": null
     },
@@ -1110,14 +1431,26 @@
       "id": "lance_dragon_fang",
       "name": "龙牙战枪",
       "slot": "weapon",
-      "type_restriction": ["长枪"],
-      "equippable_by": ["stephanie"],
+      "type_restriction": [
+        "长枪"
+      ],
+      "equippable_by": [
+        "stephanie"
+      ],
       "rarity": "epic",
       "description": "以远古火龙的獠牙铸造的双刃战枪，枪身隐隐散发火焰气息，传说持此枪者能与龙魂共鸣。",
-      "stats": { "attack": 36, "speed": 8, "agility": 6 },
+      "stats": {
+        "attack": 36,
+        "speed": 8,
+        "agility": 6
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "fire_damage_boost", "value": 15, "description": "火焰伤害+15%" }
+        {
+          "type": "fire_damage_boost",
+          "value": 15,
+          "description": "火焰伤害+15%"
+        }
       ],
       "skill_grant": null
     },
@@ -1125,14 +1458,27 @@
       "id": "armor_dragon_plate",
       "name": "龙鳞铠甲",
       "slot": "chest",
-      "type_restriction": ["重甲"],
-      "equippable_by": ["stephanie"],
+      "type_restriction": [
+        "重甲"
+      ],
+      "equippable_by": [
+        "stephanie"
+      ],
       "rarity": "rare",
       "description": "以真龙鳞片镶嵌的重型铠甲，坚不可摧，对火焰具有天然的抵抗力。",
-      "stats": { "defense": 38, "magic_defense": 18, "hp": 50 },
+      "stats": {
+        "defense": 38,
+        "magic_defense": 18,
+        "hp": 50
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "resist_damage", "element": "fire", "value": 10, "description": "受火系伤害-10%" }
+        {
+          "type": "resist_damage",
+          "element": "fire",
+          "value": 10,
+          "description": "受火系伤害-10%"
+        }
       ],
       "skill_grant": null
     },
@@ -1141,13 +1487,22 @@
       "name": "龙魂戒指",
       "slot": "accessory",
       "type_restriction": [],
-      "equippable_by": ["stephanie"],
+      "equippable_by": [
+        "stephanie"
+      ],
       "rarity": "rare",
       "description": "封印着龙魂余烬的戒指，佩戴者与龙的契约更加深厚，物理攻击力与暴击率均有提升。",
-      "stats": { "attack": 14, "agility": 8 },
+      "stats": {
+        "attack": 14,
+        "agility": 8
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "phys_crit_rate", "value": 8, "description": "物理暴击率+8%" }
+        {
+          "type": "phys_crit_rate",
+          "value": 8,
+          "description": "物理暴击率+8%"
+        }
       ],
       "skill_grant": null
     },
@@ -1155,14 +1510,26 @@
       "id": "dagger_blue_wind",
       "name": "蓝风弯刀",
       "slot": "weapon",
-      "type_restriction": ["弯刀"],
-      "equippable_by": ["cross"],
+      "type_restriction": [
+        "弯刀"
+      ],
+      "equippable_by": [
+        "cross"
+      ],
       "rarity": "rare",
       "description": "克罗斯随身携带的轻巧弯刀，刀身呈蓝紫色，出刀时留下一道蓝色残影。轻盈的重量让持刀者的攻速大幅提升。",
-      "stats": { "attack": 28, "agility": 18, "speed": 14 },
+      "stats": {
+        "attack": 28,
+        "agility": 18,
+        "speed": 14
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "phys_crit_rate", "value": 10, "description": "物理暴击率+10%" }
+        {
+          "type": "phys_crit_rate",
+          "value": 10,
+          "description": "物理暴击率+10%"
+        }
       ],
       "skill_grant": null
     },
@@ -1170,11 +1537,20 @@
       "id": "armor_thief_coat",
       "name": "盗贼风衣",
       "slot": "chest",
-      "type_restriction": ["轻甲"],
-      "equippable_by": ["cross"],
+      "type_restriction": [
+        "轻甲"
+      ],
+      "equippable_by": [
+        "cross"
+      ],
       "rarity": "rare",
       "description": "专为盗贼设计的轻型风衣，内衬暗袋众多，提供基本防护的同时完全不影响行动速度。",
-      "stats": { "defense": 18, "magic_defense": 12, "speed": 8, "agility": 6 },
+      "stats": {
+        "defense": 18,
+        "magic_defense": 12,
+        "speed": 8,
+        "agility": 6
+      },
       "percent_stats": {},
       "special_effects": [],
       "skill_grant": null
@@ -1184,15 +1560,58 @@
       "name": "疾步戒指",
       "slot": "accessory",
       "type_restriction": [],
-      "equippable_by": ["cross"],
+      "equippable_by": [
+        "cross"
+      ],
       "rarity": "rare",
       "description": "刻有风神纹路的戒指，佩戴者步伐轻盈如风，反应速度和暴击率均有显著提升。",
-      "stats": { "speed": 12, "agility": 10 },
+      "stats": {
+        "speed": 12,
+        "agility": 10
+      },
       "percent_stats": {},
       "special_effects": [
-        { "type": "phys_crit_rate", "value": 8, "description": "物理暴击率+8%" }
+        {
+          "type": "phys_crit_rate",
+          "value": 8,
+          "description": "物理暴击率+8%"
+        }
       ],
       "skill_grant": null
+    },
+    {
+      "id": "ring_earth_pulse",
+      "name": "地脉石环",
+      "slot": "accessory",
+      "rarity": "epic",
+      "description": "蕴含大地脉动之力的古老石环，佩戴者土系技能威力大幅提升",
+      "stats": {
+        "intelligence": 16,
+        "defense": 12,
+        "hp": 40
+      },
+      "percent_stats": {},
+      "special_effects": [],
+      "skill_grant": null,
+      "type_restriction": [],
+      "equippable_by": []
+    },
+    {
+      "id": "belt_seven_color",
+      "name": "七色斩腰带",
+      "slot": "accessory",
+      "rarity": "epic",
+      "description": "七色斩姬专属的彩虹腰带，舞动时散发七彩光芒，大幅提升攻击与敏捷",
+      "stats": {
+        "attack": 15,
+        "agility": 18,
+        "speed": 10
+      },
+      "percent_stats": {},
+      "special_effects": [],
+      "skill_grant": null,
+      "type_restriction": [],
+      "equippable_by": []
     }
   ]
 }

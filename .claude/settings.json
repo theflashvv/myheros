@@ -2,7 +2,29 @@
   "permissions": {
     "allow": [
       "Bash(node -e ' *)",
-      "Bash(sort -t'.' -k1,1)"
+      "Bash(sort -t'.' -k1,1)",
+      "mcp__ppt-server__ppt_close",
+      "mcp__ppt-server__ppt_create_from_spec",
+      "mcp__ppt-server__ppt_add_slide",
+      "mcp__ppt-server__ppt_set_background_color",
+      "mcp__ppt-server__ppt_add_chart",
+      "mcp__ppt-server__ppt_move_slide",
+      "mcp__ppt-server__ppt_apply_typography",
+      "mcp__ppt-server__ppt_set_gradient_background",
+      "mcp__ppt-server__ppt_set_transition",
+      "mcp__my-heroes-game__character_list",
+      "Bash(node -e \"const d=JSON.parse\\(require\\('fs'\\).readFileSync\\('C:/Users/C5284281/myproject/My Heros/data/characters.json','utf8'\\)\\); d.characters.forEach\\(c=>console.log\\(c.name+'：'+c.description.slice\\(0,40\\)\\)\\)\")",
+      "mcp__my-heroes-game__character_update",
+      "Bash(cp \"C:/Users/C5284281/Downloads/FF6/七色斩姬2D.png\" \"C:/Users/C5284281/myproject/My Heros/assets/portraits/qise.png\" && echo \"done\")",
+      "mcp__my-heroes-game__skill_add",
+      "mcp__my-heroes-game__character_add",
+      "mcp__my-heroes-game__character_add_skill",
+      "mcp__my-heroes-game__equipment_list",
+      "mcp__my-heroes-game__equipment_add",
+      "mcp__my-heroes-game__equipment_equip"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\C5284281\\Downloads\\FF6"
     ]
   }
 }

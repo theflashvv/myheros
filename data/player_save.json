@@ -184,6 +184,22 @@
       "chest": "armor_holy_robe",
       "legs": null,
       "accessory": "ring_holy_crest"
+    },
+    "zhenru": {
+      "weapon": "staff_crystal",
+      "offhand": null,
+      "head": null,
+      "chest": "armor_storm_robe",
+      "legs": null,
+      "accessory": "ring_earth_pulse"
+    },
+    "qise": {
+      "weapon": "dagger_blue_wind",
+      "offhand": null,
+      "head": null,
+      "chest": "armor_hunter_coat",
+      "legs": null,
+      "accessory": "belt_seven_color"
     }
   },
   "inventory": [
